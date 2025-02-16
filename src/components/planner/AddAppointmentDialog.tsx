@@ -43,6 +43,7 @@ import { IconBriefcase, IconUser, IconVideo, IconVideoOff, IconMapPin, IconMapPi
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { useSettings } from "@/hooks/use-settings";
+import { Typography } from "../ui/typography";
 
 
 type ServiceType = {
@@ -200,7 +201,7 @@ const AddAppointmentDialog: React.FC = () => {
       <DialogTrigger asChild>
         <Button variant="outline">
           <IconCalendarPlus className="h-4 w-4" />
-          <span className="md:block hidden">Novo Agendamento</span>
+          <Typography variant="span" className="md:block hidden">Novo Agendamento</Typography>
         </Button>
       </DialogTrigger>
       <DialogContent

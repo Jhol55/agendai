@@ -96,7 +96,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
       <div className="flex items-center justify-between">
         <div>
         </div>
-        <div className="flex items-center gap-2 justify-between w-full p-2 pt-4 bg-neutral-800/40 border-b absolute left-0 top-0">
+        <div className="flex items-center gap-2 justify-between w-full p-2 pt-4 bg-white dark:bg-neutral-800/40 border-b absolute left-0 top-0">
           <div></div>
           <div className="flex gap-2">
             <Notifications />
@@ -105,13 +105,13 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               variant="outline"
             >
               <IconUserPlus className="w-4 h-4" />
-              <span className="md:block hidden">Novo cliente</span>
+              <Typography variant="span" className="md:block hidden">Novo cliente</Typography>         
             </Button>
             <Button
               variant="outline"
             >
               <IconClipboardPlus className="h-4 w-4" />
-              <span className="md:block hidden">Novo serviço</span>
+              <Typography variant="span" className="md:block hidden">Novo serviço</Typography>
             </Button>
             <AddAppointmentDialog />
           </div>
@@ -129,8 +129,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfDay(new Date()),
               })}
             >
-              <span className="md:block hidden">Dia</span>
-              <span className="md:hidden block">D</span>
+              <Typography variant="span" className="md:block hidden">Dia</Typography>
+              <Typography variant="span" className="md:hidden block">D</Typography>
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "outline"}
@@ -142,8 +142,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfWeek(new Date()),
               })}
             >
-              <span className="md:block hidden">Semana</span>
-              <span className="md:hidden block">S</span>
+              <Typography variant="span" className="md:block hidden">Semana</Typography>
+              <Typography variant="span" className="md:hidden block">S</Typography>
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
@@ -153,8 +153,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfMonth(new Date()),
               })}
             >
-              <span className="md:block hidden">Mês</span>
-              <span className="md:hidden block">M</span>
+              <Typography variant="span" className="md:block hidden">Mês</Typography>
+              <Typography variant="span" className="md:hidden block">M</Typography>
             </Button>
           </div>
           <Separator orientation="vertical" className="mx-2" />
@@ -162,8 +162,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             <Button
               variant="outline"
               onClick={() => handleDateRangeUpdate(moveToToday())}
-            >
-              Hoje
+            >            
+              <Typography variant="span">Hoje</Typography>
             </Button>
             <Button
               variant="outline"
@@ -195,7 +195,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 onClick={() => setIsOpened(true)}
               >
                 <IconSettings className="!h-4 !w-4" />
-                <span className="md:block hidden">Configurações</span>
+                <Typography variant="span" className="md:block hidden">Configurações</Typography>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mr-7 bg-background">

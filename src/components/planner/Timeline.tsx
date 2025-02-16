@@ -71,7 +71,9 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                             <IconClock className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
                           </div>
                           : viewMode === "week"
-                            ? <IconCalendarPin className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
+                            ? <div className="flex items-center min-w-10">
+                              <IconCalendarPin className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
+                            </div>
                             : null
                       }
                     </TooltipTrigger>
