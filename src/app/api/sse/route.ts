@@ -41,7 +41,7 @@ export async function GET() {
 }
 
 // 🔹 Função para enviar eventos SSE para todos os clientes
-export function sendEventToClients(data: string) {
+function sendEventToClients(data: string) {
   clients = clients.filter((client) => !client.closed); // Remove clientes desconectados
 
   clients.forEach((client) => {
