@@ -29,7 +29,7 @@ type AppointmentType = {
   clientName: string;
 };
 
-export default function ConfirmationLink() {
+function ConfirmationLink() {
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointment");
 
@@ -64,7 +64,6 @@ export default function ConfirmationLink() {
   }
 
   return (
-    <Suspense>
       <main className="h-screen w-full bg-gray-50 dark:bg-neutral-800">
         <section className="flex items-center justify-center w-full h-full">
           {appointment?.clientName && appointment.status === "pending" && !status ? (
@@ -275,6 +274,13 @@ export default function ConfirmationLink() {
           )}
         </section>
       </main>
-    </Suspense>
   );
+}
+
+export default function ConfirmationLinkWithSuspense() {
+  return (
+    <Suspense>
+      <ConfirmationLink />
+    </Suspense>
+  )
 }
