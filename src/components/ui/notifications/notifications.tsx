@@ -1,52 +1,80 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../dropdown-menu"
+import { IconCalendar, IconMail, IconMailOpened } from "@tabler/icons-react"
+import { useEffect, useState } from "react"
+import { getNotifications } from "@/services/notifications"
+import { Loading } from "../loading/loading"
+import { Typography } from "../typography"
+import { Separator } from "../separator"
 
-export default function Component() {
+
+
+export function Notifications() {
+
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getNotifications({}).then(data => setNotifications(data));
+  }, [])
+
+  useEffect(() => {
+    if (notifications.length) {
+      setIsLoading(false);
+    }
+  }, [notifications])
+
+  const icons = {
+    scheduling: <IconCalendar className="h-5 w-5" />
+  }
+
+  const [isOpened, setIsOpened] = useState(false);
+
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Notifications</CardTitle>
-        <CardDescription>You have 3 new notifications.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="bg-muted rounded-md flex items-center justify-center aspect-square w-10">
-              <BellIcon className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">New message from Jane</p>
-              <p className="text-muted-foreground text-sm">Hey, just wanted to follow up on our meeting yesterday.</p>
-            </div>
+    <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
+      <DropdownMenuTrigger asChild className="relative">
+        <Button variant="secondary" size="icon" className="rounded-full">
+          {
+            isOpened
+              ? <IconMailOpened className="h-4 w-4 -translate-y-[1px]" />
+              : <IconMail className="h-4 w-4" />
+          }
+          <span className="sr-only">Toggle user menu</span>
+          <div className="absolute flex items-center justify-center -top-3 -right-1 rounded-full h-5 w-5 shrink-0 text-xs bg-red-500 dark:bg-red-500 pointer-events-none">
+            {!isLoading ? notifications?.length >= 99 ? 99 : notifications?.length : null}
+            <Loading display={isLoading} className="absolute !scale-[0.2]" />
           </div>
-          <div className="flex items-start gap-4">
-            <div className="bg-muted rounded-md flex items-center justify-center aspect-square w-10">
-              <CalendarIcon className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">Upcoming event reminder</p>
-              <p className="text-muted-foreground text-sm">Your team meeting is scheduled for tomorrow at 2pm.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="bg-muted rounded-md flex items-center justify-center aspect-square w-10">
-              <TruckIcon className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">Delivery update</p>
-              <p className="text-muted-foreground text-sm">
-                Your order #12345 has been shipped and will arrive tomorrow.
-              </p>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button variant="outline" className="w-full">
-          Clear all notifications
         </Button>
-      </CardFooter>
-    </Card>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="bg-background !p-0 w-full max-w-md" side="top" align="center">
+        <Card className="w-full max-w-md border-0 bg-background">
+          <CardHeader>
+            <CardTitle className="text-xl">Notificações</CardTitle>
+            <CardDescription>{`Você tem ${notifications?.length} ${notifications.length > 1 ? "novas mensagens" : "nova mensagem"}.`}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            {notifications.map((notification, index) => (
+              <div key={index} className="flex flex-col gap-4">
+                <div className="flex gap-4 items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="border rounded-md p-2 bg-neutral-50 dark:bg-neutral-800">{icons[notification.type]}</span>
+                    <Typography variant="p">{notification.title}</Typography>
+                  </div>
+                  <Button variant="outline">Ver</Button>
+                </div>
+                <Separator orientation="horizontal" />
+              </div>
+            ))}
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" className="w-full">
+              Clear all notifications
+            </Button>
+          </CardFooter>
+        </Card>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

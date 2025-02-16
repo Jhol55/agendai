@@ -39,7 +39,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { getClients } from "@/services/clients";
 import { Loading } from "../ui/loading/loading";
 import { getServices } from "@/services/services";
-import { IconBriefcase, IconUser, IconVideo, IconVideoOff, IconMapPin, IconMapPinOff } from "@tabler/icons-react";
+import { IconBriefcase, IconUser, IconVideo, IconVideoOff, IconMapPin, IconMapPinOff, IconCalendarPlus } from "@tabler/icons-react";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { useSettings } from "@/hooks/use-settings";
@@ -198,7 +198,10 @@ const AddAppointmentDialog: React.FC = () => {
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-green-500 hover:bg-green-600 dark:bg-green-500 hover:dark:bg-green-600 text-white hover:text-white">Novo Agendamento</Button>
+        <Button variant="outline">
+          <IconCalendarPlus className="h-4 w-4" />
+          <span className="md:block hidden">Novo Agendamento</span>
+        </Button>
       </DialogTrigger>
       <DialogContent
         className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"

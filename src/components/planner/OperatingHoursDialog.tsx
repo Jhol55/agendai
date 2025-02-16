@@ -25,7 +25,7 @@ import { TimePicker } from "@/components/ui/time-picker";
 import { OperatingHoursProps, operatingHoursSchema } from "@/models/OperatingHours";
 import { Typography } from "../ui/typography";
 import { Checkbox } from "../ui/checkbox";
-import { useState, useEffect, forwardRef } from "react";
+import { useState, useEffect, forwardRef, useCallback } from "react";
 import { getOperatingHours, updateOperatingHours } from "@/services/operatingHours";
 import { z } from "zod";
 
@@ -49,9 +49,6 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, object>((props, r
     },
   });
 
-  const toggleClosed = (dayName: daysOfWeekType, checked: boolean) => {
-    form.setValue(`${dayName}.closed`, checked);
-  };
 
   useEffect(() => {
     getOperatingHours({}).then((data) => {
@@ -85,24 +82,24 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, object>((props, r
     { name: "saturday", label: "Sábado", pickerOpen: { start: false, end: false } },
   ]);
 
-  const toggleOpenPicker = (
-    dayName: daysOfWeekType,
-    type: "start" | "end"
-  ) => {
-    setDays((prevDays) =>
-      prevDays.map((day) =>
-        day.name === dayName
-          ? {
-            ...day,
-            pickerOpen: {
-              ...day.pickerOpen,
-              [type]: !day.pickerOpen[type]
+  const toggleOpenPicker = useCallback(
+    (dayName: daysOfWeekType, type: "start" | "end") => {
+      setDays((prevDays) =>
+        prevDays.map((day) =>
+          day.name === dayName
+            ? {
+              ...day,
+              pickerOpen: {
+                ...day.pickerOpen,
+                [type]: !day.pickerOpen[type],
+              },
             }
-          }
-          : day
-      )
-    );
-  };
+            : day
+        )
+      );
+    },
+    []
+  );
 
   useEffect(() => {
     if (!isOpened) {
@@ -131,7 +128,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, object>((props, r
       <DialogTrigger asChild>
         <Button className="w-full" variant="outline">Horários de funcionamento</Button>
       </DialogTrigger>
-      <DialogContent       
+      <DialogContent
         className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
         aria-describedby={undefined}
         onInteractOutside={(e) => {
@@ -164,7 +161,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, object>((props, r
                               checked={field.value}
                               onCheckedChange={(checked: boolean) => {
                                 field.onChange(checked);
-                                toggleClosed(day.name, checked);
+                                form.setValue(`${day.name}.closed`, checked);
                               }}
                             />
                           </FormControl>

@@ -8,7 +8,7 @@ import { addDays, subDays, startOfDay, endOfDay, endOfWeek, startOfWeek } from "
 import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 import AddAppointmentDialog from "./AddAppointmentDialog";
 import { Button } from "../ui/button";
-import { IconChevronRight, IconChevronLeft, IconSettings } from "@tabler/icons-react";
+import { IconChevronRight, IconChevronLeft, IconSettings, IconUser, IconUserPlus, IconClipboardPlus } from "@tabler/icons-react";
 import { Typography } from "../ui/typography";
 import { capitalizeFirstLetter } from "@/utils/capitalize-first-letter";
 import { OperatingHoursDialog } from "./OperatingHoursDialog";
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { AdditionalSettingsDialog } from "./AdditionalSettingsDialog";
 import { Separator } from "../ui/separator";
+import { Notifications } from "../ui/notifications/notifications";
 
 type CalendarToolbarProps = React.HTMLAttributes<HTMLDivElement>
 
@@ -94,64 +95,31 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
     >
       <div className="flex items-center justify-between">
         <div>
-
         </div>
-        <div className="flex items-center gap-2">
-          <AddAppointmentDialog />
-          <DropdownMenu open={isOpened} onOpenChange={setIsOpened} >
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                onClick={() => setIsOpened(true)}
-              >
-                <IconSettings className="!h-4 !w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mr-7">
-              <DropdownMenuLabel>Configurações</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup className="flex flex-col justify-center p-2 gap-2">
-                <DropdownMenuItem className="!p-0 m-2" asChild>
-                  <OperatingHoursDialog />
-                </DropdownMenuItem>
-                <DropdownMenuItem className="!p-0 m-2" asChild>
-                  <AdditionalSettingsDialog />
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center gap-2 justify-between w-full p-2 pt-4 bg-neutral-800/40 border-b absolute left-0 top-0">
+          <div></div>
+          <div className="flex gap-2">
+            <Notifications />
+            <Separator orientation="vertical" className="mx-2 h-10" />
+            <Button
+              variant="outline"
+            >
+              <IconUserPlus className="w-4 h-4" />
+              <span className="md:block hidden">Novo cliente</span>
+            </Button>
+            <Button
+              variant="outline"
+            >
+              <IconClipboardPlus className="h-4 w-4" />
+              <span className="md:block hidden">Novo serviço</span>
+            </Button>
+            <AddAppointmentDialog />
+          </div>
         </div>
       </div>
-      <Separator orientation="horizontal" className="my-2" />
-      <div className="flex gap-2 justify-between w-full">
+      {/* <Separator orientation="horizontal" className="my-2" /> */}
+      <div className="flex gap-2 justify-between w-full py-2 mt-14">
         <div className="flex gap-2 items-end">
-          <Button
-            variant="outline"
-            onClick={() => handleDateRangeUpdate(moveToToday())}
-          >
-            Hoje
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleDateRangeUpdate(moveBack())}
-          >
-            <IconChevronLeft className="!w-5 !h-5" />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleDateRangeUpdate(moveForward())}
-          >
-            <IconChevronRight className="!w-5 !h-5" />
-          </Button>
-        </div>
-        <Typography variant="span" className="w-full mx-2 lg:block hidden">
-          {viewMode === "week" || viewMode === "day"
-            ? range.from && capitalizeFirstLetter(format(range.from, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))
-            : range.from && capitalizeFirstLetter(format(range.from, "MMMM", { locale: ptBR }))}
-          {viewMode === "week" && " - "}
-          {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
-        </Typography>
-        <div className="flex gap-2">
           <div className="flex gap-2">
             <Button
               variant={viewMode === "day" ? "default" : "outline"}
@@ -161,7 +129,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfDay(new Date()),
               })}
             >
-              Dia
+              <span className="md:block hidden">Dia</span>
+              <span className="md:hidden block">D</span>
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "outline"}
@@ -173,7 +142,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfWeek(new Date()),
               })}
             >
-              Semana
+              <span className="md:block hidden">Semana</span>
+              <span className="md:hidden block">S</span>
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
@@ -183,9 +153,68 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfMonth(new Date()),
               })}
             >
-              Mês
+              <span className="md:block hidden">Mês</span>
+              <span className="md:hidden block">M</span>
             </Button>
           </div>
+          <Separator orientation="vertical" className="mx-2" />
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outline"
+              onClick={() => handleDateRangeUpdate(moveToToday())}
+            >
+              Hoje
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleDateRangeUpdate(moveBack())}
+            >
+              <IconChevronLeft className="!w-5 !h-5" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleDateRangeUpdate(moveForward())}
+            >
+              <IconChevronRight className="!w-5 !h-5" />
+            </Button>
+          </div>
+        </div>
+        <Typography variant="span" className="w-full mx-2 lg:block hidden">
+          {viewMode === "week" || viewMode === "day"
+            ? range.from && capitalizeFirstLetter(format(range.from, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))
+            : range.from && capitalizeFirstLetter(format(range.from, "MMMM", { locale: ptBR }))}
+          {viewMode === "week" && " - "}
+          {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
+        </Typography>
+        <Separator orientation="vertical" className="md:hidden block" />
+        <div className="flex gap-2">
+          <DropdownMenu open={isOpened} onOpenChange={setIsOpened} >
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={() => setIsOpened(true)}
+              >
+                <IconSettings className="!h-4 !w-4" />
+                <span className="md:block hidden">Configurações</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mr-7 bg-background">
+              <DropdownMenuLabel>
+                <Typography variant="span">
+                  Configurações
+                </Typography>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup className="flex flex-col justify-center p-2 gap-2">
+                <DropdownMenuItem className="!p-0 m-2" asChild>
+                  <OperatingHoursDialog />
+                </DropdownMenuItem>
+                <DropdownMenuItem className="!p-0 m-2" asChild>
+                  <AdditionalSettingsDialog />
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

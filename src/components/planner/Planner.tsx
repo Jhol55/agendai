@@ -43,7 +43,7 @@ export type PlannerMainComponentProps = React.HTMLAttributes<HTMLDivElement>;
 
 const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
   return (
-    <div className="flex flex-col gap-2  ">
+    <div className="flex flex-col p-4 relative">
       <CalendarToolbar />
       <CalendarContent {...props} />
     </div>
@@ -122,7 +122,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   }, [appointments, resources, updateAppointment, viewMode]);
 
   return (appointments &&
-    <div className="flex max-h-[calc(85vh_-_theme(spacing.16))] flex-col border rounded-md border-neutral-200 dark:border-neutral-700">
+    <div className="flex md:max-h-[calc(88vh_-_theme(spacing.16))] max-h-[calc(81vh_-_theme(spacing.16))] flex-col border rounded-md border-neutral-200 dark:border-neutral-700">
       <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent">
         <Table>
           <Timeline />

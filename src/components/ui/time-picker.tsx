@@ -21,56 +21,58 @@ export function TimePicker({
   disabled,
   onChange,
   placeholder,
-  mode = "datetime", // "datetime" | "date" | "time"
+  mode = "datetime",
 }: {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  value?: Date | undefined;
+  value?: Date | undefined | null;
   disabled?: boolean;
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
   mode?: "datetime" | "date" | "time";
 }) {
-  const [date, setDate] = React.useState<Date | undefined>(undefined);
-  const [externalDate, setExternalDate] = React.useState<Date | undefined>(value)
+  const [date, setDate] = React.useState<Date | undefined>(value ?? undefined);
+  const isFirstRender = React.useRef(true);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
-      setDate(selectedDate);
+      onChange?.(new Date(selectedDate))
+      setDate(new Date(selectedDate));     
     }
   };
 
   const handleTimeChange = (type: "hour" | "minute", value: string) => {
     const newDate = date ? new Date(date) : new Date();
-
     if (!date) {
       newDate.setHours(0);
       newDate.setMinutes(0);
     }
-
     if (type === "hour") {
       newDate.setHours(parseInt(value));
-    } else if (type === "minute") {
+    } else {
       newDate.setMinutes(parseInt(value));
     }
-
-    setDate(newDate);
+    onChange?.(newDate)
+    setDate(newDate); 
   };
 
   React.useEffect(() => {
-    onChange?.(date);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (value && !date) {
+      setDate(value);
+    }
+  }, [date, value]);
 
   React.useEffect(() => {
-    if (value && !date) {
-      setExternalDate(value);
-      onChange?.(value);
+    if (value) {
+      setDate(value);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value])
 
   return (
     <Popover open={open} onOpenChange={onOpenChange} modal>
@@ -79,7 +81,7 @@ export function TimePicker({
           variant="outline"
           className={cn(
             "w-full justify-start text-left font-normal bg-background",
-            (!date && !externalDate) && "text-muted-foreground"
+            (!date && !value) && "text-gray-500"
           )}
         >
           <IconCalendar className="mr-2 h-4 w-4" />
@@ -94,18 +96,8 @@ export function TimePicker({
                     : "HH:mm",
                 { locale: ptBR }
               )
-            ) : externalDate ? (
-              format(
-                externalDate,
-                mode === "datetime"
-                  ? "dd/MM/yyyy HH:mm"
-                  : mode === "date"
-                    ? "dd/MM/yyyy"
-                    : "HH:mm",
-                { locale: ptBR }
-              )
             ) : (
-              <span>{placeholder ? placeholder : "Selecione"}</span>
+              <span>{placeholder || "Selecione"}</span>
             )}
           </div>
         </Button>

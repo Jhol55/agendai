@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 
 export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
@@ -52,12 +53,13 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           <TableHead
             key={index}
             className={cn(
-              "sticky top-0 bg-background first:border-0 last:border-0 border-x text-center max-w-full whitespace-nowrap bg-neutral-50 dark:bg-neutral-800 dark:border-x-neutral-700",
+              "sticky bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-neutral-50 dark:bg-neutral-800 dark:border-r-neutral-700",
+              viewMode !== "day" && "top-0",
               shouldDisplayIcon({ index, viewMode })
-                ? "z-20" : "z-10"
+                ? "z-30" : "z-20"
             )}
           >
-            <div className="relative flex items-center justify-center">
+            <span className="relative flex items-center justify-center">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>
@@ -87,7 +89,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                   </Tooltip>
                 </TooltipProvider>
               }
-            </div>
+            </span>
           </TableHead>
         ))}
       </TableRow>
