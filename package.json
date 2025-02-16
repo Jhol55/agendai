@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node ./scripts/replace-out.js && parcel build ./out/admin.html --no-source-maps && node ./scripts/replace.js",
+    "build2": "next build && node ./scripts/replace-out.js && parcel build ./out/admin.html --no-source-maps && node ./scripts/replace.js",
     "parcel": "node ./scripts/replace-out.js && parcel build ./out/admin.html --no-source-maps && node ./scripts/replace.js",
     "start": "next start",
+    "build": "next build",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
