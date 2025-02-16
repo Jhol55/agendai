@@ -64,7 +64,7 @@ export default function ConfirmationLink() {
   }
 
   return (
-    <Suspense fallback={null}>
+    <Suspense>
       <main className="h-screen w-full bg-gray-50 dark:bg-neutral-800">
         <section className="flex items-center justify-center w-full h-full">
           {appointment?.clientName && appointment.status === "pending" && !status ? (
