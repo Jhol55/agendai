@@ -279,7 +279,7 @@ function ConfirmationLink() {
 
 export default function ConfirmationLinkWithSuspense() {
   return (
-    <Suspense>
+    <Suspense fallback={<div></div>}>
       <ConfirmationLink />
     </Suspense>
   )
