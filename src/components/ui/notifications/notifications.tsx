@@ -59,7 +59,7 @@ export function Notifications() {
                 <div className="flex gap-4 items-center justify-between">
                   <div className="flex items-center gap-4">
                     <span className="border rounded-md p-2 bg-neutral-50 dark:bg-neutral-800">{icons[notification.type]}</span>
-                    <Typography variant="p">{notification.title}</Typography>
+                    <Typography variant="span">{notification.title}</Typography>
                   </div>
                   <Button variant="outline">Ver</Button>
                 </div>

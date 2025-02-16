@@ -14,7 +14,7 @@ export const Typography = forwardRef<HTMLParagraphElement, TypographyProps>(({
   const styles = {
     p: `text-xs font-medium`,
     b: 'text-xs font-bold',
-    span: `text-md font-medium`,
+    span: `text-sm font-medium`,
     h1: `text-xl font-bold`,
     h2: `text-lg font-semibold`,
     h3: `text-md font-semibold`,

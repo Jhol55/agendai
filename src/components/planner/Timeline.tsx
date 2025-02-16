@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
+import { Typography } from "../ui/typography";
 
 export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
@@ -59,7 +60,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                 ? "z-30" : "z-20"
             )}
           >
-            <span className="relative flex items-center justify-center">
+            <Typography variant="span" className="relative flex items-center justify-center opacity-70">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>
@@ -91,7 +92,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                   </Tooltip>
                 </TooltipProvider>
               }
-            </span>
+            </Typography>
           </TableHead>
         ))}
       </TableRow>
