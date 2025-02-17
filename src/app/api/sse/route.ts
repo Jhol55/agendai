@@ -1,33 +1,19 @@
-
-
-let clients: { id: number; sendData: (data: { ping: boolean } | string) => void, closed: boolean }[] = [];
-let clientId = 0;
-
 export async function GET() {
-  const id = clientId++;
   const encoder = new TextEncoder();
-
   const stream = new ReadableStream({
     start(controller) {
-      const sendData = (data: { ping: boolean } | string) => {
-        const client = clients.find((c) => c.id === id);
-        if (client && !client.closed) {
-          try {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-          } catch (error) {
-            client.closed = true; // Marca como fechado para remover depois
-          }
-        }
+      const send = (data: { ping: boolean } | { message: string }) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      clients.push({ id, sendData, closed: false });
+      const interval = setInterval(() => send({ ping: true }), 25000);
 
-      const interval = setInterval(() => sendData({ ping: true }), 10000);
-
-      return () => {
+      controller.close = () => {
         clearInterval(interval);
-        clients = clients.filter((client) => client.id !== id);
       };
+
+      // Mensagem inicial
+      send({ message: "Conexão SSE iniciada" });
     },
   });
 
@@ -39,27 +25,3 @@ export async function GET() {
     },
   });
 }
-
-// 🔹 Função para enviar eventos SSE para todos os clientes
-function sendEventToClients(data: string) {
-  clients = clients.filter((client) => !client.closed); // Remove clientes desconectados
-
-  clients.forEach((client) => {
-    try {
-      client.sendData(data);
-    } catch (error) {
-      client.closed = true;
-    }
-  });
-
-  // 🔹 Remove clientes fechados para evitar vazamento de memória
-  clients = clients.filter((client) => !client.closed);
-}
-
-
-export async function POST(req: Request) {
-  const body = await req.json();
-  sendEventToClients(body); // Envia para todos os clientes conectados
-  return new Response("OK", { status: 200 });
-}
-
