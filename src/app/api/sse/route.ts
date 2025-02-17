@@ -1,19 +1,36 @@
+
+
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
 
-type SSEMessage = { ping: boolean } | { message: string };
+type MessageType = { ping: boolean } | { message: string };
+type ClientType = { id: string, send: (data: MessageType) => void }[]
+
+let clients: ClientType = [];
 
 export async function GET() {
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     start(controller) {
-      const send = (data: SSEMessage) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      let closed = false
+      const id = crypto.randomUUID();
+
+      const send = (data: MessageType) => {
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          closed = true
+          clients = clients.filter((client) => client.id !== id);
+        }
       };
 
+      clients.push({ id, send });
+
       const interval = setInterval(() => {
-        send({ ping: true });
+        if (!closed) {
+          send({ ping: true });
+        }
       }, 10000);
 
       controller.close = () => {
@@ -32,6 +49,12 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  console.log(req.body)
-  return new Response("Webhook recebido e dados enviados para SSE", { status: 200 });
+  const body = await req.json();
+
+  clients.forEach((client) => {
+    client.send(body);
+  });
+
+  return new Response("OK", { status: 200 });
+
 }
