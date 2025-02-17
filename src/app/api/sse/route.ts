@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 type SSEMessage = { ping: boolean } | { message: string };
+
 
 export async function GET() {
   const encoder = new TextEncoder();
@@ -13,14 +15,13 @@ export async function GET() {
 
       send({ message: "Conexão SSE iniciada" });
 
-      const interval = setInterval(() => send({ ping: true }), 10000);
+      const interval = setInterval(() => {
+        send({ ping: true });
+      }, 10000);
 
-      const closeStream = () => {
+      controller.close = () => {
         clearInterval(interval);
-        controller.close();
       };
-
-      self.addEventListener("beforeunload", closeStream);
     },
   });
 
