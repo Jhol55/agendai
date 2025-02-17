@@ -3,7 +3,6 @@ export const runtime = "edge";
 
 type SSEMessage = { ping: boolean } | { message: string };
 
-
 export async function GET() {
   const encoder = new TextEncoder();
 
@@ -13,7 +12,7 @@ export async function GET() {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      send({ message: "Conexão SSE iniciada" });
+      // send({ message: "Conexão SSE iniciada" });
 
       const interval = setInterval(() => {
         send({ ping: true });
