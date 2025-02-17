@@ -23,7 +23,7 @@ export function Notifications() {
   }, [])
 
   useEffect(() => {
-    if (notifications.length) {
+    if (notifications?.length) {
       setIsLoading(false);
     }
   }, [notifications])
