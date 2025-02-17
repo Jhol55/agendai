@@ -5,6 +5,8 @@ export async function GET() {
   const id = clientId++;
   const encoder = new TextEncoder();
 
+  console.log(`Novo cliente SSE conectado: ${id}`);
+
   const stream = new ReadableStream({
     start(controller) {
       const sendData = (data: { ping: boolean } | { message: string }) => {
@@ -16,17 +18,22 @@ export async function GET() {
         }
       };
 
-      // Registra o cliente na lista de clientes conectados
+      // Adiciona o cliente à lista
       const newClient = { id, sendData, closed: false };
       clients.push(newClient);
 
-      // Envia a mensagem de conexão apenas uma vez para este cliente
-      sendData({ message: "Conexão SSE iniciada" });
+      // Só envia "Conexão SSE iniciada" se for a primeira conexão
+      if (!clients.some((client) => client.id !== id)) {
+        sendData({ message: "Conexão SSE iniciada" });
+      }
 
       // Envia pings periódicos
-      const interval = setInterval(() => sendData({ ping: true }), 5000);
+      const interval = setInterval(() => {
+        if (!newClient.closed) sendData({ ping: true });
+      }, 5000);
 
       return () => {
+        console.log(`Cliente SSE desconectado: ${id}`);
         clearInterval(interval);
         clients = clients.filter((client) => client.id !== id);
       };
@@ -58,6 +65,6 @@ function sendEventToClients(data: { message: string }) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  sendEventToClients(body); // Envia para todos os clientes conectados
+  sendEventToClients(body);
   return new Response("OK", { status: 200 });
 }
