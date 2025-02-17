@@ -31,7 +31,7 @@ export async function GET() {
   });
 }
 
-async function POST(req: Request) {
+export async function POST(req: Request) {
   console.log(req.body)
   return new Response("Webhook recebido e dados enviados para SSE", { status: 200 });
 }
