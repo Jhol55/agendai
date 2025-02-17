@@ -182,7 +182,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         <Typography variant="span" className="w-full mx-2 lg:block hidden">
           {viewMode === "week" || viewMode === "day"
             ? range.from && capitalizeFirstLetter(format(range.from, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))
-            : range.from && capitalizeFirstLetter(format(range.from, "MMMM", { locale: ptBR }))}
+            : range.from && "Mês de " + format(range.from, "MMMM", { locale: ptBR })}
           {viewMode === "week" && " - "}
           {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
         </Typography>

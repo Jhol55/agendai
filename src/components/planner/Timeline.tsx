@@ -60,7 +60,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                 ? "z-30" : "z-20"
             )}
           >
-            <Typography variant="span" className="relative flex items-center justify-center opacity-70">
+            <Typography variant="span" className="relative flex items-center justify-center !text-neutral-200/60">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>
@@ -79,7 +79,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                       }
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>
+                      <p className="opacity-100">
                         {
                           viewMode === "day"
                             ? "Hora Atual"
