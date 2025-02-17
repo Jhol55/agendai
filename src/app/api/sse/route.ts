@@ -1,8 +1,13 @@
+export const dynamic = "force-dynamic";
+
+type SSEMessage = { ping: boolean } | { message: string };
+
 export async function GET() {
   const encoder = new TextEncoder();
+
   const stream = new ReadableStream({
     start(controller) {
-      const send = (data: { ping: boolean } | { message: string }) => {
+      const send = (data: SSEMessage) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
@@ -12,7 +17,6 @@ export async function GET() {
         clearInterval(interval);
       };
 
-      // Mensagem inicial
       send({ message: "Conexão SSE iniciada" });
     },
   });
