@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 export const dynamic = "force-dynamic";
 
 type SSEMessage = { ping: boolean } | { message: string };
