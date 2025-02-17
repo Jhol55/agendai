@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 type SSEMessage = { ping: boolean } | { message: string };
 
+let initialMessageSent = false;
+
 export async function GET() {
   const encoder = new TextEncoder();
 
@@ -11,7 +13,11 @@ export async function GET() {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      send({ message: "Conexão SSE iniciada" });
+
+      if (!initialMessageSent) {
+        send({ message: "Conexão SSE iniciada" });
+        initialMessageSent = true; 
+      }
 
       const interval = setInterval(() => send({ ping: true }), 10000);
 
