@@ -11,13 +11,13 @@ export async function GET() {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      const interval = setInterval(() => send({ ping: true }), 25000);
+      const interval = setInterval(() => send({ ping: true }), 5000);
 
       controller.close = () => {
         clearInterval(interval);
       };
 
-      send({ message: "Conexão SSE iniciada" });
+      // send({ message: "Conexão SSE iniciada" });
     },
   });
 
