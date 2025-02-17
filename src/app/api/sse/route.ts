@@ -17,6 +17,7 @@ export async function GET() {
         clearInterval(interval);
       };
 
+      send({ message: "Conexão SSE iniciada" });
     },
   });
 
