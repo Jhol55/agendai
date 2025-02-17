@@ -12,8 +12,6 @@ export async function GET() {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      // send({ message: "Conexão SSE iniciada" });
-
       const interval = setInterval(() => {
         send({ ping: true });
       }, 10000);
@@ -31,4 +29,9 @@ export async function GET() {
       "Connection": "keep-alive",
     },
   });
+}
+
+async function POST(req: Request) {
+  console.log(req.body)
+  return new Response("Webhook recebido e dados enviados para SSE", { status: 200 });
 }
