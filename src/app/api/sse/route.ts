@@ -1,6 +1,6 @@
 export const runtime = "edge"
 
-export default async function handler() {
+export async function GET() {
   const encoder = new TextEncoder();
 
   const readable = new ReadableStream({
