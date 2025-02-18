@@ -158,7 +158,7 @@ export function Notifications() {
                         <Typography variant="span">{notification.title}</Typography>
                       </div>
                     </div>
-                    <Button variant="outline" onClick={() => readMessage()}>Ver</Button>
+                    <Button variant="outline" onClick={() => readMessage(1)}>Ver</Button>
                   </div>
                   <Separator orientation="horizontal" />
                 </div>
