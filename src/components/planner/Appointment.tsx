@@ -356,7 +356,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={openClient}
-                                className={cn(!field.value && "text-muted-foreground", "w-full justify-between")}
+                                className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
                               >
                                 <div className="flex gap-4 items-center">
                                   <IconUser />
@@ -422,7 +422,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   variant="outline"
                                   role="combobox"
                                   aria-expanded={openService}
-                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between")}
+                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
                                 >
                                   <div className="flex gap-4 items-center">
                                     <IconBriefcase />
@@ -758,7 +758,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                           Voltar
                         </AlertDialogCancel>
                         <AlertDialogAction
-                          className="bg-red-500 hover:bg-red-600"
+                          className="bg-red-500 hover:bg-red-600 text-white"
                           onClick={(e) => {
                             e.preventDefault();
                             setIsRemoveAppointmentOpen(false);

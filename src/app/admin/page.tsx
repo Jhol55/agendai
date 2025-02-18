@@ -7,6 +7,7 @@ import { Logo } from "@/components/sections/container/logo";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { api } from "@/services/api";
+import { subscribe } from "@/database/realtime";
 
 
 export default function Admin() {
@@ -31,9 +32,6 @@ export default function Admin() {
       clearTimeout(timeout);
     };
   }, [activeTab]);
-
-  
-
 
   return (
     <div className="flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full min-h-[100vh]">

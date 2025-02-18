@@ -285,7 +285,7 @@ const AddAppointmentDialog: React.FC = () => {
                           variant="outline"
                           role="combobox"
                           aria-expanded={openClient}
-                          className={cn(!field.value && "text-muted-foreground", "w-full justify-between")}
+                          className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
                         >
                           <div className="flex gap-4">
                             <IconUser />
@@ -354,7 +354,7 @@ const AddAppointmentDialog: React.FC = () => {
                             variant="outline"
                             role="combobox"
                             aria-expanded={openService}
-                            className={cn(!field.value && "text-muted-foreground", "w-full justify-between")}
+                            className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
                           >
                             <div className="flex gap-4">
                               <IconBriefcase />

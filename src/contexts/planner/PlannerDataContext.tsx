@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, FC, useEffect, u
 import { AppointmentService, ResourceService } from "@/services/planner/";
 import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
+import { subscribe } from "@/database/realtime";
 
 interface DataContextType {
   appointments: Appointment[];
@@ -35,34 +36,6 @@ export const PlannerDataContextProvider: FC<{
   }, [appointments]);
 
   useEffect(() => {
-    let eventSource: EventSource;
-
-    const connect = () => {
-      eventSource = new EventSource("/api/sse");
-
-      eventSource.onmessage = (event) => {
-        console.log("📩 Nova atualização:", event.data);
-        const { ping } = JSON.parse(event?.data);
-        if (!ping) {
-          handleUpdate()
-        }
-      };
-
-      eventSource.onerror = () => {
-        console.warn("❌ Conexão SSE fechada, tentando reconectar...");
-        eventSource.close();
-
-        setTimeout(connect, 5000);
-      };
-    };
-
-    connect();
-
-    return () => eventSource.close();
-  }, [handleUpdate]);
-
-
-  useEffect(() => {
     if (dateRange) {
       appointmentServiceRef.current
         .getInitialAppointments({
@@ -80,21 +53,33 @@ export const PlannerDataContextProvider: FC<{
     }
   }, [dateRange, trigger]);
 
+  useEffect(() => {
+    const subscription = subscribe({
+      channel: "appointments",
+      table: "appointments",
+      onChange: () => handleUpdate(),
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [handleUpdate])
+
   const contextValue: DataContextType = {
     appointments,
     resources: resourceService.getResources(),
     handleUpdate: handleUpdate,
     addAppointment: async (appointment) => {
       await appointmentServiceRef.current.createAppointment({ appointment });
-      // handleUpdate();
+      handleUpdate();
     },
     updateAppointment: async (appointment) => {
       await appointmentServiceRef.current.updateAppointment({ updatedAppointment: appointment });
-      // handleUpdate();
+      handleUpdate();
     },
     removeAppointment: async (id) => {
       await appointmentServiceRef.current.deleteAppointment({ id });
-      // handleUpdate();
+      handleUpdate();
     },
     addResource: (resource) => {
       resourceService.addResource(resource);
