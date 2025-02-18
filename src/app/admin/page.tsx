@@ -5,9 +5,6 @@ import { Sidebar, SidebarBody, SidebarButton } from "@/components/ui/sidebar"
 import { links } from "@/components/sections/container/links";
 import { Logo } from "@/components/sections/container/logo";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { api } from "@/services/api";
-import { subscribe } from "@/database/realtime";
 
 
 export default function Admin() {
