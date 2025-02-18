@@ -73,7 +73,7 @@ export function Notifications() {
   }, [notifications])
 
   useEffect(() => {
-    if (isOpened) {
+    if (toast && isOpened) {
       toast.dismiss(toastRef.current)
     }
   }, [isOpened])
