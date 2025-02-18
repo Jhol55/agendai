@@ -12,19 +12,21 @@ import {
 } from "@/components/ui/pagination"
 import { motion } from "framer-motion";
 import { IconCalendar, IconMail, IconMailOpened } from "@tabler/icons-react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { getNotifications } from "@/services/notifications"
 import { Loading } from "../loading/loading"
 import { Typography } from "../typography"
 import { Separator } from "../separator"
 import { subscribe } from "@/database/realtime"
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 
 interface NotificationProps {
   title: string;
-  type: "scheduling" | "payment";
+  type: "appointments" | "payment";
   created_at: string;
+  created_by: "ai" | "user";
 }
 
 export function Notifications() {
@@ -32,15 +34,19 @@ export function Notifications() {
   const [notifications, setNotifications] = useState<NotificationProps[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [trigger, setTrigger] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
   const handleUpdate = useCallback(() => setTrigger(!trigger), [trigger])
+  const toastRef = useRef<string | number | undefined>(undefined)
 
   useEffect(() => {
+    setIsLoading(true);
     getNotifications({ page }).then(data => {
       setNotifications(data.notifications);
       setTotalPages(data.totalPages);
+      setUnreadCount(data.unreadCount);
     });
   }, [trigger, page])
 
@@ -48,7 +54,11 @@ export function Notifications() {
     const subscription = subscribe({
       channel: "notifications",
       table: "notifications",
-      onChange: () => handleUpdate()
+      onChange: (payload) => {
+        const newData = payload.new as NotificationProps;
+        toastRef.current = toast.success(newData.title, { duration: 180000 });
+        handleUpdate();
+      }
     })
 
     return () => {
@@ -62,8 +72,18 @@ export function Notifications() {
     }
   }, [notifications])
 
+  useEffect(() => {
+    if (isOpened) {
+      toast.dismiss(toastRef.current)
+    }
+  }, [isOpened])
+
+  const readMessage = (id: number) => {
+    console.log(id)
+  }
+
   const icons = {
-    scheduling: <IconCalendar className="h-5 w-5" />,
+    appointments: <IconCalendar className="h-5 w-5" />,
     payment: ""
   }
 
@@ -95,31 +115,31 @@ export function Notifications() {
           }
           <span className="sr-only">Toggle user menu</span>
           <div className="absolute flex items-center justify-center -top-3 -right-1 rounded-full h-5 w-5 shrink-0 text-xs bg-red-500 dark:bg-red-500 pointer-events-none">
-            {!isLoading ? notifications?.length >= 99 ? 99 : notifications?.length : null}
+            <span className="-translate-x-[1px]">{!isLoading ? unreadCount >= 99 ? 99 : unreadCount : null}</span>
             <Loading display={isLoading} className="absolute -translate-x-[0.5px] !scale-[0.2]" />
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:max-w-md max-w-full max-h-[85vh]" side="top" align="center">
         <Card className="w-full border-0 bg-background dark:bg-neutral-900">
-          <CardHeader className="!pb-4">
+          <CardHeader className="!p-6">
             <CardTitle className="text-xl">Notificações</CardTitle>
             <CardDescription>{
-              notifications.length === 0
+              unreadCount === 0
                 ? "Não há novas mensagens no momento."
-                : `Você tem ${notifications?.length} ${notifications.length > 1
+                : `Você tem ${unreadCount} ${unreadCount > 1
                   ? "mensagens novas não lidas"
                   : "mensagem nova não lida"}.`
             }
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4 overflow-auto h-[52vh] max-h-[52vh] !p-4">
-            {notifications.length
+          <CardContent className="flex flex-col gap-4 overflow-auto h-[52vh] max-h-[52vh] !p-0">
+            {!isLoading && notifications?.length
               ? notifications.map((notification, index) => (
                 <div key={index} className="flex flex-col gap-4">
-                  <div className="flex gap-4 items-center justify-between">
+                  <div className="flex gap-4 items-center justify-between !px-6">
                     <div className="flex items-center gap-4">
-                      <div className="border rounded-md p-2 bg-neutral-50 dark:bg-neutral-800">{icons[notification.type]}</div>
+                      <span className="border rounded-md p-2 bg-neutral-50 dark:bg-neutral-800">{icons[notification.type]}</span>
                       <div className="flex flex-col gap-1">
                         <Typography>
                           {new Date(notification.created_at).toLocaleString("pt-BR",
@@ -138,17 +158,17 @@ export function Notifications() {
                         <Typography variant="span">{notification.title}</Typography>
                       </div>
                     </div>
-                    <Button variant="outline">Ver</Button>
+                    <Button variant="outline" onClick={() => readMessage()}>Ver</Button>
                   </div>
                   <Separator orientation="horizontal" />
                 </div>
               )) : (
                 <div className="flex justify-center items-center h-full w-full">
-                  <Loading display={!notifications.length} className="!scale-[0.5]" />
+                  <Loading display={isLoading} className="!scale-[0.5]" />
                 </div>
               )}
           </CardContent>
-          <CardFooter className="flex flex-col items-center gap-4 justify-center !p-4">
+          <CardFooter className="flex flex-col items-center gap-4 justify-center !py-4 !px-6">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
@@ -179,7 +199,7 @@ export function Notifications() {
               </PaginationContent>
             </Pagination>
             <Button variant="outline" className="w-full">
-              Clear all notifications
+              Marcar todos como lidos
             </Button>
           </CardFooter>
         </Card>

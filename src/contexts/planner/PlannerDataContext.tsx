@@ -3,6 +3,7 @@ import { AppointmentService, ResourceService } from "@/services/planner/";
 import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
+import { toast } from "sonner";
 
 interface DataContextType {
   appointments: Appointment[];
@@ -57,7 +58,7 @@ export const PlannerDataContextProvider: FC<{
     const subscription = subscribe({
       channel: "appointments",
       table: "appointments",
-      onChange: () => handleUpdate(),
+      onChange: (payload) => handleUpdate()
     })
 
     return () => {
