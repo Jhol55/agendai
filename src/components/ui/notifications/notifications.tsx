@@ -63,6 +63,7 @@ export function Notifications() {
       setTotalPages(data.totalPages);
       setUnreadCount(data.unreadCount);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger, page])
 
   useEffect(() => {

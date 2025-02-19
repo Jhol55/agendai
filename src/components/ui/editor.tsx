@@ -568,7 +568,7 @@ const Editor = React.forwardRef(function Editor(
           </SyntaxHighlighter>
           <textarea
             className={cn(
-              "bg-transparent resize-none focus:outline-none font-nunito text-base text-black selection:text-transparent dark:selection:bg-white/30",
+              "bg-transparent resize-none focus:outline-none font-nunito text-base text-black dark:text-white selection:text-transparent dark:selection:bg-white/30",
               "whitespace-nowrap absolute left-[3em] h-full w-[calc(100%-3rem)] top-0 z-50 py-2 leading-[1.4rem]",
               textAreaClassName
             )}
