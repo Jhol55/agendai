@@ -62,7 +62,6 @@ export function Notifications() {
       setNotifications(data.notifications);
       setTotalPages(data.totalPages);
       setUnreadCount(data.unreadCount);
-      console.log(data.unreadCount)
     });
   }, [trigger, page])
 

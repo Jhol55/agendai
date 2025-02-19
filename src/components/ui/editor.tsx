@@ -487,10 +487,6 @@ const Editor = React.forwardRef(function Editor(
 
   const { theme } = useTheme();
 
-  React.useEffect(() => {
-    console.log(theme)
-  }, [theme])
-
   // Sync textarea and highlighter scrollbars
   React.useEffect(() => {
     const input = inputRef.current;
