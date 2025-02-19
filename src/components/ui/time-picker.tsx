@@ -39,7 +39,7 @@ export function TimePicker({
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
       onChange?.(new Date(selectedDate))
-      setDate(new Date(selectedDate));     
+      setDate(new Date(selectedDate));
     }
   };
 
@@ -55,24 +55,24 @@ export function TimePicker({
       newDate.setMinutes(parseInt(value));
     }
     onChange?.(newDate)
-    setDate(newDate); 
+    setDate(newDate);
   };
 
   React.useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return;
+      if (value && !date) {
+        onChange?.(new Date(value))
+        setDate(new Date(value));
+        return;
+      }
+      
     }
-    if (value && !date) {
-      setDate(value);
+    if (value && mode === "datetime") {
+      onChange?.(new Date(value))
+      setDate(new Date(value));
     }
-  }, [date, value]);
-
-  React.useEffect(() => {
-    if (value) {
-      setDate(value);
-    }
-  }, [value])
+  }, [value]);
 
   return (
     <Popover open={open} onOpenChange={onOpenChange} modal>
