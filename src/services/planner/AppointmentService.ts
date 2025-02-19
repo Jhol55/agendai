@@ -43,13 +43,21 @@ export class AppointmentService {
     return this.appointments;
   }
 
-
   async getInitialAppointments({ test = false, from, to }: { test?: boolean, from: string | undefined, to: string | undefined }) {
     try {
-      const response = await api(test).get(`get-appointments?from=${from}&to=${to}`);
+      const response = await api(test).get(`get-appointments?from=${from}&to=${to}`);  
       return response.data;
     } catch (error) {
       console.error('Erro ao carregar os agendamentos: ', error);
+    }
+  }
+
+  async getAppointmentById({ test = false, id }: { test?: boolean, id: number }) {
+    try {
+      const response = await api(test).get(`get-appointment?id=${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao carregar o agendamento: ', error);
     }
   }
 }

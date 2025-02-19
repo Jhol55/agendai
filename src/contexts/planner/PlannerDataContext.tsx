@@ -12,6 +12,7 @@ interface DataContextType {
   addAppointment: (appointment: Appointment) => void;
   updateAppointment: (appointment: Appointment) => void;
   removeAppointment: (id: string) => void;
+  getAppointmentById: (id: number) => Promise<unknown>;
   addResource: (resource: Resource) => void;
   updateResource: (resource: Resource) => void;
   removeResource: (id: string) => void;
@@ -81,6 +82,9 @@ export const PlannerDataContextProvider: FC<{
     removeAppointment: async (id) => {
       await appointmentServiceRef.current.deleteAppointment({ id });
       handleUpdate();
+    },
+    getAppointmentById: async (id) => {
+      return appointmentServiceRef.current.getAppointmentById({ id });
     },
     addResource: (resource) => {
       resourceService.addResource(resource);

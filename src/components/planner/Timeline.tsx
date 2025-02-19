@@ -60,7 +60,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                 ? "z-30" : "z-20"
             )}
           >
-            <Typography variant="span" className="relative flex items-center justify-center !text-neutral-200/60">
+            <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200/60 !text-black/60">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>
