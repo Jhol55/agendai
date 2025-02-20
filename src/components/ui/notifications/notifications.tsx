@@ -87,6 +87,13 @@ export function Notifications() {
   useEffect(() => {
     if (notifications?.length) {
       setIsLoading(false);
+    } else {
+      setTimeout(() => {
+        if (!notifications?.length) {
+          setIsLoading(false);
+          setUnreadCount(0);
+        }
+      }, 3000)
     }
   }, [notifications, message])
 
@@ -153,7 +160,7 @@ export function Notifications() {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:max-w-md max-w-full max-h-[90vh]" side="top" align="center">
+      <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:max-w-md max-w-[90%] max-h-[90vh] mx-auto" side="top" align="center">
         <Card className="w-full border-0 bg-background dark:bg-neutral-900">
           <CardHeader className="!px-8 !pb-4">
             <CardTitle className="text-xl">Notificações</CardTitle>
@@ -168,20 +175,20 @@ export function Notifications() {
               </CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2 overflow-auto h-[52vh] max-h-[52vh] !p-0 !px-2">
+          <CardContent className="flex flex-col gap-2 overflow-auto md:h-[calc(100vh-19rem)] h-[calc(100vh-22rem)] !p-0 !px-2">
             {!isLoading && !message && notifications?.length
               ? notifications.map((notification, index) => (
                 <React.Fragment key={index}>
                   <Button
                     variant="outline"
-                    className={cn("h-full border-none", notification.is_read ? "dark:bg-neutral-900" : "dark:bg-neutral-700")}
+                    className={cn("h-full max-h-16 border-none", notification.is_read ? "dark:bg-neutral-900" : "dark:bg-neutral-700")}
                     onClick={() => readMessage({ id: notification.ref_id, type: "appointments" })}
                   >
                     <div className="flex flex-col gap-4 w-full">
                       <div className="flex gap-4 items-center justify-between !px-2 w-full">
                         <div className="flex items-center gap-4 w-full">
                           <div className="border rounded-md p-2 bg-neutral-50 dark:bg-neutral-700">{icons[notification.type]}</div>
-                          <div className="flex flex-col items-start gap-1 w-full">
+                          <div className="flex flex-col items-start gap-1 w-full overflow-hidden truncate">
                             <Typography>
                               {new Date(notification.created_at).toLocaleString("pt-BR", dateTimeFormatOptions).replace(",", " -")}
                             </Typography>
