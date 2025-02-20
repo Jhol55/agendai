@@ -85,17 +85,19 @@ export function Notifications() {
   }, [handleUpdate])
 
   useEffect(() => {
-    if (notifications?.length) {
-      setIsLoading(false);
+    let timeout: NodeJS.Timeout;
+  
+    if (!notifications?.length) {
+      timeout = setTimeout(() => {
+        setIsLoading(false);
+        setUnreadCount(0);
+      }, 5000);
     } else {
-      setTimeout(() => {
-        if (!notifications?.length) {
-          setIsLoading(false);
-          setUnreadCount(0);
-        }
-      }, 3000)
+      setIsLoading(false);
     }
-  }, [notifications, message])
+  
+    return () => clearTimeout(timeout);
+  }, [notifications]);
 
   useEffect(() => {
     if (toastRef.current && isOpened) {
