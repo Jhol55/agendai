@@ -17,8 +17,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
+import { Tabs, TabContainer, TabPanel, Tab } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
-import { forwardRef, useEffect, useState, useTransition } from "react";
+import { forwardRef, useEffect, useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdditionalSettingsProps, AdditionalSettingsSchema } from "@/models/AdditionalSettings";
@@ -27,11 +30,16 @@ import { toast } from "sonner";
 import { useSettings } from "@/hooks/use-settings";
 import { Input } from "../ui/input";
 import { SettingsState } from "@/contexts/settings/SettingsContext.type";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { Typography } from "../ui/typography";
 
-export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, object>((props, ref) => {
+export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: () => void }>(({ onClose, ...props }, ref) => {
   const [isOpened, setIsOpened] = useState(false);
   const [isPending, startOnSubmitTransition] = useTransition();
   const { settings, updateSettings } = useSettings();
+
+  const [isRescheduleDeadlineUnitOpen, setIsRescheduleDeadlineUnitOpen] = useState(false);
 
   const findIndex = ({ type, array = [] }: { type: string, array: { type: string }[] | undefined }): number => {
     return array.findIndex(item => item.type === type);
@@ -43,22 +51,57 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, object>((prop
       scheduling: [
         {
           type: "tax",
-          value: settings?.scheduling[findIndex({ type: "tax", array: settings.scheduling })].value
+          value: settings?.scheduling[findIndex({ type: "tax", array: settings.scheduling })]?.value ?? 0
+        },
+        {
+          type: "reschedule_deadline_value",
+          value: settings?.scheduling[findIndex({ type: "reschedule_deadline_value", array: settings.scheduling })]?.value ?? 0
+        },
+        {
+          type: "reschedule_deadline_unit",
+          value: settings?.scheduling[findIndex({ type: "reschedule_deadline_unit", array: settings.scheduling })]?.value ?? "hours"
+        },
+        {
+          type: "payment_deadline_value",
+          value: settings?.scheduling[findIndex({ type: "payment_deadline_value", array: settings.scheduling })]?.value ?? 0
+        },
+        {
+          type: "tax_deadline_value",
+          value: settings?.scheduling[findIndex({ type: "tax_deadline_value", array: settings.scheduling })]?.value ?? 0
         }
       ]
     },
   });
 
   useEffect(() => {
-    form.reset({
-      scheduling: [
-        {
-          type: "tax",
-          value: settings?.scheduling[findIndex({ type: "tax", array: settings.scheduling })].value
-        }
-      ]
-    })
-  }, [form, settings])
+    setTimeout(() => (
+      form.reset({
+        scheduling: [
+          {
+            type: "tax",
+            value: settings?.scheduling[findIndex({ type: "tax", array: settings.scheduling })]?.value ?? 0
+          },
+          {
+            type: "reschedule_deadline_value",
+            value: settings?.scheduling[findIndex({ type: "reschedule_deadline_value", array: settings.scheduling })]?.value ?? 0
+          },
+          {
+            type: "reschedule_deadline_unit",
+            value: settings?.scheduling[findIndex({ type: "reschedule_deadline_unit", array: settings.scheduling })]?.value ?? "hours"
+          },
+          {
+            type: "payment_deadline_value",
+            value: settings?.scheduling[findIndex({ type: "payment_deadline_value", array: settings.scheduling })]?.value ?? 0
+          },
+          {
+            type: "tax_deadline_value",
+            value: settings?.scheduling[findIndex({ type: "tax_deadline_value", array: settings.scheduling })]?.value ?? 0
+          }
+        ]
+      })
+    ), 100)
+
+  }, [form, settings, isOpened])
 
 
   function onSubmit(values: z.infer<typeof AdditionalSettingsSchema>) {
@@ -66,8 +109,24 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, object>((prop
       scheduling: [
         {
           type: "tax",
-          value: values.scheduling[findIndex({ type: "tax", array: settings?.scheduling })].value
+          value: values.scheduling[findIndex({ type: "tax", array: settings?.scheduling })]?.value ?? 0
         },
+        {
+          type: "reschedule_deadline_value",
+          value: values.scheduling[findIndex({ type: "reschedule_deadline_value", array: settings?.scheduling })]?.value ?? 0
+        },
+        {
+          type: "reschedule_deadline_unit",
+          value: values.scheduling[findIndex({ type: "reschedule_deadline_unit", array: settings?.scheduling })]?.value ?? "hours"
+        },
+        {
+          type: "payment_deadline_value",
+          value: values.scheduling[findIndex({ type: "payment_deadline_value", array: settings?.scheduling })]?.value ?? 0
+        },
+        {
+          type: "tax_deadline_value",
+          value: values.scheduling[findIndex({ type: "tax_deadline_value", array: settings?.scheduling })]?.value ?? 0
+        }
       ]
     };
 
@@ -79,17 +138,22 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, object>((prop
             resolve(updateSettings({ data: newSettings }));
           }),
         {
-          loading: "Adding appointment",
-          success: "Appointment added",
-          error: "Failed to add appointment",
+          loading: "Atualizando as configurações...",
+          success: "As configurações foram atualizadas com sucesso.",
+          error: "Falha ao atualizar as configurações!"
         },
       );
-      
+
     });
     setTimeout(() => {
       setIsOpened(false);
     }, 1000);
   }
+
+  const units: { label: "Horas" | "Dias"; value: "hours" | "days" }[] = [
+    { label: "Horas", value: "hours" },
+    { label: "Dias", value: "days" }
+  ];
 
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
@@ -105,36 +169,177 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, object>((prop
             <DialogTitle>Configurações adicionais</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form id="update-settings" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
-              <FormField
-                control={form.control}
-                name={`scheduling.${findIndex({ type: "tax", array: settings?.scheduling })}.value`}
-                render={({ field }) => (
-                  <FormItem className="flex flex-col w-full">
-                    <FormLabel className="text-left">Taxa de reserva</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Valor"
-                        spellCheck={false}
-                        value={Number(field.value ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                        onChange={(e) => {
-                          const numericValue = e.target.value.replace(/\D/g, "");
-                          field.onChange(numericValue ? Number(numericValue) / 100 : "");
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form id="update-settings" onSubmit={form.handleSubmit(onSubmit)} className="relative space-y-8 max-h-[70vh] h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
+              <TabContainer className="absolute w-full left-0">
+                <Tabs className="mb-4 bg-neutral-900 border-t border-b rounded-none" activeClassName="bg-neutral-800">
+                  <Tab value="scheduling"><Typography variant="span">Agenda</Typography></Tab>
+                  <Tab value="financial"><Typography variant="span">Financeiro</Typography></Tab>
+                </Tabs>
+                <TabPanel value="scheduling" className="flex flex-col gap-6 px-4">
+                  <div className="flex gap-2">
+                    <FormField
+                      control={form.control}
+                      name={`scheduling.${findIndex({ type: "reschedule_deadline_value", array: settings?.scheduling })}.value`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col w-full">
+                          <FormLabel className="text-left">Prazo para reagendamento</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Valor"
+                              spellCheck={false}
+                              value={Number(field.value ?? 0)}
+                              onChange={(e) => {
+                                const numericValue = e.target.value.replace(/\D/g, "");
+                                field.onChange(numericValue ? Number(numericValue) : "");
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`scheduling.${findIndex({ type: "reschedule_deadline_unit", array: settings?.scheduling })}.value`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col w-full">
+                          <FormLabel>Unidade</FormLabel>
+                          <FormControl>
+                            <Popover open={isRescheduleDeadlineUnitOpen} onOpenChange={setIsRescheduleDeadlineUnitOpen} modal>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={isRescheduleDeadlineUnitOpen}
+                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
+                                >
+                                  <div className="flex gap-4">
+                                    {units?.find(unit => unit?.value === field?.value)?.label}
+                                  </div>
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-0 popover-content-width-fix">
+                                <Command className="pl-1">
+                                  <CommandList>
+                                    <CommandGroup>
+                                      {units.map((unit, index) => (
+                                        <CommandItem
+                                          key={index}
+                                          value={unit.value}
+                                          onSelect={(currentValue) => {
+                                            field.onChange(currentValue);
+                                            setTimeout(() => (
+                                              setIsRescheduleDeadlineUnitOpen(false)
+                                            ), 100)
+                                          }}
+                                          className="cursor-pointer"
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === unit.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {unit.label}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </TabPanel>
+                <TabPanel value="financial" className="flex flex-col gap-6 px-4">
+                  <FormField
+                    control={form.control}
+                    name={`scheduling.${findIndex({ type: "tax", array: settings?.scheduling })}.value`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col w-full">
+                        <FormLabel className="text-left">Taxa de reserva</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Valor"
+                            spellCheck={false}
+                            value={Number(field.value ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                            onChange={(e) => {
+                              const numericValue = e.target.value.replace(/\D/g, "");
+                              field.onChange(numericValue ? Number(numericValue) / 100 : "");
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`scheduling.${findIndex({ type: "tax_deadline_value", array: settings?.scheduling })}.value`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col w-full">
+                        <FormLabel className="text-left">Prazo para pagamento da taxa de reserva (em dias antes do compromisso)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Valor"
+                            spellCheck={false}
+                            value={Number(field.value ?? 0)}
+                            onChange={(e) => {
+                              const numericValue = e.target.value.replace(/\D/g, "");
+                              field.onChange(numericValue ? Number(numericValue) : "");
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`scheduling.${findIndex({ type: "payment_deadline_value", array: settings?.scheduling })}.value`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col w-full">
+                        <FormLabel className="text-left">Prazo para pagamento do serviço (em dias após o compromisso)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Valor"
+                            spellCheck={false}
+                            value={Number(field.value ?? 0)}
+                            onChange={(e) => {
+                              const numericValue = e.target.value.replace(/\D/g, "");
+                              field.onChange(numericValue ? Number(numericValue) : "");
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabPanel>
+              </TabContainer>
             </form>
+
             <DialogFooter className="px-[1.5rem] mb-6">
-              <Button form="update-settings" type="submit" className="bg-green-500 hover:bg-green-600 text-white">Salvar</Button>
+              <Button
+                form="update-settings"
+                type="submit"
+                className="bg-green-500 hover:bg-green-600 text-white"
+                onClick={() => console.log(form.watch())}
+              >
+                Salvar
+              </Button>
             </DialogFooter>
+
           </Form>
+
         </DialogContent>
       }
-    </Dialog>
+    </Dialog >
   )
 })
 

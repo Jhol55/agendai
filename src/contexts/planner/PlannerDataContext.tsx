@@ -3,7 +3,6 @@ import { AppointmentService, ResourceService } from "@/services/planner/";
 import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
-import { toast } from "sonner";
 
 interface DataContextType {
   appointments: Appointment[];
@@ -66,6 +65,7 @@ export const PlannerDataContextProvider: FC<{
       subscription.unsubscribe()
     }
   }, [handleUpdate])
+
 
   const contextValue: DataContextType = {
     appointments,

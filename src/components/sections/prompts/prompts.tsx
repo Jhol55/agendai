@@ -17,8 +17,9 @@ export const Prompts = () => {
 
   const tabs = useMemo(() => [
     { title: "Recepcionista", agent: "front-desk" },
-    { title: "Assistente Comercial", agent: "commercial" },
-    { title: "Assistente de Agendamento", agent: "scheduling" }
+    { title: "Assistente de Agendamento", agent: "scheduling" },
+    { title: "Assistente de Reagendamento", agent: "rescheduling" },
+    { title: "Assistente de Cancelamento", agent: "unscheduling" },
   ], []
   );
 
@@ -106,7 +107,7 @@ export const Prompts = () => {
               key={agent}
               value={prompt}
               onValueChange={content => handleOnValueChange(content)}
-              containerClassName={cn(activeTab === agent ? "block dark:bg-black bg-white" : "hidden")}
+              containerClassName={cn(activeTab === agent ? "block dark:bg-[#171717] bg-white" : "hidden")}
             />
           ))}
         </div>

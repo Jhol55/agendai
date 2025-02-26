@@ -183,7 +183,7 @@ export function Notifications() {
                 <React.Fragment key={index}>
                   <Button
                     variant="outline"
-                    className={cn("h-full max-h-16 border-none", notification.is_read ? "dark:bg-neutral-900" : "dark:bg-neutral-700")}
+                    className={cn("h-full max-h-16 border-none", notification.is_read ? "dark:bg-neutral-900" : "dark:bg-neutral-800/70")}
                     onClick={() => readMessage({ id: notification.ref_id, type: "appointments" })}
                   >
                     <div className="flex flex-col gap-4 w-full">

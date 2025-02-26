@@ -529,7 +529,8 @@ const Editor = React.forwardRef(function Editor(
             customStyle={{
               margin: 0,
               padding: 0,
-              background: "transparent",
+              background: "#171717",
+              backgroundColor: "#171717",
               fontSize: "1rem",
               height: "100%",
               width: "100%",
@@ -545,11 +546,11 @@ const Editor = React.forwardRef(function Editor(
                 lineHeight: "1.40",
                 transform: "translateX(-2px)",
                 backgroundColor: theme === "dark"
-                  ? "black"
+                  ? "#171717"
                   : "#ffffff",
                 color: theme === "dark"
                   ? "#ffffff"
-                  : "black",
+                  : "#171717",
                 fontFamily: "Nunito",
               },
             })}
@@ -558,7 +559,7 @@ const Editor = React.forwardRef(function Editor(
               minWidth: "50px",
               position: "sticky",
               backgroundColor: theme === "dark"
-                ? "black"
+                ? "#171717"
                 : "#ffffff",
               border: "none"
             }}

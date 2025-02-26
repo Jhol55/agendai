@@ -79,8 +79,8 @@ const AddAppointmentDialog: React.FC = () => {
     reValidateMode: "onChange",
     defaultValues: {
       title: "",
-      start: new Date(),
-      end: new Date(),
+      start: undefined,
+      end: undefined,
       resourceId: "a47aaada-005d-4db0-8779-7fddb32d291e",
       status: "pending",
       details: {

@@ -72,6 +72,7 @@ export function TimePicker({
       onChange?.(new Date(value))
       setDate(new Date(value));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   return (

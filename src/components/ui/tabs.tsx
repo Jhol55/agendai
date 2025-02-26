@@ -78,7 +78,7 @@ const Tabs: FC<TabsProps> = ({ children, className, activeClassName }) => {
     <div
       ref={ref}
       className={cn(
-        "bg relative flex flex-nowrap gap-2 overflow-auto rounded-md bg-slate-100 p-2 shadow-md dark:bg-zinc-900",
+        "bg relative flex flex-nowrap gap-2 overflow-auto rounded-md p-2",
         className,
       )}
     >
@@ -86,7 +86,7 @@ const Tabs: FC<TabsProps> = ({ children, className, activeClassName }) => {
       <span
         style={{ width: active.width, height: active.height, left: active.left, top: active.top, margin: 0 }}
         className={cn(
-          "z-1 absolute h-full rounded-sm bg-slate-200 transition-all duration-200 ease-in-out dark:bg-zinc-800",
+          "z-1 absolute h-full rounded-sm transition-all duration-200 ease-in-out",
           activeClassName,
         )}
       ></span>
@@ -119,6 +119,7 @@ const Tab: FC<TabProps> = ({ children, className, value, onClick }) => {
       data-value={value}
       onClick={handleClick}
       ref={ref}
+      type="button"
       className={cn(`z-10 text-nowrap rounded-sm px-6 py-2 transition-colors duration-200`, className)}
     >
       {children}
@@ -130,7 +131,7 @@ const TabPanel: FC<TabProps> = ({ children, value, className }) => {
   const { active } = useTabsContext();
   if (value !== active.item) return null;
   return (
-    <div className={cn("mt-2 rounded-md bg-slate-100 px-6 py-4 shadow-md dark:bg-zinc-900", className)}>{children}</div>
+    <div className={cn("rounded-md", className)}>{children}</div>
   );
 };
 

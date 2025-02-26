@@ -15,10 +15,12 @@ export interface Appointment {
     durationMinutes?: number;
     online: boolean;
     payments: {
+      id?: number | undefined;
       type: "service" | "fee";
       value?: number;
-      status: "pending" | "received";
+      status: "pending" | "received" | "refunded";
       sendPaymentLink: boolean;
+      billingType?: "credit_card" | "debit_card" | "cash" | "pix" | null;
     }[];
   }
 }
@@ -40,10 +42,12 @@ export const updateAppointmentSchema = z.object({
     online: z.boolean(),
     payments: z.array(
       z.object({
+        id: z.number().optional(),
         type: z.enum(["fee", "service"]),
         value: z.number().optional(),
-        status: z.enum(["pending", "received"]),
+        status: z.enum(["pending", "received", "refunded"]),
         sendPaymentLink: z.boolean(),
+        billingType: z.enum(["credit_card", "debit_card", "cash", "pix"]).nullable().optional()
       })
     ),
   }),
@@ -70,10 +74,12 @@ export const createAppointmentSchema = z.object({
     online: z.boolean(),
     payments: z.array(
       z.object({
+        id: z.number().optional(),
         type: z.enum(["fee", "service"]),
         value: z.number().optional(),
-        status: z.enum(["pending", "received"]),
+        status: z.enum(["pending", "received", "refunded"]),
         sendPaymentLink: z.boolean(),
+        billingType: z.enum(["credit_card", "debit_card", "cash", "pix"]).nullable().optional()
       })
     ),
   })
