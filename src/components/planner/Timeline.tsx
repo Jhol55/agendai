@@ -54,7 +54,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           <TableHead
             key={index}
             className={cn(
-              "sticky bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-neutral-50 dark:bg-neutral-800 dark:border-r-neutral-700",
+              "sticky bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-r-neutral-700",
               viewMode !== "day" && "top-0",
               shouldDisplayIcon({ index, viewMode })
                 ? "z-30" : "z-20"

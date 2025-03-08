@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
 
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -147,7 +148,7 @@ input:-webkit-autofill:active {
   }
 
   .dark {
-    --background: 240 0 7%;
+    --background: 240 0 8%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;

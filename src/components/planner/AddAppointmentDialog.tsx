@@ -287,7 +287,7 @@ const AddAppointmentDialog: React.FC = () => {
                           aria-expanded={openClient}
                           className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
                         >
-                          <div className="flex gap-4">
+                          <div className="flex items-center gap-4">
                             <IconUser />
                             {field.value
                               ? clients.find((client) => client.name === field.value)?.name
@@ -356,7 +356,7 @@ const AddAppointmentDialog: React.FC = () => {
                             aria-expanded={openService}
                             className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
                           >
-                            <div className="flex gap-4">
+                            <div className="flex items-center gap-4">
                               <IconBriefcase />
                               {currentService
                                 ? currentService.name

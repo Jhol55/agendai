@@ -33,6 +33,7 @@ import { SettingsState } from "@/contexts/settings/SettingsContext.type";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Typography } from "../ui/typography";
+import { Separator } from "../ui/separator";
 
 export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: () => void }>(({ onClose, ...props }, ref) => {
   const [isOpened, setIsOpened] = useState(false);
@@ -170,12 +171,13 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
           </DialogHeader>
           <Form {...form}>
             <form id="update-settings" onSubmit={form.handleSubmit(onSubmit)} className="relative space-y-8 max-h-[70vh] h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
-              <TabContainer className="absolute w-full left-0">
-                <Tabs className="mb-4 bg-neutral-900 border-t border-b rounded-none" activeClassName="bg-neutral-800">
+              <TabContainer className="w-full">
+                <Tabs className="bg-background rounded-none" activeClassName="bg-neutral-800">
                   <Tab value="scheduling"><Typography variant="span">Agenda</Typography></Tab>
                   <Tab value="financial"><Typography variant="span">Financeiro</Typography></Tab>
                 </Tabs>
-                <TabPanel value="scheduling" className="flex flex-col gap-6 px-4">
+                <Separator orientation="horizontal" className="my-6" />
+                <TabPanel value="scheduling" className="flex flex-col gap-6">
                   <div className="flex gap-2">
                     <FormField
                       control={form.control}
@@ -256,7 +258,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
                     />
                   </div>
                 </TabPanel>
-                <TabPanel value="financial" className="flex flex-col gap-6 px-4">
+                <TabPanel value="financial" className="flex flex-col gap-6">
                   <FormField
                     control={form.control}
                     name={`scheduling.${findIndex({ type: "tax", array: settings?.scheduling })}.value`}
@@ -334,9 +336,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
                 Salvar
               </Button>
             </DialogFooter>
-
           </Form>
-
         </DialogContent>
       }
     </Dialog >

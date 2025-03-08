@@ -58,7 +58,7 @@ export default function Admin() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "100%", opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="relative flex w-full flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-white dark:bg-neutral-900"
+          className="relative flex w-full flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-[#F8F9FA] dark:bg-neutral-900"
         >
           {links[activeTab].content}
         </motion.div>

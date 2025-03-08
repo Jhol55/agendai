@@ -15,6 +15,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { DateRange } from "react-day-picker";
 import { Loading } from "../ui/loading/loading";
 import { toast } from "sonner";
+import { PlannerTopBar } from "./PlannerTopbar";
 
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -44,8 +45,11 @@ export type PlannerMainComponentProps = React.HTMLAttributes<HTMLDivElement>;
 const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
   return (
     <div className="flex flex-col p-4 relative">
-      <CalendarToolbar />
-      <CalendarContent {...props} />
+      <PlannerTopBar />
+      <div className="mt-16 p-2 bg-white md:h-[86vh] rounded-md">
+        <CalendarToolbar />
+        <CalendarContent {...props} />
+      </div>
     </div>
   );
 };

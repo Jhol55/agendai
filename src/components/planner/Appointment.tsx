@@ -264,9 +264,9 @@ const Appointment: React.FC<AppointmentProps> = ({
   return (
     <Card ref={ref} className={cn(
       viewMode === "month" ? "w-full" : "w-[10rem]",
-      "!items-start dark:hover:bg-neutral-700 hover:bg-neutral-50 bg-white dark:bg-neutral-800 group transition-colors duration-150")} onDoubleClick={() => setIsOpened(true)}>
+      "!items-start dark:hover:bg-neutral-700 hover:bg-[#F8F9FA] bg-white dark:bg-neutral-800 group transition-colors duration-150")} onDoubleClick={() => setIsOpened(true)}>
       <CardHeader className="flex flex-row items-center justify-between p-1">
-        <Badge variant={"outline"} className="border-none hover:cursor-grab group-hover:dark:bg-neutral-900 group-hover:bg-neutral-200 group-hover:border-neutral-300 dark:border-neutral-700 group-hover:dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
+        <Badge variant={"outline"} className="border-none ml-1 hover:cursor-grab group-hover:dark:bg-neutral-900 group-hover:bg-neutral-200 group-hover:border-neutral-300 dark:border-neutral-700 group-hover:dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
           {appointment.details.service}
         </Badge>
         <Dialog open={isOpened} onOpenChange={setIsOpened}>

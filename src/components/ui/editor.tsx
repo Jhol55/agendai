@@ -529,7 +529,7 @@ const Editor = React.forwardRef(function Editor(
             customStyle={{
               margin: 0,
               padding: 0,
-              background: "#171717",
+              background: "#fff",
               backgroundColor: "#171717",
               fontSize: "1rem",
               height: "100%",

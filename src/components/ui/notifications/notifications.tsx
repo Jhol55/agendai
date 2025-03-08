@@ -157,7 +157,7 @@ export function Notifications() {
           }
           <span className="sr-only">Toggle user menu</span>
           <div className="absolute flex items-center justify-center -top-3 -right-1 rounded-full h-5 w-5 shrink-0 text-xs bg-red-500 dark:bg-red-500 pointer-events-none">
-            <span className="-translate-x-[1px]">{!isLoading ? unreadCount >= 99 ? 99 : unreadCount : null}</span>
+            <span>{!isLoading ? unreadCount >= 99 ? 99 : unreadCount : null}</span>
             <Loading display={isLoading} className="absolute -translate-x-[0.5px] !scale-[0.2]" />
           </div>
         </Button>
@@ -189,7 +189,7 @@ export function Notifications() {
                     <div className="flex flex-col gap-4 w-full">
                       <div className="flex gap-4 items-center justify-between !px-2 w-full">
                         <div className="flex items-center gap-4 w-full">
-                          <div className="border rounded-md p-2 bg-neutral-50 dark:bg-neutral-700">{icons[notification.type]}</div>
+                          <div className="border rounded-md p-2 bg-[#F8F9FA] dark:bg-neutral-700">{icons[notification.type]}</div>
                           <div className="flex flex-col items-start gap-1 w-full overflow-hidden truncate">
                             <Typography>
                               {new Date(notification.created_at).toLocaleString("pt-BR", dateTimeFormatOptions).replace(",", " -")}
@@ -204,7 +204,7 @@ export function Notifications() {
                 </React.Fragment>
               )) : (!isLoading && message ?
                 <div className="flex flex-col justify-center items-center h-full w-full px-6 pb-6">
-                  <div className="flex flex-col justify-center items-center border rounded-md h-full w-full p-6 gap-4 dark:bg-background dark:border-neutral-800 bg-neutral-50">
+                  <div className="flex flex-col justify-center items-center border rounded-md h-full w-full p-6 gap-4 dark:bg-background dark:border-neutral-800 bg-[#F8F9FA]">
                     <div className="flex gap-2">
                       <Typography variant="span" className="text-justify">Segue abaixo os detalhes do agendamento realizado pelo assistente:</Typography>
                     </div>

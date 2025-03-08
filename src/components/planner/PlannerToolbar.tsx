@@ -1,31 +1,18 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useCalendar } from "@/contexts/planner/PlannerContext";
 import { cn } from "@/lib/utils";
 import { endOfMonth, format, getDaysInMonth, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { addDays, subDays, startOfDay, endOfDay, endOfWeek, startOfWeek } from "date-fns";
-import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
-import AddAppointmentDialog from "./AddAppointmentDialog";
 import { Button } from "../ui/button";
 import { IconChevronRight, IconChevronLeft, IconSettings, IconUser, IconUserPlus, IconClipboardPlus } from "@tabler/icons-react";
 import { Typography } from "../ui/typography";
 import { capitalizeFirstLetter } from "@/utils/capitalize-first-letter";
-import { OperatingHoursDialog } from "./OperatingHoursDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { AdditionalSettingsDialog } from "./AdditionalSettingsDialog";
 import { Separator } from "../ui/separator";
-import { Notifications } from "../ui/notifications/notifications";
+import { ConfigDialog } from "./ConfigDialog";
+import AddAppointmentDialog from "./AddAppointmentDialog";
+
 
 type CalendarToolbarProps = React.HTMLAttributes<HTMLDivElement>
 
@@ -33,7 +20,6 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   className,
   ...props
 }) => {
-  const [isOpened, setIsOpened] = useState(false);
   const { setDateRange, viewMode } = useCalendar();
 
   const [range, setRange] = useState<DateRange>({
@@ -93,48 +79,23 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
       className={cn("flex flex-col", className)}
       {...props}
     >
-      <div className="flex items-center justify-between">
-        <div>
-        </div>
-        <div className="flex items-center gap-2 justify-between w-full p-2 pt-4 bg-white dark:bg-neutral-800/40 border-b absolute left-0 top-0">
-          <div></div>
-          <div className="flex gap-2">
-            <Notifications />
-            <Separator orientation="vertical" className="mx-2 h-10" />
-            <Button
-              variant="outline"
-            >
-              <IconUserPlus className="w-4 h-4" />
-              <Typography variant="span" className="md:block hidden">Novo cliente</Typography>         
-            </Button>
-            <Button
-              variant="outline"
-            >
-              <IconClipboardPlus className="h-4 w-4" />
-              <Typography variant="span" className="md:block hidden">Novo serviço</Typography>
-            </Button>
-            <AddAppointmentDialog />
-          </div>
-        </div>
-      </div>
-      {/* <Separator orientation="horizontal" className="my-2" /> */}
-      <div className="flex gap-2 justify-between w-full py-2 mt-14">
-        <div className="flex gap-2 items-end">
+      <div className="flex gap-2 justify-between w-full pb-2">
+        <div className="flex gap-6 items-end">
           <div className="flex gap-2">
             <Button
               variant={viewMode === "day" ? "default" : "outline"}
-              className={cn(viewMode === "day" && "border bg-neutral-200 dark:bg-neutral-800 dark:text-white text-black hover:bg-neutral-300 dark:hover:bg-neutral-700")}
+              className={cn(viewMode === "day" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:text-white text-black hover:bg-[#2B2D42] dark:hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfDay(new Date()),
                 to: endOfDay(new Date()),
               })}
             >
-              <Typography variant="span" className="md:block hidden">Dia</Typography>
-              <Typography variant="span" className="md:hidden block">D</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200" ,"md:block hidden")}>Dia</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200", "md:hidden block")}>D</Typography>
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "outline"}
-              className={cn(viewMode === "week" && "border bg-neutral-200 dark:bg-neutral-800 dark:text-white text-black hover:bg-neutral-300 dark:hover:bg-neutral-700")}
+              className={cn(viewMode === "week" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:text-white text-black hover:bg-[#2B2D42] dark:hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfWeek(new Date(), {
                   locale: { options: { weekStartsOn: 0 } },
@@ -142,22 +103,21 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfWeek(new Date()),
               })}
             >
-              <Typography variant="span" className="md:block hidden">Semana</Typography>
-              <Typography variant="span" className="md:hidden block">S</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200" ,"md:block hidden")}>Semana</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200", "md:hidden block")}>S</Typography>
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
-              className={cn(viewMode === "month" && "border bg-neutral-200 dark:bg-neutral-800 dark:text-white text-black hover:bg-neutral-300 dark:hover:bg-neutral-700")}
+              className={cn(viewMode === "month" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:text-white text-black hover:bg-[#2B2D42] dark:hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfMonth(new Date()),
                 to: endOfMonth(new Date()),
               })}
             >
-              <Typography variant="span" className="md:block hidden">Mês</Typography>
-              <Typography variant="span" className="md:hidden block">M</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200" ,"md:block hidden")}>Mês</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200", "md:hidden block")}>M</Typography>
             </Button>
-          </div>
-          <Separator orientation="vertical" className="mx-2" />
+          </div>      
           <div className="flex gap-2 items-center">
             <Button
               variant="outline"
@@ -187,35 +147,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
         </Typography>
         <Separator orientation="vertical" className="md:hidden block" />
-        <div className="flex gap-2">
-          <DropdownMenu open={isOpened} onOpenChange={setIsOpened} >
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                onClick={() => setIsOpened(true)}
-              >
-                <IconSettings className="!h-4 !w-4" />
-                <Typography variant="span" className="md:block hidden">Configurações</Typography>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mr-7 bg-background">
-              <DropdownMenuLabel>
-                <Typography variant="span">
-                  Configurações
-                </Typography>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup className="flex flex-col justify-center p-2 gap-2">
-                <DropdownMenuItem className="!p-0 m-2" asChild>
-                  <OperatingHoursDialog />
-                </DropdownMenuItem>
-                <DropdownMenuItem className="!p-0 m-2" asChild>
-                  <AdditionalSettingsDialog />
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <AddAppointmentDialog />
       </div>
     </div>
   );

@@ -78,7 +78,7 @@ const Tabs: FC<TabsProps> = ({ children, className, activeClassName }) => {
     <div
       ref={ref}
       className={cn(
-        "bg relative flex flex-nowrap gap-2 overflow-auto rounded-md p-2",
+        "bg relative flex flex-nowrap gap-2 overflow-auto rounded-md",
         className,
       )}
     >

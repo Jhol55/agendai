@@ -96,8 +96,8 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "sticky left-0 h-screen px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-background w-[60px] flex-shrink-0",
-          "border-r border-neutral-200 dark:border-neutral-700",
+          "sticky left-0 h-screen px-4 py-4 hidden md:flex md:flex-col bg-[#2B2D42] dark:bg-[#2E2E46] w-[60px] flex-shrink-0",
+          "",
           className
         )}
         animate={{
@@ -180,7 +180,7 @@ export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
     return (
       <Button
         variant="ghost"
-        className={cn("relative flex items-center justify-start gap-2 group/sidebar py-2 !px-1 h-10 w-fit hover:bg-neutral-200 dark:hover:bg-neutral-800", className)}
+        className={cn("relative flex items-center justify-start gap-2 group/sidebar py-2 !px-1 h-10 w-fit hover:bg-transparent dark:hover:bg-neutral-800", className)}
         onClick={(e: React.MouseEvent) => {
           onClick?.(e);
           if (isMobile) {
@@ -191,7 +191,6 @@ export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
         {...props}
       >
         <div className="absolute left-1">{icon}</div>
-
         <motion.div
           animate={{
             display: animate ? (open ? "inline-block" : "none") : "inline-block",
@@ -199,7 +198,7 @@ export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
           }}
           className="group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !px-2 !ml-5"
         >
-          <Typography variant="span">{label}</Typography>
+          <Typography variant="span" className="dark:text-neutral-200 !text-neutral-200">{label}</Typography>
         </motion.div>
       </Button>
     );
