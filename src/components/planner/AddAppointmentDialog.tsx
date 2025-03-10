@@ -199,9 +199,9 @@ const AddAppointmentDialog: React.FC = () => {
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <IconCalendarPlus className="h-4 w-4" />
-          <Typography variant="span" className="md:block hidden">Novo Agendamento</Typography>
+        <Button variant="outline" className="bg-[#2B2D42] hover:bg-[#2B2D42]">
+          <IconCalendarPlus className="h-4 w-4 text-white" />
+          <Typography variant="span" className="md:block hidden !text-white">Novo Agendamento</Typography>
         </Button>
       </DialogTrigger>
       <DialogContent

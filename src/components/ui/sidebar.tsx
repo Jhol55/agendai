@@ -12,6 +12,8 @@ import { ModeToggle } from "./ModeToggle";
 interface SidebarContextProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  activeLabel: string | undefined;
+  setActiveLabel?: React.Dispatch<React.SetStateAction<string | undefined>>;
   animate: boolean;
 }
 
@@ -39,12 +41,12 @@ export const SidebarProvider = ({
   animate?: boolean;
 }) => {
   const [openState, setOpenState] = useState(false);
-
+  const [activeLabel, setActiveLabel] = useState<string | undefined>(undefined)
   const open = openProp !== undefined ? openProp : openState;
   const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen, animate }}>
+    <SidebarContext.Provider value={{ open, setOpen, animate, activeLabel, setActiveLabel }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -68,7 +70,19 @@ export const Sidebar = ({
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+export const SidebarBody = ({
+  initialActiveLabel,
+  ...props
+}: {
+  initialActiveLabel?: string
+} & React.ComponentProps<typeof motion.div>) => {
+
+  const { setActiveLabel } = useSidebar();
+
+  useEffect(() => {
+    setActiveLabel?.(initialActiveLabel)
+  }, [initialActiveLabel, setActiveLabel])
+
   return (
     <>
       <DesktopSidebar {...props} />
@@ -174,33 +188,39 @@ interface SidebarButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
   ({ icon, label, className, onClick, ...props }, ref) => {
-    const { open, animate, setOpen } = useSidebar();
+    const { open, animate, setOpen, activeLabel, setActiveLabel } = useSidebar();
     const { isMobile } = useWindowSize();
 
     return (
-      <Button
-        variant="ghost"
-        className={cn("relative flex items-center justify-start gap-2 group/sidebar py-2 !px-1 h-10 w-fit hover:bg-transparent dark:hover:bg-neutral-800", className)}
-        onClick={(e: React.MouseEvent) => {
-          onClick?.(e);
-          if (isMobile) {
-            setOpen(false);
-          }
-        }}
-        ref={ref}
-        {...props}
-      >
-        <div className="absolute left-1">{icon}</div>
-        <motion.div
-          animate={{
-            display: animate ? (open ? "inline-block" : "none") : "inline-block",
-            opacity: animate ? (open ? 1 : 0) : 1,
+      <div className="flex items-center w-full h-full">
+        {activeLabel === label &&
+          <div className="absolute right-0 w-1 h-6 bg-green-400 border border-green-400 rounded-l"></div>
+        }
+        <Button
+          variant="ghost"
+          className={cn("relative flex items-center justify-start gap-2 group/sidebar py-2 !px-1 h-10 w-fit hover:bg-transparent dark:hover:bg-neutral-800", className)}
+          onClick={(e: React.MouseEvent) => {
+            setActiveLabel?.(label);
+            onClick?.(e);
+            if (isMobile) {
+              setOpen(false);
+            }
           }}
-          className="group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !px-2 !ml-5"
+          ref={ref}
+          {...props}
         >
-          <Typography variant="span" className="dark:text-neutral-200 !text-neutral-200">{label}</Typography>
-        </motion.div>
-      </Button>
+          <div className={cn("absolute left-1 text-neutral-200", activeLabel === label && "text-green-400")}>{icon}</div>
+          <motion.div
+            animate={{
+              display: animate ? (open ? "inline-block" : "none") : "inline-block",
+              opacity: animate ? (open ? 1 : 0) : 1,
+            }}
+            className="group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !px-2 !ml-5"
+          >
+            <Typography variant="span" className={cn("!text-neutral-200", activeLabel === label && "!text-green-400")}>{label}</Typography>
+          </motion.div>
+        </Button>
+      </div>
     );
   }
 );

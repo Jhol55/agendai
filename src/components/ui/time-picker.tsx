@@ -77,11 +77,16 @@ export function TimePicker({
 
   return (
     <Popover open={open} onOpenChange={onOpenChange} modal>
-      <PopoverTrigger asChild disabled={disabled}>
+      <PopoverTrigger 
+      asChild 
+      disabled={disabled} 
+      className="disabled:!cursor-not-allowed disabled:hover:bg-neutral-50 disabled:text-neutral-700 disabled:hover:text-neutral-700 disabled:!pointer-events-auto"
+      >
         <Button
           variant="outline"
+          disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal dark:bg-neutral-900",
+            "w-full justify-start text-left font-normal dark:bg-neutral-900 z-50",
             (!date && !value) && "text-gray-500"
           )}
         >

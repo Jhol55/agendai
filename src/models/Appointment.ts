@@ -21,6 +21,7 @@ export interface Appointment {
       status: "pending" | "received" | "refunded";
       sendPaymentLink: boolean;
       billingType?: "credit_card" | "debit_card" | "cash" | "pix" | null;
+      dueDate: string;
     }[];
   }
 }
@@ -47,7 +48,8 @@ export const updateAppointmentSchema = z.object({
         value: z.number().optional(),
         status: z.enum(["pending", "received", "refunded"]),
         sendPaymentLink: z.boolean(),
-        billingType: z.enum(["credit_card", "debit_card", "cash", "pix"]).nullable().optional()
+        billingType: z.enum(["credit_card", "debit_card", "cash", "pix"]).nullable().optional(),
+        dueDate: z.string()
       })
     ),
   }),

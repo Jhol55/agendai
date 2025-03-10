@@ -17,7 +17,7 @@ export const links = [
   {
     label: "Dashboard",
     icon: (
-      <IconBrandTabler className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
+      <IconBrandTabler className="!h-5 !w-5 flex-shrink-0" />
     ),
     content: (
       <KnowledgeBases />
@@ -26,7 +26,7 @@ export const links = [
   {
     label: "Bases de Conhecimento",
     icon: (
-      <IconBrain className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
+      <IconBrain className="!h-5 !w-5 flex-shrink-0" />
     ),
     content: (
       <KnowledgeBases />
@@ -35,7 +35,7 @@ export const links = [
   {
     label: "Prompts",
     icon: (
-      <IconMessage className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
+      <IconMessage className="!h-5 !w-5 flex-shrink-0" />
     ),
     content: (
       <Prompts />
@@ -44,7 +44,7 @@ export const links = [
   {
     label: "Serviços",
     icon: (
-      <IconBriefcase className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
+      <IconBriefcase className="!h-5 !w-5 flex-shrink-0" />
     ),
     content: (
       <Services />
@@ -53,7 +53,7 @@ export const links = [
   {
     label: "Agenda",
     icon: (
-      <IconCalendarWeek className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
+      <IconCalendarWeek className="!h-5 !w-5 flex-shrink-0" />
     ),
     content: (
       <Scheduler />

@@ -46,7 +46,7 @@ const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
   return (
     <div className="flex flex-col p-4 relative">
       <PlannerTopBar />
-      <div className="mt-16 p-2 bg-white md:h-[86vh] rounded-md">
+      <div className="mt-14 p-2 bg-white md:h-[87vh] rounded-md">
         <CalendarToolbar />
         <CalendarContent {...props} />
       </div>

@@ -114,6 +114,7 @@ const Appointment: React.FC<AppointmentProps> = ({
   const [autoEndDate, setAutoEndDate] = React.useState<Date | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isFeeRefundOpen, setIsFeeRefundOpen] = useState(false);
+  const [isServiceRefundOpen, setIsServiceRefundOpen] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -615,14 +616,14 @@ const Appointment: React.FC<AppointmentProps> = ({
                           render={({ field }) => (
                             <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
                               <div className="flex gap-2 items-center !mr-auto">
-                                <FormControl>                          
+                                <FormControl>
                                   {appointment.details.payments[feeIndex]?.billingType !== "cash" && appointment.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
                                     ? (
                                       <AlertDialog open={isFeeRefundOpen} onOpenChange={setIsFeeRefundOpen}>
                                         <AlertDialogTrigger className="flex items-center">
                                           <Checkbox
                                             checked={["received", "confirmed"].includes(field.value)}
-                                            onClick={() => setIsFeeRefundOpen(true)}                                       
+                                            onClick={() => setIsFeeRefundOpen(true)}
                                             disabled={watch.details.payments[feeIndex].sendPaymentLink}
                                           />
                                         </AlertDialogTrigger>
@@ -647,9 +648,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                                           <AlertDialogFooter>
                                             <AlertDialogCancel
                                               onClick={(e) => {
-                                                e.preventDefault();    
+                                                e.preventDefault();
                                                 field.onChange(field.value);
-                                                setIsFeeRefundOpen(false);                                         
+                                                setIsFeeRefundOpen(false);
                                               }}
                                             >
                                               Voltar
@@ -658,8 +659,8 @@ const Appointment: React.FC<AppointmentProps> = ({
                                               className="bg-red-500 hover:bg-red-600 text-white"
                                               onClick={(e) => {
                                                 e.preventDefault();
-                                                setIsFeeRefundOpen(false);   
-                                                field.onChange("pending");                                           
+                                                setIsFeeRefundOpen(false);
+                                                field.onChange("pending");
                                               }}
                                             >
                                               Continuar
@@ -716,7 +717,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                         )}
                       />
                     </div>
-                    <div className="flex w-full items-center">
+                    <div className="flex items-center w-full">
                       <FormField
                         control={form.control}
                         name={`details.payments.${serviceIndex}.sendPaymentLink`}
@@ -727,12 +728,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 <Checkbox
                                   checked={field.value}
                                   onCheckedChange={(checked: boolean) => {
-                                    field.onChange(checked);
-                                    if (checked) {
-                                      form.clearErrors([`details.payments.${serviceIndex}.status`, `details.payments.${serviceIndex}.sendPaymentLink`])
-                                    }
+                                    field.onChange(checked);                                  
                                   }}
-                                  disabled={["received", "confirmed"].includes(watch.details.payments[serviceIndex].status)}
+                                  disabled={["received", "confirmed"].includes(watch.details.payments[feeIndex].status)}
                                 />
                               </FormControl>
                               <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
@@ -740,34 +738,90 @@ const Appointment: React.FC<AppointmentProps> = ({
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name={`details.payments.${serviceIndex}.status`}
-                        render={({ field }) => (
-                          <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
-                            <div className="flex gap-2 items-center !mr-auto">
-                              <FormControl>
-                                <Checkbox
-                                  checked={["received", "confirmed"].includes(field.value)}
-                                  onCheckedChange={(checked: boolean) => {
-                                    field.onChange(checked ? "received" : "pending");
-                                    if (checked) {
-                                      form.clearErrors([`details.payments.${serviceIndex}.status`, `details.payments.${serviceIndex}.sendPaymentLink`])
-                                    }
-                                  }}
-                                  disabled={watch.details.payments[serviceIndex].sendPaymentLink}
-                                />
-                              </FormControl>
-                              <FormLabel className="text-left !mt-[1px]">Recebido</FormLabel>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex w-full justify-between">
+                        <FormField
+                          control={form.control}
+                          name={`details.payments.${serviceIndex}.status`}
+                          render={({ field }) => (
+                            <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
+                              <div className="flex gap-2 items-center !mr-auto">
+                                <FormControl>
+                                  {appointment.details.payments[serviceIndex]?.billingType !== "cash" && appointment.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
+                                    ? (
+                                      <AlertDialog open={isServiceRefundOpen} onOpenChange={setIsServiceRefundOpen}>
+                                        <AlertDialogTrigger className="flex items-center">
+                                          <Checkbox
+                                            checked={["received", "confirmed"].includes(field.value)}
+                                            onClick={() => setIsServiceRefundOpen(true)}
+                                            disabled={watch.details.payments[serviceIndex].sendPaymentLink}
+                                          />
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle asChild>
+                                              <Typography
+                                                variant="h2"
+                                              >
+                                                Tem certeza que deseja continuar?
+                                              </Typography>
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              <Typography
+                                                variant="span"
+                                                secondary
+                                              >
+                                                Esta ação estornará o pagamento selecionado e não poderá ser desfeita.
+                                              </Typography>
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                field.onChange(field.value);
+                                                setIsServiceRefundOpen(false);
+                                              }}
+                                            >
+                                              Voltar
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                              className="bg-red-500 hover:bg-red-600 text-white"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                setIsServiceRefundOpen(false);
+                                                field.onChange("pending");
+                                              }}
+                                            >
+                                              Continuar
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+
+                                    ) : (
+                                      <Checkbox
+                                        checked={["received", "confirmed"].includes(field.value)}
+                                        onCheckedChange={(checked: boolean) => {
+                                          field.onChange(checked ? "received" : "pending");
+                                          if (checked) {
+                                            form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
+                                          }
+                                        }}
+                                        disabled={watch.details.payments[feeIndex].sendPaymentLink}
+                                      />
+                                    )}
+                                </FormControl>
+                                <FormLabel className="text-left !mt-[1px]">Recebido</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
+                    <FormMessage className="mt-2.5">
+                      {form?.formState?.errors?.details?.payments?.[feeIndex]?.sendPaymentLink?.message || ""}
+                    </FormMessage>
                   </div>
-                  <FormMessage className="!mt-2.5">
-                    {form?.formState?.errors?.details?.payments?.[serviceIndex]?.sendPaymentLink?.message || ""}
-                  </FormMessage>
 
                 </form>
                 <DialogFooter className="flex !flex-row w-full justify-end gap-2 px-[1.5rem] mb-6">
@@ -911,7 +965,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                       <IconCalendarDollar
                         className={cn(
                           "w-4 h-4",
-                          ["received", "confirmed"].includes(appointment.details.payments[feeIndex]?.status) ? "text-green-600" : "text-red-600"
+                          ["received", "confirmed"].includes(appointment.details.payments[feeIndex]?.status)
+                            ? "text-green-600"
+                            : new Date(appointment.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                              ? ""
+                              : "text-red-600"
                         )}
                       />
                     </TooltipTrigger>
@@ -931,7 +989,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                               {
                                 ["received", "confirmed"].includes(appointment.details.payments[feeIndex]?.status)
                                   ? "Pago"
-                                  : "Pendente"
+                                  : new Date(appointment.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                    ? "Pendente"
+                                    : "Vencido"
                               }
                             </Typography>
                           </>
@@ -950,7 +1010,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                       <IconCurrencyDollar
                         className={cn(
                           "w-4 h-4",
-                          ["received", "confirmed"].includes(appointment.details.payments[serviceIndex]?.status) ? "text-green-600" : "text-red-600"
+                          ["received", "confirmed"].includes(appointment.details.payments[serviceIndex]?.status)
+                            ? "text-green-600"
+                            : new Date(appointment.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                              ? ""
+                              : "text-red-600"
                         )}
                       />
                     </TooltipTrigger>
@@ -969,8 +1033,10 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <Typography variant="p" className="text-xs">
                               {
                                 ["received", "confirmed"].includes(appointment.details.payments[serviceIndex]?.status)
-                                  ? "Pago"
-                                  : "Pendente"
+                                ? "Pago"
+                                : new Date(appointment.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                  ? "Pendente"
+                                  : "Vencido"
                               }
                             </Typography>
                           </>

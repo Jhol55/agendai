@@ -149,7 +149,7 @@ export function Notifications() {
   return (
     <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
       <DropdownMenuTrigger asChild className="relative">
-        <Button variant="secondary" size="icon" className="rounded-full dark:bg-neutral-800">
+        <Button variant="secondary" size="icon" className="rounded-full dark:bg-neutral-800 w-8 h-8">
           {
             isOpened
               ? <IconMailOpened className="h-4 w-4 -translate-y-[1px]" />
