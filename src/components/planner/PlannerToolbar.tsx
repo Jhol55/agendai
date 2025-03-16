@@ -10,7 +10,6 @@ import { IconChevronRight, IconChevronLeft, IconSettings, IconUser, IconUserPlus
 import { Typography } from "../ui/typography";
 import { capitalizeFirstLetter } from "@/utils/capitalize-first-letter";
 import { Separator } from "../ui/separator";
-import { ConfigDialog } from "./ConfigDialog";
 import AddAppointmentDialog from "./AddAppointmentDialog";
 
 

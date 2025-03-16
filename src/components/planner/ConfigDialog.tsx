@@ -26,6 +26,7 @@ export const ConfigDialog = () => {
                 <Button
                     variant="outline"
                     onClick={() => setIsOpened(true)}
+                    className="rounded-full"
                 >
                     <IconSettings className="!h-4 !w-4" />
                     <Typography variant="span" className="md:block hidden">Configurações</Typography>

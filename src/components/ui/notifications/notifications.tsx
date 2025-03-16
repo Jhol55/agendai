@@ -107,6 +107,7 @@ export function Notifications() {
     if (!isOpened) {
       setTimeout(()=> {
         setMessage(undefined);
+        setPage(1);
       }, 200)
     }
   }, [isOpened])
@@ -149,7 +150,7 @@ export function Notifications() {
   return (
     <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
       <DropdownMenuTrigger asChild className="relative">
-        <Button variant="secondary" size="icon" className="rounded-full dark:bg-neutral-800 w-8 h-8">
+        <Button variant="outline" size="icon" className="rounded-full w-8 h-8">
           {
             isOpened
               ? <IconMailOpened className="h-4 w-4 -translate-y-[1px]" />
@@ -157,7 +158,7 @@ export function Notifications() {
           }
           <span className="sr-only">Toggle user menu</span>
           <div className="absolute flex items-center justify-center -top-3 -right-1 rounded-full h-5 w-5 shrink-0 text-xs bg-red-500 dark:bg-red-500 pointer-events-none">
-            <span>{!isLoading ? unreadCount >= 99 ? 99 : unreadCount : null}</span>
+            <Typography variant="p" className="!text-neutral-100">{!isLoading ? unreadCount >= 99 ? 99 : unreadCount : null}</Typography>
             <Loading display={isLoading} className="absolute -translate-x-[0.5px] !scale-[0.2]" />
           </div>
         </Button>

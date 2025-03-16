@@ -242,6 +242,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       setClientSearchValue("");
       setServiceSearchValue("");
       setAutoEndDate(undefined);
+      handleUpdate();
       form.reset();
       setTimeout(() => {
         setIsLoading(true);
@@ -730,7 +731,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   onCheckedChange={(checked: boolean) => {
                                     field.onChange(checked);                                  
                                   }}
-                                  disabled={["received", "confirmed"].includes(watch.details.payments[feeIndex].status)}
+                                  disabled={["received", "confirmed"].includes(watch.details.payments[serviceIndex].status)}
                                 />
                               </FormControl>
                               <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
@@ -883,7 +884,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                     form="update-appointment"
                     type="submit"
                     className="bg-green-500 hover:bg-green-600 text-white"
-                    onClick={() => console.log(watch)}
+                    onClick={() => console.log(form.formState.errors)}
                   >
                     Salvar
                   </Button>

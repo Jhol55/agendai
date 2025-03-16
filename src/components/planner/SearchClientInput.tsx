@@ -7,8 +7,6 @@ import { getClients } from "@/services/clients";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react";
-import { Typography } from "../ui/typography";
-
 
 export const SearchClientInput = ({ onSelect }: { onSelect?: (client: { id: string, name: string }) => void }) => {
   const [isOpened, setIsOpened] = useState(false);
@@ -45,7 +43,7 @@ export const SearchClientInput = ({ onSelect }: { onSelect?: (client: { id: stri
           aria-expanded={!!(clientSearchValue && isOpened)}
           className="w-72 flex justify-between relative border-none"
         >
-          <div className="absolute left-0 flex items-center w-full bg-white border rounded-md">
+          <div className="absolute left-0 flex items-center w-full border rounded-md">
             <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
               ref={inputRef}
