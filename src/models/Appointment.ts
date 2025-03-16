@@ -82,7 +82,7 @@ export const createAppointmentSchema = z.object({
         status: z.enum(["pending", "received", "refunded", "confirmed"]),
         sendPaymentLink: z.boolean(),
         billingType: z.enum(["credit_card", "debit_card", "cash", "pix"]).nullable().optional(),
-        dueDate: z.string().optional()
+        dueDate: z.string()
       })
     ),
   })

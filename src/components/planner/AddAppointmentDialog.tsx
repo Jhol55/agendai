@@ -93,12 +93,14 @@ const AddAppointmentDialog: React.FC = () => {
             value: undefined,
             status: "pending",
             sendPaymentLink: false,
+            dueDate: new Date().toISOString()
           },
           {
             type: "service",
             value: undefined,
             status: "pending",
             sendPaymentLink: false,
+            dueDate: new Date().toISOString()
           },
         ],
       }
@@ -111,7 +113,7 @@ const AddAppointmentDialog: React.FC = () => {
         serviceId: values.details.serviceId,
         durationMinutes: values.details.durationMinutes,
         online: values.details.online,
-        payments: values?.details?.payments
+        payments: values?.details?.payments,
       },
       order: 0,
       id: "",
