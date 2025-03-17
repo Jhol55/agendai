@@ -148,7 +148,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         durationMinutes: appointment.details.durationMinutes,
         online: appointment.details.online,
         payments: appointment.details.payments.map(payment => ({
-          ...payment, sendPaymentLink: false
+          ...payment, sendPaymentLink: false, dueDate: new Date(payment.dueDate)
         }))
       }
     },
@@ -167,7 +167,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         durationMinutes: appointment.details.durationMinutes,
         online: appointment.details.online,
         payments: appointment.details.payments.map(payment => ({
-          ...payment, sendPaymentLink: false
+          ...payment, sendPaymentLink: false, dueDate: new Date(payment.dueDate)
         }))
       }
     });
@@ -200,6 +200,9 @@ const Appointment: React.FC<AppointmentProps> = ({
       setIsOpened(false);
       setAutoEndDate(undefined);
     }, 500);
+    setTimeout(() => {
+      handleUpdate();
+    }, 1000)
   }
 
   function onRemove(id: string) {

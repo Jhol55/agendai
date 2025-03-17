@@ -21,7 +21,7 @@ export interface Appointment {
       status: "pending" | "received" | "refunded" | "confirmed";
       sendPaymentLink: boolean;
       billingType?: "credit_card" | "debit_card" | "cash" | "pix" | null;
-      dueDate: string;
+      dueDate: Date;
     }[];
   }
 }
@@ -49,7 +49,7 @@ export const updateAppointmentSchema = z.object({
         status: z.enum(["pending", "received", "refunded", "confirmed"]),
         sendPaymentLink: z.boolean(),
         billingType: z.enum(["credit_card", "debit_card", "cash", "pix"]).nullable().optional(),
-        dueDate: z.string()
+        dueDate: z.date()
       })
     ),
   }),
@@ -82,7 +82,7 @@ export const createAppointmentSchema = z.object({
         status: z.enum(["pending", "received", "refunded", "confirmed"]),
         sendPaymentLink: z.boolean(),
         billingType: z.enum(["credit_card", "debit_card", "cash", "pix"]).nullable().optional(),
-        dueDate: z.string()
+        dueDate: z.date()
       })
     ),
   })
@@ -91,3 +91,43 @@ export const createAppointmentSchema = z.object({
     message: "O horário de fim deve ser posterior ao horário de início",
     path: ["end"],
   })
+  .refine((data) => {
+    function findPaymentIndex(type: string) {
+      return data.details.payments.findIndex(payment => payment.type === type);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const index = findPaymentIndex("fee");
+    const payment = data.details.payments[index];
+
+    const dueDate = new Date(payment.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    
+    return dueDate.getTime() >= today.getTime();
+
+  }, {
+    message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+    path: ["details", "payments", "0", "dueDate"],
+  })
+  .refine((data) => {
+    function findPaymentIndex(type: string) {
+      return data.details.payments.findIndex(payment => payment.type === type);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const index = findPaymentIndex("service");
+    const payment = data.details.payments[index];
+
+    const dueDate = new Date(payment.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    
+    return dueDate.getTime() >= today.getTime();
+
+  }, {
+    message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+    path: ["details", "payments", "1", "dueDate"],
+  });

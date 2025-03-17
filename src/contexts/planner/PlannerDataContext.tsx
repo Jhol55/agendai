@@ -58,7 +58,7 @@ export const PlannerDataContextProvider: FC<{
     const subscription = subscribe({
       channel: "appointments",
       table: "appointments",
-      onChange: (payload) => handleUpdate()
+      onChange: (payload) => setTimeout(() => handleUpdate(), 1000)
     })
 
     return () => {

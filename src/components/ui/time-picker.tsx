@@ -59,18 +59,21 @@ export function TimePicker({
   };
 
   React.useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      if (value && !date) {
+    if (isFirstRender.current) {      
+      if (value && !date) {     
+        isFirstRender.current = false;
         onChange?.(new Date(value))
         setDate(new Date(value));
         return;
       }
       
     }
-    if (value && mode === "datetime") {
-      onChange?.(new Date(value))
+    if (value) {    
       setDate(new Date(value));
+
+      if (date && date.getTime() !== new Date(value).getTime()) {
+        onChange?.(new Date(value))
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);

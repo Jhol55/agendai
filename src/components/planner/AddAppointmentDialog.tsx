@@ -93,14 +93,14 @@ const AddAppointmentDialog: React.FC = () => {
             value: undefined,
             status: "pending",
             sendPaymentLink: false,
-            dueDate: new Date().toISOString()
+            dueDate: undefined
           },
           {
             type: "service",
             value: undefined,
             status: "pending",
             sendPaymentLink: false,
-            dueDate: new Date().toISOString()
+            dueDate: undefined
           },
         ],
       }
@@ -478,6 +478,25 @@ const AddAppointmentDialog: React.FC = () => {
                           const newDate = new Date(date);
                           newDate.setMinutes(newDate.getMinutes() + (durationMinutes || 0));
                           setAutoEndDate(newDate);
+
+                          form.setValue(`details.payments.${feeIndex}.dueDate`, (() => {
+                            let dueDate = new Date(
+                              date.getTime() - Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "tax_deadline_value")].value) * 86400000
+                            )
+                            if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                              dueDate = new Date()
+                            }
+                            return dueDate
+                          })())
+                          form.setValue(`details.payments.${serviceIndex}.dueDate`, (() => {
+                            let dueDate = new Date(
+                              date.getTime() + Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "payment_deadline_value")].value) * 86400000
+                            )
+                            if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                              dueDate = new Date()
+                            }
+                            return dueDate
+                          })())
                         }
                       }}
                       disabled={!durationMinutes}
@@ -529,7 +548,29 @@ const AddAppointmentDialog: React.FC = () => {
                           disabled={!currentService}
                         />
                       </FormControl>
-                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`details.payments.${feeIndex}.dueDate`}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col w-full">
+                      <FormLabel className="text-left">Data de vencimento</FormLabel>
+                      <FormControl>
+                        <TimePicker
+                          placeholder="Selecione uma data"
+                          value={field.value}
+                          mode="date"
+                          onChange={(date) => {
+                            field.onChange(date);
+                            if (date) {
+                              form.clearErrors([`details.payments.${feeIndex}.dueDate`])
+                            }
+                          }}
+                          disabled={!watch.start}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -546,9 +587,6 @@ const AddAppointmentDialog: React.FC = () => {
                             checked={field.value}
                             onCheckedChange={(checked: boolean) => {
                               field.onChange(checked);
-                              if (checked) {
-                                form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
-                              }
                             }}
                             disabled={watch.details.payments[feeIndex].status === "received" || !currentService}
                           />
@@ -570,9 +608,6 @@ const AddAppointmentDialog: React.FC = () => {
                               checked={field.value === "received"}
                               onCheckedChange={(checked: boolean) => {
                                 field.onChange(checked ? "received" : "pending");
-                                if (checked) {
-                                  form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
-                                }
                               }}
                               disabled={watch.details.payments[feeIndex].sendPaymentLink || !currentService}
                             />
@@ -584,8 +619,8 @@ const AddAppointmentDialog: React.FC = () => {
                   />
                 </div>
               </div>
-              <FormMessage className="mt-2.5">
-                {form?.formState?.errors?.details?.payments?.[feeIndex]?.sendPaymentLink?.message || ""}
+              <FormMessage className="mt-2.5 w-full">
+                {form?.formState?.errors?.details?.payments?.[feeIndex]?.dueDate?.message || ""}
               </FormMessage>
             </div>
             <div className="flex flex-col items-center w-full">
@@ -609,6 +644,29 @@ const AddAppointmentDialog: React.FC = () => {
                         />
                       </FormControl>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`details.payments.${serviceIndex}.dueDate`}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col w-full">
+                      <FormLabel className="text-left">Data de vencimento</FormLabel>
+                      <FormControl>
+                        <TimePicker
+                          placeholder="Selecione uma data"
+                          value={field.value}
+                          mode="date"
+                          onChange={(date) => {
+                            field.onChange(date);
+                            if (date) {
+                              form.clearErrors([`details.payments.${serviceIndex}.dueDate`])
+                            }
+                          }}
+                          disabled={!watch.start}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -662,8 +720,8 @@ const AddAppointmentDialog: React.FC = () => {
                 />
               </div>
             </div>
-            <FormMessage className="!mt-2.5">
-              {form?.formState?.errors?.details?.payments?.[serviceIndex]?.sendPaymentLink?.message || ""}
+            <FormMessage className="!mt-2 w-full">
+              {form?.formState?.errors?.details?.payments?.[serviceIndex]?.dueDate?.message || ""}
             </FormMessage>
           </form>
           <DialogFooter className="px-[1.5rem] mb-6">
