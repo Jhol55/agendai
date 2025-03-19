@@ -236,7 +236,7 @@ const AddAppointmentDialog: React.FC = () => {
                         }}
                         variant={field.value === "pending" ? "default" : "outline"}
                         className={cn(
-                          "w-32 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white",
+                          "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white",
                           field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
                         )}
                         type="button"
@@ -249,7 +249,7 @@ const AddAppointmentDialog: React.FC = () => {
                         }}
                         variant={field.value === "confirmed" ? "default" : "outline"}
                         className={cn(
-                          "w-32 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white",
+                          "flex-1 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white",
                           field.value === "confirmed" && "bg-green-500 dark:bg-green-500 text-white hover:bg-green-500 dark:hover:bg-green-500"
                         )}
                         type="button"
@@ -262,7 +262,7 @@ const AddAppointmentDialog: React.FC = () => {
                         }}
                         variant={field.value === "canceled" ? "default" : "outline"}
                         className={cn(
-                          "w-32 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white",
+                          "flex-1 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white",
                           field.value === "canceled" && "bg-red-500 dark:bg-red-500 text-white hover:bg-red-500 dark:hover:bg-red-500"
                         )}
                         type="button"
