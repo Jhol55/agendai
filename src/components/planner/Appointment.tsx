@@ -104,6 +104,7 @@ const Appointment: React.FC<AppointmentProps> = ({
   const [isRemoveAppointmentOpen, setIsRemoveAppointmentOpen] = useState(false);
   const [openClient, setOpenClient] = React.useState(false);
   const [openService, setOpenService] = React.useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [clients, setClients] = React.useState<{ id: string, name: string }[]>([]);
   const [services, setServices] = React.useState<ServiceType[]>([]);
   const [currentService, setCurrentService] = React.useState<ServiceType | undefined>(undefined);
@@ -148,31 +149,49 @@ const Appointment: React.FC<AppointmentProps> = ({
         durationMinutes: appointment.details.durationMinutes,
         online: appointment.details.online,
         payments: appointment.details.payments.map(payment => ({
-          ...payment, sendPaymentLink: false, dueDate: new Date(payment.dueDate)
+          ...payment,
+          sendPaymentLink: false,
+          dueDate: (() => {
+            const [year, month, day] = String(payment.dueDate).split("-").map(Number);
+            let date = new Date(year, month - 1, day);
+            if (isNaN(date.getTime())) {
+              date = payment.dueDate
+            }
+            return date
+          })()
         }))
       }
     },
   });
 
   useEffect(() => {
-    form.reset({
-      title: appointment.title,
-      clientId: appointment.clientId,
-      start: new Date(appointment.start) ?? new Date(),
-      end: new Date(appointment.end) ?? new Date(),
-      status: appointment.status,
-      details: {
-        service: appointment.details.service,
-        serviceId: appointment.details.serviceId,
-        durationMinutes: appointment.details.durationMinutes,
-        online: appointment.details.online,
-        payments: appointment.details.payments.map(payment => ({
-          ...payment, sendPaymentLink: false, dueDate: new Date(payment.dueDate)
-        }))
-      }
-    });
     if (isOpened) {
       setTimeout(() => {
+        form.reset({
+          title: appointment.title,
+          clientId: appointment.clientId,
+          start: new Date(appointment.start) ?? new Date(),
+          end: new Date(appointment.end) ?? new Date(),
+          status: appointment.status,
+          details: {
+            service: appointment.details.service,
+            serviceId: appointment.details.serviceId,
+            durationMinutes: appointment.details.durationMinutes,
+            online: appointment.details.online,
+            payments: appointment.details.payments.map(payment => ({
+              ...payment,
+              sendPaymentLink: false,
+              dueDate: (() => {
+                const [year, month, day] = String(payment.dueDate).split("-").map(Number);
+                let date = new Date(year, month - 1, day);
+                if (isNaN(date.getTime())) {
+                  date = payment.dueDate
+                }
+                return date
+              })()
+            }))
+          }
+        });
         setIsLoading(false);
       }, 1000)
     }
@@ -245,9 +264,9 @@ const Appointment: React.FC<AppointmentProps> = ({
       setClientSearchValue("");
       setServiceSearchValue("");
       setAutoEndDate(undefined);
-      handleUpdate();
-      form.reset();
       setTimeout(() => {
+        handleUpdate();
+        form.reset();
         setIsLoading(true);
       }, 500)
     } else {
@@ -285,7 +304,7 @@ const Appointment: React.FC<AppointmentProps> = ({
             className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
             onInteractOutside={(e) => {
               e.preventDefault();
-              if (!openClient && !openService) {
+              if (!openClient && !openService && !isCalendarOpen) {
                 setIsOpened(false);
               }
             }}
@@ -361,7 +380,6 @@ const Appointment: React.FC<AppointmentProps> = ({
                               <Button
                                 variant="outline"
                                 role="combobox"
-                                aria-expanded={openClient}
                                 className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
                               >
                                 <div className="flex gap-4 items-center">
@@ -536,6 +554,13 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 const newDate = new Date(date);
                                 newDate.setMinutes(newDate.getMinutes() + (appointment.details.durationMinutes ?? 0));
                                 setAutoEndDate(newDate);
+                                setIsCalendarOpen(false);
+                              }
+                            }}
+                            onClick={() => setIsCalendarOpen(true)}
+                            onInteractOutside={(e) => {
+                              if (isCalendarOpen) {
+                                setIsCalendarOpen(false);
                               }
                             }}
                             value={appointment.start}
@@ -556,6 +581,13 @@ const Appointment: React.FC<AppointmentProps> = ({
                           <TimePicker
                             onChange={(date) => {
                               field.onChange(date);
+                              setIsCalendarOpen(false);
+                            }}
+                            onClick={() => setIsCalendarOpen(true)}
+                            onInteractOutside={(e) => {
+                              if (isCalendarOpen) {
+                                setIsCalendarOpen(false);
+                              }
                             }}
                             value={autoEndDate ?? appointment.end}
                             disabled={!appointment.end}
@@ -585,6 +617,36 @@ const Appointment: React.FC<AppointmentProps> = ({
                               />
                             </FormControl>
                             <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`details.payments.${feeIndex}.dueDate`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col w-full">
+                            <FormLabel className="text-left">Data de vencimento</FormLabel>
+                            <FormControl>
+                              <TimePicker
+                                placeholder="Selecione uma data"
+                                value={field.value}
+                                mode="date"
+                                onChange={(date) => {
+                                  field.onChange(date);
+                                  setIsCalendarOpen(false)
+                                  if (date) {
+                                    form.clearErrors([`details.payments.${feeIndex}.dueDate`])
+                                  }
+                                }}
+                                onClick={() => setIsCalendarOpen(true)}
+                                onInteractOutside={(e) => {
+                                  if (isCalendarOpen) {
+                                    setIsCalendarOpen(false);
+                                  }
+                                }}
+                                disabled={!watch.start}
+                              />
+                            </FormControl>
                           </FormItem>
                         )}
                       />
@@ -720,6 +782,36 @@ const Appointment: React.FC<AppointmentProps> = ({
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name={`details.payments.${serviceIndex}.dueDate`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col w-full">
+                            <FormLabel className="text-left">Data de vencimento</FormLabel>
+                            <FormControl>
+                              <TimePicker
+                                placeholder="Selecione uma data"
+                                value={field.value}
+                                mode="date"
+                                onChange={(date) => {
+                                  field.onChange(date);
+                                  setIsCalendarOpen(false);
+                                  if (date) {
+                                    form.clearErrors([`details.payments.${serviceIndex}.dueDate`])
+                                  }
+                                }}
+                                onClick={() => setIsCalendarOpen(true)}
+                                onInteractOutside={(e) => {
+                                  if (isCalendarOpen) {
+                                    setIsCalendarOpen(false);
+                                  }
+                                }}
+                                disabled={!watch.start}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                     </div>
                     <div className="flex items-center w-full">
                       <FormField
@@ -732,7 +824,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 <Checkbox
                                   checked={field.value}
                                   onCheckedChange={(checked: boolean) => {
-                                    field.onChange(checked);                                  
+                                    field.onChange(checked);
                                   }}
                                   disabled={["received", "confirmed"].includes(watch.details.payments[serviceIndex].status)}
                                 />
@@ -887,7 +979,6 @@ const Appointment: React.FC<AppointmentProps> = ({
                     form="update-appointment"
                     type="submit"
                     className="bg-green-500 hover:bg-green-600 text-white"
-                    onClick={() => console.log(form.formState.errors)}
                   >
                     Salvar
                   </Button>
@@ -1037,10 +1128,10 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <Typography variant="p" className="text-xs">
                               {
                                 ["received", "confirmed"].includes(appointment.details.payments[serviceIndex]?.status)
-                                ? "Pago"
-                                : new Date(appointment.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                  ? "Pendente"
-                                  : "Vencido"
+                                  ? "Pago"
+                                  : new Date(appointment.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                    ? "Pendente"
+                                    : "Vencido"
                               }
                             </Typography>
                           </>

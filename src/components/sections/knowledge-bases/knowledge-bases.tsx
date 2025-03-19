@@ -164,7 +164,7 @@ export const KnowledgeBases = () => {
   return (
     <>
       <section className="absolute flex flex-col w-full h-full">
-        <div className="sticky top-0 flex flex-col gap-4 bg-white dark:bg-neutral-900 z-50">
+        <div className="sticky top-0 flex flex-col gap-4 bg-transparent dark:bg-neutral-900 z-50">
           <div className="flex items-center justify-between md:mt-10 mt-2 px-10">
             <Typography variant="h1" className="whitespace-nowrap text-end">Bases de Conhecimento</Typography>
             <div className="flex items-center gap-2">

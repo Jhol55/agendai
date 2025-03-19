@@ -99,7 +99,7 @@ export const columns: ColumnDef<typeof dataMock[0]>[] = [
 
 export const Services = () => {
   return (
-    <section className="w-full flex-1 px-10 md:my-10 my-3 bg-white dark:bg-neutral-900">
+    <section className="w-full flex-1 px-10 md:my-10 my-3 bg-transparent dark:bg-neutral-900">
       <div>
         <Typography variant="h1">Serviços</Typography>
       </div>

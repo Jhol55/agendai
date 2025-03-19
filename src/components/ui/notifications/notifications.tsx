@@ -163,7 +163,7 @@ export function Notifications() {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:max-w-md max-w-[90%] max-h-[90vh] mx-auto" side="top" align="center">
+      <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:max-w-md max-w-[90%] max-h-[90vh] md:mx-10 mx-auto" side="top" align="center">
         <Card className="w-full border-0 bg-background dark:bg-neutral-900">
           <CardHeader className="!px-8 !pb-4">
             <CardTitle className="text-xl">Notificações</CardTitle>

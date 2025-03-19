@@ -64,6 +64,7 @@ const AddAppointmentDialog: React.FC = () => {
   const [openService, setOpenService] = React.useState(false);
   const [openStart, setOpenStart] = React.useState(false);
   const [openEnd, setOpenEnd] = React.useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [clients, setClients] = React.useState<{ id: string, name: string }[]>([]);
   const [services, setServices] = React.useState<ServiceType[]>([]);
   const [currentService, setCurrentService] = React.useState<ServiceType | undefined>(undefined);
@@ -136,10 +137,10 @@ const AddAppointmentDialog: React.FC = () => {
           success: "Compromisso adicionado com sucesso!",
           error: "Ocorreu um erro ao adicionar o compromisso. Tente novamente!",
         },
-      );
-      form.reset();
+      );   
     });
     setTimeout(() => {
+      form.reset();
       setIsOpened(false);
     }, 1000);
   }
@@ -211,7 +212,7 @@ const AddAppointmentDialog: React.FC = () => {
         aria-describedby={undefined}
         onInteractOutside={(e) => {
           e.preventDefault();
-          if (!openClient && !openService && !openStart && !openEnd) {
+          if (!openClient && !openService && !isCalendarOpen) {
             setIsOpened(false);
           }
         }}
@@ -469,11 +470,10 @@ const AddAppointmentDialog: React.FC = () => {
                   <FormLabel className="text-left">Início</FormLabel>
                   <FormControl>
                     <TimePicker
-                      open={openStart}
-                      onOpenChange={setOpenStart}
                       placeholder="Selecione uma data e um horário"
                       onChange={(date) => {
                         field.onChange(date);
+                        setIsCalendarOpen(false);
                         if (date) {
                           const newDate = new Date(date);
                           newDate.setMinutes(newDate.getMinutes() + (durationMinutes || 0));
@@ -496,7 +496,13 @@ const AddAppointmentDialog: React.FC = () => {
                               dueDate = new Date()
                             }
                             return dueDate
-                          })())
+                          })())                 
+                        }
+                      }}
+                      onClick={() => setIsCalendarOpen(true)}
+                      onInteractOutside={(e) => {
+                        if (isCalendarOpen) {
+                          setIsCalendarOpen(false);
                         }
                       }}
                       disabled={!durationMinutes}
@@ -514,11 +520,16 @@ const AddAppointmentDialog: React.FC = () => {
                   <FormLabel className="text-left">Fim</FormLabel>
                   <FormControl>
                     <TimePicker
-                      open={openEnd}
-                      onOpenChange={setOpenEnd}
                       placeholder="Selecione uma data e um horário"
                       onChange={(date) => {
                         field.onChange(date);
+                        setIsCalendarOpen(false);
+                      }}
+                      onClick={() => setIsCalendarOpen(true)}
+                      onInteractOutside={(e) => {
+                        if (isCalendarOpen) {
+                          setIsCalendarOpen(false);
+                        }
                       }}
                       value={autoEndDate}
                       disabled={!durationMinutes}
@@ -564,8 +575,15 @@ const AddAppointmentDialog: React.FC = () => {
                           mode="date"
                           onChange={(date) => {
                             field.onChange(date);
+                            setIsCalendarOpen(false);
                             if (date) {
                               form.clearErrors([`details.payments.${feeIndex}.dueDate`])
+                            }
+                          }}
+                          onClick={() => setIsCalendarOpen(true)}
+                          onInteractOutside={(e) => {
+                            if (isCalendarOpen) {
+                              setIsCalendarOpen(false);
                             }
                           }}
                           disabled={!watch.start}
@@ -660,8 +678,15 @@ const AddAppointmentDialog: React.FC = () => {
                           mode="date"
                           onChange={(date) => {
                             field.onChange(date);
+                            setIsCalendarOpen(false);
                             if (date) {
                               form.clearErrors([`details.payments.${serviceIndex}.dueDate`])
+                            }
+                          }}
+                          onClick={() => setIsCalendarOpen(true)}
+                          onInteractOutside={(e) => {
+                            if (isCalendarOpen) {
+                              setIsCalendarOpen(false);
                             }
                           }}
                           disabled={!watch.start}
