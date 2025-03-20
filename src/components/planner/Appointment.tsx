@@ -691,7 +691,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
                               <div className="flex gap-2 items-center !mr-auto">
                                 <FormControl>
-                                  {appointment.details.payments[feeIndex]?.billingType !== "cash" && appointment.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
+                                  {appointment.details.payments[feeIndex]?.billingType !== "cash" && appointment.details.payments[feeIndex]?.billingType !== null && appointment.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
                                     ? (
                                       <AlertDialog open={isFeeRefundOpen} onOpenChange={setIsFeeRefundOpen}>
                                         <AlertDialogTrigger className="flex items-center">
@@ -852,7 +852,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
                               <div className="flex gap-2 items-center !mr-auto">
                                 <FormControl>
-                                  {appointment.details.payments[serviceIndex]?.billingType !== "cash" && appointment.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
+                                  {appointment.details.payments[serviceIndex]?.billingType !== "cash" && appointment.details.payments[serviceIndex]?.billingType != null && appointment.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
                                     ? (
                                       <AlertDialog open={isServiceRefundOpen} onOpenChange={setIsServiceRefundOpen}>
                                         <AlertDialogTrigger className="flex items-center">
@@ -903,7 +903,6 @@ const Appointment: React.FC<AppointmentProps> = ({
                                           </AlertDialogFooter>
                                         </AlertDialogContent>
                                       </AlertDialog>
-
                                     ) : (
                                       <Checkbox
                                         checked={["received", "confirmed"].includes(field.value)}
