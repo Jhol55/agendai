@@ -53,6 +53,50 @@ export const updateAppointmentSchema = z.object({
       })
     ),
   }),
+})
+.refine((data) => data.end.getTime() >= data.start.getTime(), {
+  message: "O horário de fim deve ser posterior ao horário de início",
+  path: ["end"],
+})
+.refine((data) => {
+  function findPaymentIndex(type: string) {
+    return data.details.payments.findIndex(payment => payment.type === type);
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const index = findPaymentIndex("fee");
+  const payment = data.details.payments[index];
+
+  const dueDate = new Date(payment.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+  
+  return dueDate.getTime() >= today.getTime();
+
+}, {
+  message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+  path: ["details", "payments", "0", "dueDate"],
+})
+.refine((data) => {
+  function findPaymentIndex(type: string) {
+    return data.details.payments.findIndex(payment => payment.type === type);
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const index = findPaymentIndex("service");
+  const payment = data.details.payments[index];
+
+  const dueDate = new Date(payment.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+  
+  return dueDate.getTime() >= today.getTime();
+
+}, {
+  message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+  path: ["details", "payments", "1", "dueDate"],
 });
 
 

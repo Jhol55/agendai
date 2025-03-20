@@ -15,13 +15,6 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 
-type PointerDownOutsideEvent = CustomEvent<{
-  originalEvent: PointerEvent;
-}>;
-type FocusOutsideEvent = CustomEvent<{
-  originalEvent: FocusEvent;
-}>;
-
 
 export function TimePicker({
   open,
@@ -33,6 +26,7 @@ export function TimePicker({
   onInteractOutside,
   placeholder,
   mode = "datetime",
+  className
 }: {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -43,6 +37,7 @@ export function TimePicker({
   onInteractOutside?: (event: MouseEvent | TouchEvent) => void;
   placeholder?: string;
   mode?: "datetime" | "date" | "time";
+  className?: string;
 }) {
   const [date, setDate] = React.useState<Date | undefined>(value ?? undefined);
   const isFirstRender = React.useRef(true);
@@ -112,7 +107,8 @@ export function TimePicker({
             disabled={disabled}
             className={cn(
               "w-full justify-start text-left font-normal dark:bg-neutral-900 z-50",
-              (!date && !value) && "text-gray-500"
+              (!date && !value) && "text-gray-500",
+              className
             )}
           >
             <IconCalendar className="mr-2 h-4 w-4" />

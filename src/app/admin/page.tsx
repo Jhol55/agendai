@@ -36,7 +36,7 @@ export default function Admin() {
         <SidebarBody className="justify-between gap-10" initialActiveLabel={links[activeTab].label}>
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             <Logo />
-            <div className={"mt-8 flex flex-col gap-2"}>
+            <div className={"mt-20 flex flex-col gap-2"}>
               {links.map(({ icon, label }, idx) => (
                 <SidebarButton
                   key={idx}

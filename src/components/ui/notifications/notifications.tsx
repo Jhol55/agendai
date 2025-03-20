@@ -159,7 +159,7 @@ export function Notifications() {
           <span className="sr-only">Toggle user menu</span>
           <div className="absolute flex items-center justify-center -top-3 -right-1 rounded-full h-5 w-5 shrink-0 text-xs bg-red-500 dark:bg-red-500 pointer-events-none">
             <Typography variant="p" className="!text-neutral-100">{!isLoading ? unreadCount >= 99 ? 99 : unreadCount : null}</Typography>
-            <Loading display={isLoading} className="absolute -translate-x-[0.5px] !scale-[0.2]" />
+            <Loading display={isLoading} className="absolute !scale-[0.2]" />
           </div>
         </Button>
       </DropdownMenuTrigger>

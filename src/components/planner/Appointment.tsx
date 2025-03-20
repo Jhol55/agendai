@@ -148,7 +148,10 @@ const Appointment: React.FC<AppointmentProps> = ({
         serviceId: appointment.details.serviceId,
         durationMinutes: appointment.details.durationMinutes,
         online: appointment.details.online,
-        payments: appointment.details.payments.map(payment => ({
+        payments: appointment.details.payments
+        .slice()
+        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
+        .map(payment => ({
           ...payment,
           sendPaymentLink: false,
           dueDate: (() => {
@@ -178,7 +181,10 @@ const Appointment: React.FC<AppointmentProps> = ({
             serviceId: appointment.details.serviceId,
             durationMinutes: appointment.details.durationMinutes,
             online: appointment.details.online,
-            payments: appointment.details.payments.map(payment => ({
+            payments: appointment.details.payments
+            .slice()
+            .sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
+            .map(payment => ({
               ...payment,
               sendPaymentLink: false,
               dueDate: (() => {
@@ -614,6 +620,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   const numericValue = e.target.value.replace(/\D/g, "");
                                   field.onChange(numericValue ? Number(numericValue) / 100 : "");
                                 }}
+                                className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none")}
                               />
                             </FormControl>
                             <FormMessage />
@@ -628,6 +635,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormLabel className="text-left">Data de vencimento</FormLabel>
                             <FormControl>
                               <TimePicker
+                                className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none")}
                                 placeholder="Selecione uma data"
                                 value={field.value}
                                 mode="date"
@@ -755,9 +763,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                         />
                       </div>
                     </div>
-                    <FormMessage className="mt-2.5">
-                      {form?.formState?.errors?.details?.payments?.[feeIndex]?.sendPaymentLink?.message || ""}
-                    </FormMessage>
+                    <FormMessage className="mt-2.5 w-full">
+                      {form?.formState?.errors?.details?.payments?.[feeIndex]?.dueDate?.message || ""}
+                    </FormMessage>               
                   </div>
                   <div className="flex flex-col items-center w-full">
                     <div className="flex items-center gap-2 w-full">
@@ -776,6 +784,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   const numericValue = e.target.value.replace(/\D/g, "");
                                   field.onChange(numericValue ? Number(numericValue) / 100 : "");
                                 }}
+                                className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none")}
                               />
                             </FormControl>
                             <FormMessage />
@@ -790,6 +799,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormLabel className="text-left">Data de vencimento</FormLabel>
                             <FormControl>
                               <TimePicker
+                                className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none")}
                                 placeholder="Selecione uma data"
                                 value={field.value}
                                 mode="date"
@@ -900,10 +910,10 @@ const Appointment: React.FC<AppointmentProps> = ({
                                         onCheckedChange={(checked: boolean) => {
                                           field.onChange(checked ? "received" : "pending");
                                           if (checked) {
-                                            form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
+                                            form.clearErrors([`details.payments.${serviceIndex}.status`, `details.payments.${serviceIndex}.sendPaymentLink`])
                                           }
                                         }}
-                                        disabled={watch.details.payments[feeIndex].sendPaymentLink}
+                                        disabled={watch.details.payments[serviceIndex].sendPaymentLink}
                                       />
                                     )}
                                 </FormControl>
@@ -914,8 +924,8 @@ const Appointment: React.FC<AppointmentProps> = ({
                         />
                       </div>
                     </div>
-                    <FormMessage className="mt-2.5">
-                      {form?.formState?.errors?.details?.payments?.[feeIndex]?.sendPaymentLink?.message || ""}
+                    <FormMessage className="mt-2.5 w-full">
+                      {form?.formState?.errors?.details?.payments?.[serviceIndex]?.dueDate?.message || ""}
                     </FormMessage>
                   </div>
 
@@ -979,6 +989,12 @@ const Appointment: React.FC<AppointmentProps> = ({
                     form="update-appointment"
                     type="submit"
                     className="bg-green-500 hover:bg-green-600 text-white"
+                    onClick={() => {
+                      console.log(form.formState.errors)
+                      console.log(feeIndex);
+                      console.log(serviceIndex)
+                      console.log(appointment)
+                    }}
                   >
                     Salvar
                   </Button>
