@@ -149,41 +149,40 @@ const Appointment: React.FC<AppointmentProps> = ({
         durationMinutes: appointment.details.durationMinutes,
         online: appointment.details.online,
         payments: appointment.details.payments
-        .slice()
-        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
-        .map(payment => ({
-          ...payment,
-          sendPaymentLink: false,
-          dueDate: (() => {
-            const [year, month, day] = String(payment.dueDate).split("-").map(Number);
-            let date = new Date(year, month - 1, day);
-            if (isNaN(date.getTime())) {
-              date = payment.dueDate
-            }
-            return date
-          })()
-        }))
+          .sort((a, b) => a.type.localeCompare(b.type))
+          .filter(payment => payment.status !== "refunded")
+          .map(payment => ({
+            ...payment,
+            sendPaymentLink: false,
+            dueDate: (() => {
+              const [year, month, day] = String(payment.dueDate).split("-").map(Number);
+              let date = new Date(year, month - 1, day);
+              if (isNaN(date.getTime())) {
+                date = payment.dueDate
+              }
+              return date
+            })()
+          }))
       }
     },
   });
 
   useEffect(() => {
-    if (isOpened) {
-      setTimeout(() => {
-        form.reset({
-          title: appointment.title,
-          clientId: appointment.clientId,
-          start: new Date(appointment.start) ?? new Date(),
-          end: new Date(appointment.end) ?? new Date(),
-          status: appointment.status,
-          details: {
-            service: appointment.details.service,
-            serviceId: appointment.details.serviceId,
-            durationMinutes: appointment.details.durationMinutes,
-            online: appointment.details.online,
-            payments: appointment.details.payments
-            .slice()
-            .sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
+    setTimeout(() => {
+      form.reset({
+        title: appointment.title,
+        clientId: appointment.clientId,
+        start: new Date(appointment.start) ?? new Date(),
+        end: new Date(appointment.end) ?? new Date(),
+        status: appointment.status,
+        details: {
+          service: appointment.details.service,
+          serviceId: appointment.details.serviceId,
+          durationMinutes: appointment.details.durationMinutes,
+          online: appointment.details.online,
+          payments: appointment.details.payments
+            .sort((a, b) => a.type.localeCompare(b.type))
+            .filter(payment => payment.status !== "refunded")
             .map(payment => ({
               ...payment,
               sendPaymentLink: false,
@@ -196,12 +195,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                 return date
               })()
             }))
-          }
-        });
-        setIsLoading(false);
-      }, 1000)
-    }
-  }, [appointment, form, isOpened]);
+        }
+      });
+      setIsLoading(false);
+    }, 1000)
+  }, [appointment, form]);
 
   function onSubmit(values: z.infer<typeof updateAppointmentSchema>) {
     startOnSubmitTransition(() => {
@@ -213,6 +211,12 @@ const Appointment: React.FC<AppointmentProps> = ({
                 ...appointment,
                 ...values,
               }));
+          }).then(() => {
+            setTimeout(() => {
+              handleUpdate();
+              setIsOpened(false);
+              setAutoEndDate(undefined);
+            }, 500);
           }),
         {
           loading: "Atualizando compromisso...",
@@ -220,14 +224,7 @@ const Appointment: React.FC<AppointmentProps> = ({
           error: "Ocorreu um erro ao atualizar o compromisso. Tente novamente!",
         },
       );
-    });
-    setTimeout(() => {
-      setIsOpened(false);
-      setAutoEndDate(undefined);
-    }, 500);
-    setTimeout(() => {
-      handleUpdate();
-    }, 1000)
+    })
   }
 
   function onRemove(id: string) {
@@ -271,7 +268,6 @@ const Appointment: React.FC<AppointmentProps> = ({
       setServiceSearchValue("");
       setAutoEndDate(undefined);
       setTimeout(() => {
-        handleUpdate();
         form.reset();
         setIsLoading(true);
       }, 500)
@@ -691,7 +687,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
                               <div className="flex gap-2 items-center !mr-auto">
                                 <FormControl>
-                                  {appointment.details.payments[feeIndex]?.billingType !== "cash" && appointment.details.payments[feeIndex]?.billingType !== null && appointment.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
+                                  {watch.details.payments[feeIndex]?.billingType !== "cash" && watch.details.payments[feeIndex]?.billingType !== null && watch.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
                                     ? (
                                       <AlertDialog open={isFeeRefundOpen} onOpenChange={setIsFeeRefundOpen}>
                                         <AlertDialogTrigger className="flex items-center">
@@ -715,7 +711,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                                 variant="span"
                                                 secondary
                                               >
-                                                Esta ação estornará o pagamento selecionado e não poderá ser desfeita.
+                                                Esta ação estornará o pagamento selecionado e não poderá ser desfeita após salvar o formulário.
                                               </Typography>
                                             </AlertDialogDescription>
                                           </AlertDialogHeader>
@@ -765,7 +761,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                     </div>
                     <FormMessage className="mt-2.5 w-full">
                       {form?.formState?.errors?.details?.payments?.[feeIndex]?.dueDate?.message || ""}
-                    </FormMessage>               
+                    </FormMessage>
                   </div>
                   <div className="flex flex-col items-center w-full">
                     <div className="flex items-center gap-2 w-full">
@@ -852,7 +848,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
                               <div className="flex gap-2 items-center !mr-auto">
                                 <FormControl>
-                                  {appointment.details.payments[serviceIndex]?.billingType !== "cash" && appointment.details.payments[serviceIndex]?.billingType != null && appointment.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
+                                  {watch.details.payments[serviceIndex]?.billingType !== "cash" && watch.details.payments[serviceIndex]?.billingType != null && watch.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
                                     ? (
                                       <AlertDialog open={isServiceRefundOpen} onOpenChange={setIsServiceRefundOpen}>
                                         <AlertDialogTrigger className="flex items-center">
@@ -876,7 +872,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                                 variant="span"
                                                 secondary
                                               >
-                                                Esta ação estornará o pagamento selecionado e não poderá ser desfeita.
+                                                Esta ação estornará o pagamento selecionado e não poderá ser desfeita após salvar o formulário.
                                               </Typography>
                                             </AlertDialogDescription>
                                           </AlertDialogHeader>
@@ -929,7 +925,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                   </div>
 
                 </form>
-                <DialogFooter className="flex !flex-row w-full justify-end gap-2 px-[1.5rem] mb-6">
+                <DialogFooter className="flex !flex-row w-full justify-end gap-2 px-[2.3rem] mb-6">
                   <AlertDialog open={isRemoveAppointmentOpen} onOpenChange={setIsRemoveAppointmentOpen}>
                     <AlertDialogTrigger asChild>
                       <Button
@@ -988,12 +984,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                     form="update-appointment"
                     type="submit"
                     className="bg-green-500 hover:bg-green-600 text-white"
-                    onClick={() => {
-                      console.log(form.formState.errors)
-                      console.log(feeIndex);
-                      console.log(serviceIndex)
-                      console.log(appointment)
-                    }}
+                    onClick={() => console.log(form.formState.errors)}
                   >
                     Salvar
                   </Button>
@@ -1053,9 +1044,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <Typography variant="b" className="text-xs">Status:</Typography>
                             <Typography variant="p" className="text-xs">
                               {
-                                appointment.status === "confirmed"
+                                watch.status === "confirmed"
                                   ? "Confirmado"
-                                  : appointment.status === "canceled"
+                                  : watch.status === "canceled"
                                     ? "Cancelado"
                                     : "Pendente"
                               }
@@ -1075,9 +1066,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                       <IconCalendarDollar
                         className={cn(
                           "w-4 h-4",
-                          ["received", "confirmed"].includes(appointment.details.payments[feeIndex]?.status)
+                          ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
                             ? "text-green-600"
-                            : new Date(appointment.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                            : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
                               ? ""
                               : "text-red-600"
                         )}
@@ -1092,20 +1083,17 @@ const Appointment: React.FC<AppointmentProps> = ({
                           </>
                         }
                         </div>
-                        <div className="flex gap-1">{
-                          <>
-                            <Typography variant="b" className="text-xs">Status:</Typography>
-                            <Typography variant="p" className="text-xs">
-                              {
-                                ["received", "confirmed"].includes(appointment.details.payments[feeIndex]?.status)
-                                  ? "Pago"
-                                  : new Date(appointment.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                    ? "Pendente"
-                                    : "Vencido"
-                              }
-                            </Typography>
-                          </>
-                        }
+                        <div className="flex gap-1">
+                          <Typography variant="b" className="text-xs">Status:</Typography>
+                          <Typography variant="p" className="text-xs">
+                            {
+                              ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
+                                ? "Pago"
+                                : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                  ? "Pendente"
+                                  : "Vencido"
+                            }
+                          </Typography>
                         </div>
                       </div>
                     </TooltipContent>
@@ -1120,9 +1108,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                       <IconCurrencyDollar
                         className={cn(
                           "w-4 h-4",
-                          ["received", "confirmed"].includes(appointment.details.payments[serviceIndex]?.status)
+                          ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
                             ? "text-green-600"
-                            : new Date(appointment.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                            : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
                               ? ""
                               : "text-red-600"
                         )}
@@ -1137,20 +1125,17 @@ const Appointment: React.FC<AppointmentProps> = ({
                           </>
                         }
                         </div>
-                        <div className="flex gap-1">{
-                          <>
-                            <Typography variant="b" className="text-xs">Status:</Typography>
-                            <Typography variant="p" className="text-xs">
-                              {
-                                ["received", "confirmed"].includes(appointment.details.payments[serviceIndex]?.status)
-                                  ? "Pago"
-                                  : new Date(appointment.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                    ? "Pendente"
-                                    : "Vencido"
-                              }
-                            </Typography>
-                          </>
-                        }
+                        <div className="flex gap-1">
+                          <Typography variant="b" className="text-xs">Status:</Typography>
+                          <Typography variant="p" className="text-xs">
+                            {
+                              ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
+                                ? "Pago"
+                                : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                  ? "Pendente"
+                                  : "Vencido"
+                            }
+                          </Typography>
                         </div>
                       </div>
                     </TooltipContent>

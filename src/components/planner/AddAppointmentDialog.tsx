@@ -56,7 +56,7 @@ type ServiceType = {
 }
 
 const AddAppointmentDialog: React.FC = () => {
-  const { addAppointment, resources } = usePlannerData();
+  const { addAppointment } = usePlannerData();
   const [isOpened, setIsOpened] = useState(false);
   const [isPending, startAddAppointmentTransition] = useTransition();
   const { settings } = useSettings();
@@ -131,6 +131,11 @@ const AddAppointmentDialog: React.FC = () => {
         () =>
           new Promise((resolve) => {
             resolve(addAppointment(newAppointment));
+          }).then(() => {
+            setTimeout(() => {
+              form.reset();
+              setIsOpened(false);
+            }, 500);
           }),
         {
           loading: "Adicionando novo compromisso...",
@@ -139,10 +144,6 @@ const AddAppointmentDialog: React.FC = () => {
         },
       );   
     });
-    setTimeout(() => {
-      form.reset();
-      setIsOpened(false);
-    }, 1000);
   }
 
   const watch = form.watch();
@@ -204,7 +205,7 @@ const AddAppointmentDialog: React.FC = () => {
       <DialogTrigger asChild>
         <Button variant="outline" className="bg-[#2B2D42] hover:bg-[#2B2D42]">
           <IconCalendarPlus className="h-4 w-4 text-white" />
-          <Typography variant="span" className="md:block hidden !text-white">Novo Agendamento</Typography>
+          <Typography variant="span" className="md:block hidden !text-white">Novo compromisso</Typography>
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -749,7 +750,7 @@ const AddAppointmentDialog: React.FC = () => {
               {form?.formState?.errors?.details?.payments?.[serviceIndex]?.dueDate?.message || ""}
             </FormMessage>
           </form>
-          <DialogFooter className="px-[1.5rem] mb-6">
+          <DialogFooter className="px-[2.3rem] mb-6">
             <Button
               form="add-appointment"
               type="submit"

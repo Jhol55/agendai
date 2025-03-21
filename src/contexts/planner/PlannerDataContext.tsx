@@ -55,17 +55,22 @@ export const PlannerDataContextProvider: FC<{
   }, [dateRange, trigger]);
 
   useEffect(() => {
-    const subscription = subscribe({
+    const AppointmentSubscription = subscribe({
       channel: "appointments",
       table: "appointments",
       onChange: (payload) => setTimeout(() => handleUpdate(), 1000)
     })
+    const PaymentsSubscription = subscribe({
+      channel: "payments",
+      table: "payments",
+      onChange: (payload) => setTimeout(() => handleUpdate(), 1000)
+    })
 
     return () => {
-      subscription.unsubscribe()
+      AppointmentSubscription.unsubscribe()
+      PaymentsSubscription.unsubscribe()
     }
   }, [handleUpdate])
-
 
   const contextValue: DataContextType = {
     appointments,

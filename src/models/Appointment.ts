@@ -54,50 +54,60 @@ export const updateAppointmentSchema = z.object({
     ),
   }),
 })
-.refine((data) => data.end.getTime() >= data.start.getTime(), {
-  message: "O horário de fim deve ser posterior ao horário de início",
-  path: ["end"],
-})
-.refine((data) => {
-  function findPaymentIndex(type: string) {
-    return data.details.payments.findIndex(payment => payment.type === type);
-  }
+  .refine((data) => data.end.getTime() >= data.start.getTime(), {
+    message: "O horário de fim deve ser posterior ao horário de início",
+    path: ["end"],
+  })
+  .refine((data) => {
+    const payments = data.details.payments
+      .sort((a, b) => a.type.localeCompare(b.type))
+      .filter(payment => payment.status !== "refunded")
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    function findPaymentIndex(type: string) {
+      return payments
+        .findIndex(payment => payment.type === type);
+    }
 
-  const index = findPaymentIndex("fee");
-  const payment = data.details.payments[index];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const dueDate = new Date(payment.dueDate);
-  dueDate.setHours(0, 0, 0, 0);
-  
-  return dueDate.getTime() >= today.getTime();
+    const index = findPaymentIndex("fee");
+    const payment = payments[index];
 
-}, {
-  message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
-  path: ["details", "payments", "0", "dueDate"],
-})
-.refine((data) => {
-  function findPaymentIndex(type: string) {
-    return data.details.payments.findIndex(payment => payment.type === type);
-  }
+    const dueDate = new Date(payment.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    return dueDate.getTime() >= today.getTime();
 
-  const index = findPaymentIndex("service");
-  const payment = data.details.payments[index];
+  }, {
+    message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+    path: ["details", "payments", "0", "dueDate"],
+  })
+  .refine((data) => {
+    const payments = data.details.payments
+      .sort((a, b) => a.type.localeCompare(b.type))
+      .filter(payment => payment.status !== "refunded")
 
-  const dueDate = new Date(payment.dueDate);
-  dueDate.setHours(0, 0, 0, 0);
-  
-  return dueDate.getTime() >= today.getTime();
+    function findPaymentIndex(type: string) {
+      return payments
+        .findIndex(payment => payment.type === type);
+    }
 
-}, {
-  message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
-  path: ["details", "payments", "1", "dueDate"],
-});
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const index = findPaymentIndex("service");
+    const payment = payments[index];
+
+    const dueDate = new Date(payment.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+
+    return dueDate.getTime() >= today.getTime();
+
+  }, {
+    message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+    path: ["details", "payments", "1", "dueDate"],
+  });
 
 
 export const createAppointmentSchema = z.object({
@@ -137,7 +147,8 @@ export const createAppointmentSchema = z.object({
   })
   .refine((data) => {
     function findPaymentIndex(type: string) {
-      return data.details.payments.findIndex(payment => payment.type === type);
+      return data.details.payments
+        .findIndex(payment => payment.type === type && payment.status !== "refunded");
     }
 
     const today = new Date();
@@ -148,7 +159,7 @@ export const createAppointmentSchema = z.object({
 
     const dueDate = new Date(payment.dueDate);
     dueDate.setHours(0, 0, 0, 0);
-    
+
     return dueDate.getTime() >= today.getTime();
 
   }, {
@@ -157,7 +168,10 @@ export const createAppointmentSchema = z.object({
   })
   .refine((data) => {
     function findPaymentIndex(type: string) {
-      return data.details.payments.findIndex(payment => payment.type === type);
+      return data.details.payments
+        .slice()
+        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
+        .findIndex(payment => payment.type === type && payment.status !== "refunded");
     }
 
     const today = new Date();
@@ -168,7 +182,7 @@ export const createAppointmentSchema = z.object({
 
     const dueDate = new Date(payment.dueDate);
     dueDate.setHours(0, 0, 0, 0);
-    
+
     return dueDate.getTime() >= today.getTime();
 
   }, {
