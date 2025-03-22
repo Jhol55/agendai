@@ -14,6 +14,8 @@ interface SidebarContextProps {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   activeLabel: string | undefined;
   setActiveLabel?: React.Dispatch<React.SetStateAction<string | undefined>>;
+  isLoading: boolean;
+  setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
   animate: boolean;
 }
 
@@ -41,12 +43,13 @@ export const SidebarProvider = ({
   animate?: boolean;
 }) => {
   const [openState, setOpenState] = useState(false);
-  const [activeLabel, setActiveLabel] = useState<string | undefined>(undefined)
+  const [activeLabel, setActiveLabel] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
   const open = openProp !== undefined ? openProp : openState;
   const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen, animate, activeLabel, setActiveLabel }}>
+    <SidebarContext.Provider value={{ open, setOpen, animate, activeLabel, setActiveLabel, isLoading, setIsLoading }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -96,7 +99,7 @@ export const DesktopSidebar = ({
   children,
   ...props
 }: React.ComponentProps<typeof motion.div>) => {
-  const { open, setOpen, animate } = useSidebar();
+  const { open, setOpen, animate, isLoading, setIsLoading } = useSidebar();
   const { isMobile } = useWindowSize();
 
   useEffect(() => {
@@ -118,7 +121,16 @@ export const DesktopSidebar = ({
           width: animate ? (open ? "250px" : "60px") : "250px",
         }}
         onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
+        onMouseLeave={() => {
+          if (isLoading) {
+            setTimeout(() => {
+              setOpen(false);
+              setIsLoading?.(false);
+            }, 500)         
+          } else {
+            setOpen(false);
+          }
+        }}
         {...props}
       >
         {children}
@@ -188,7 +200,7 @@ interface SidebarButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
   ({ icon, label, className, onClick, ...props }, ref) => {
-    const { open, animate, setOpen, activeLabel, setActiveLabel } = useSidebar();
+    const { open, animate, setOpen, activeLabel, setActiveLabel, setIsLoading } = useSidebar();
     const { isMobile } = useWindowSize();
 
     return (
@@ -201,6 +213,7 @@ export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
           className={cn("relative flex items-center justify-start gap-2 group/sidebar py-2 !px-1 h-10 w-fit hover:bg-transparent dark:hover:bg-neutral-800", className)}
           onClick={(e: React.MouseEvent) => {
             setActiveLabel?.(label);
+            setIsLoading?.(true);
             onClick?.(e);
             if (isMobile) {
               setOpen(false);

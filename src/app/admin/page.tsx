@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function Admin() {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(4);
+  const [activeTab, setActiveTab] = useState(3);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

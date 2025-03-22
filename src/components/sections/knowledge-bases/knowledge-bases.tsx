@@ -71,11 +71,11 @@ export const columns: ColumnDef<Document>[] = [
     header: "Resumo",
     cell: ({ row }) => <Typography variant="span">{row.getValue("summary")}</Typography>
   },
-  {
-    accessorKey: "size",
-    header: "Tamanho",
-    cell: ({ row }) => <Typography variant="span" className="md:whitespace-nowrap">{`${(parseFloat(row.getValue("size")) / 1024 / 1024).toFixed(2)} MB`}</Typography>
-  },
+  // {
+  //   accessorKey: "size",
+  //   header: "Tamanho",
+  //   cell: ({ row }) => <Typography variant="span" className="md:whitespace-nowrap">{`${(parseFloat(row.getValue("size")) / 1024 / 1024).toFixed(2)} MB`}</Typography>
+  // },
 ]
 
 
@@ -110,7 +110,7 @@ export const KnowledgeBases = () => {
     formData.append("categories", "knowledge");
     formData.append("fileNames", file.name);
     formData.append("fileTypes", file.type);
-    formData.append("fileSizes", file.size.toString());
+    // formData.append("fileSizes", file.size.toString());
 
     setShowFileUpload(false);
     setFile(null);
@@ -165,7 +165,7 @@ export const KnowledgeBases = () => {
     <>
       <section className="absolute flex flex-col w-full h-full">
         <div className="sticky top-0 flex flex-col gap-4 bg-transparent dark:bg-neutral-900 z-50">
-          <div className="flex items-center justify-between md:mt-10 mt-2 px-10">
+          <div className="flex items-center justify-between md:mt-4 mt-2 px-4">
             <Typography variant="h1" className="whitespace-nowrap text-end">Bases de Conhecimento</Typography>
             <div className="flex items-center gap-2">
               <AlertDialog>
@@ -217,8 +217,9 @@ export const KnowledgeBases = () => {
             </div>
           </div>
         </div>
-        <div className="py-2 px-10 flex flex-col gap-2 flex-1 w-full">
+        <div className="py-2 px-4 flex flex-col gap-2 flex-1 w-full">
           <DataTable
+            className="bg-white"
             columns={columns}
             data={documents}
             onRowSelection={(data) => setSelectedDocuments(data)}

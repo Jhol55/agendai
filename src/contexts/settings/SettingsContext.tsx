@@ -20,6 +20,7 @@ export const SettingsProvider = ({
 
   useEffect(() => {    
      settingsService.getSettings({}).then(setSettings);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger])
 
   const contextValue = {

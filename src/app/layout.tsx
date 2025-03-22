@@ -29,7 +29,6 @@ export default function RootLayout({
           </ThemeProvider>
           <Toaster closeButton />
         </SettingsProvider>
-
       </body>
     </html>
   );

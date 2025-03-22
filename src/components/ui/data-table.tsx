@@ -85,9 +85,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={cn("flex rounded-md border border-neutral-200 dark:border-neutral-800", className)}>
-      <div className={"relative w-full h-full max-h-[calc(100vh-100px)] md:max-h-[calc(100vh-120px)] overflow-auto rounded-md"}>
+      <div className={"relative w-full h-full max-h-[calc(100vh-100px)] md:max-h-[calc(100vh-110px)] overflow-auto rounded-md"}>
         <Table>
-          <TableHeader className="sticky top-0 bg-white dark:bg-neutral-900">
+          <TableHeader className="sticky top-0 bg-[#F8F9FA] dark:bg-neutral-900">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -137,12 +137,12 @@ export function DataTable<TData, TValue>({
                       damping: 30
                     }}
                   >
-                    <Typography variant="p">
+                    <Typography variant="span">
                       Não há informações para exibir.
                     </Typography>
                   </motion.div>
                   <div className="w-full flex justify-center">
-                    <Loading display={isLoading} />
+                    <Loading display={isLoading} className="!scale-[0.5]" />
                   </div>
                 </TableCell>
               </TableRow>

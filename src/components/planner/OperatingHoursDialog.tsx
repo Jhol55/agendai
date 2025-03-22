@@ -28,7 +28,7 @@ import { Checkbox } from "../ui/checkbox";
 import { useState, useEffect, forwardRef, useCallback } from "react";
 import { getOperatingHours, updateOperatingHours } from "@/services/operatingHours";
 import { z } from "zod";
-import { BlockTimeSlotsDialog } from "./BlockTimeSlotsDialog";
+
 
 type daysOfWeekType = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"
 

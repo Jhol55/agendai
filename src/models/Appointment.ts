@@ -58,56 +58,59 @@ export const updateAppointmentSchema = z.object({
     message: "O horário de fim deve ser posterior ao horário de início",
     path: ["end"],
   })
-  .refine((data) => {
-    const payments = data.details.payments
-      .sort((a, b) => a.type.localeCompare(b.type))
-      .filter(payment => payment.status !== "refunded")
+  // .superRefine((data, ctx) => {
+  //   const payments = data.details.payments
+  //     .sort((a, b) => a.type.localeCompare(b.type))
+  //     .filter(payment => payment.status !== "refunded")
 
-    function findPaymentIndex(type: string) {
-      return payments
-        .findIndex(payment => payment.type === type);
-    }
+  //   function findPaymentIndex(type: string) {
+  //     return payments
+  //       .findIndex(payment => payment.type === type);
+  //   }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
 
-    const index = findPaymentIndex("fee");
-    const payment = payments[index];
+  //   const index = findPaymentIndex("fee");
+  //   const payment = payments[index];
 
-    const dueDate = new Date(payment.dueDate);
-    dueDate.setHours(0, 0, 0, 0);
+  //   const dueDate = new Date(payment.dueDate);
+  //   dueDate.setHours(0, 0, 0, 0);
 
-    return dueDate.getTime() >= today.getTime();
+  //   if (dueDate.getTime() < today.getTime()) {
+  //     ctx.addIssue({
+  //       code: z.ZodIssueCode.custom,
+  //       message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+  //       path: ["details", "payments", "0", "dueDate"],
+  //     });
+  //   }
 
-  }, {
-    message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
-    path: ["details", "payments", "0", "dueDate"],
-  })
-  .refine((data) => {
-    const payments = data.details.payments
-      .sort((a, b) => a.type.localeCompare(b.type))
-      .filter(payment => payment.status !== "refunded")
+  // })
+  // .refine((data) => {
+  //   const payments = data.details.payments
+  //     .sort((a, b) => a.type.localeCompare(b.type))
+  //     .filter(payment => payment.status !== "refunded")
 
-    function findPaymentIndex(type: string) {
-      return payments
-        .findIndex(payment => payment.type === type);
-    }
+  //   function findPaymentIndex(type: string) {
+  //     return payments
+  //       .findIndex(payment => payment.type === type);
+  //   }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
 
-    const index = findPaymentIndex("service");
-    const payment = payments[index];
+  //   const index = findPaymentIndex("service");
+  //   const payment = payments[index];
 
-    const dueDate = new Date(payment.dueDate);
-    dueDate.setHours(0, 0, 0, 0);
+  //   const dueDate = new Date(payment.dueDate);
+  //   dueDate.setHours(0, 0, 0, 0);
 
-    return dueDate.getTime() >= today.getTime();
+  //   return dueDate.getTime() >= today.getTime();
 
-  }, {
-    message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
-    path: ["details", "payments", "1", "dueDate"],
-  });
+  // }, {
+  //   message: "A data de vencimento deve ser igual ou posterior à data de hoje.",
+  //   path: ["details", "payments", "1", "dueDate"],
+  // });
 
 
 export const createAppointmentSchema = z.object({

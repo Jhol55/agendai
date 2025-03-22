@@ -167,6 +167,8 @@ const Appointment: React.FC<AppointmentProps> = ({
     },
   });
 
+  const watch = form.watch();
+
   useEffect(() => {
     setTimeout(() => {
       form.reset({
@@ -202,29 +204,70 @@ const Appointment: React.FC<AppointmentProps> = ({
   }, [appointment, form]);
 
   function onSubmit(values: z.infer<typeof updateAppointmentSchema>) {
-    startOnSubmitTransition(() => {
-      toast.promise(
-        () =>
-          new Promise((resolve) => {
-            resolve(
-              updateAppointment({
-                ...appointment,
-                ...values,
-              }));
-          }).then(() => {
-            setTimeout(() => {
-              handleUpdate();
-              setIsOpened(false);
-              setAutoEndDate(undefined);
-            }, 500);
-          }),
-        {
-          loading: "Atualizando compromisso...",
-          success: "Compromisso atualizado com sucesso!",
-          error: "Ocorreu um erro ao atualizar o compromisso. Tente novamente!",
-        },
-      );
+    const originalPayments = appointment.details.payments
+      .sort((a, b) => a.type.localeCompare(b.type))
+      .filter(payment => payment.status !== "refunded")
+      .map(payment => ({
+        ...payment,
+        sendPaymentLink: false,
+        dueDate: (() => {
+          const [year, month, day] = String(payment.dueDate).split("-").map(Number);
+          let date = new Date(year, month - 1, day);
+          if (isNaN(date.getTime())) {
+            date = payment.dueDate
+          }
+          return date
+        })()
+      }))
+
+    const payments = values.details.payments
+      .sort((a, b) => a.type.localeCompare(b.type))
+
+    let canSubmit = true;
+
+    originalPayments.map((payment, index) => {
+      if (payment.dueDate.toISOString() !== payments[index].dueDate.toISOString()) {
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const dueDate = payments[index].dueDate;
+        dueDate.setHours(0, 0, 0, 0);
+
+        if (dueDate.getTime() < today.getTime()) {
+          form.setError(`details.payments.${index}.dueDate`, {
+            message: "A data de vencimento deve ser igual ou posterior à data de hoje."
+          })
+          canSubmit = false;
+        }
+      }
     })
+
+    if (canSubmit) {
+      startOnSubmitTransition(() => {
+        toast.promise(
+          () =>
+            new Promise((resolve) => {
+              resolve(
+                updateAppointment({
+                  ...appointment,
+                  ...values,
+                }));
+            }).then(() => {
+              setTimeout(() => {
+                handleUpdate();
+                setIsOpened(false);
+                setAutoEndDate(undefined);
+              }, 500);
+            }),
+          {
+            loading: "Atualizando compromisso...",
+            success: "Compromisso atualizado com sucesso!",
+            error: "Ocorreu um erro ao atualizar o compromisso. Tente novamente!",
+          },
+        );
+      })
+    }
   }
 
   function onRemove(id: string) {
@@ -277,7 +320,6 @@ const Appointment: React.FC<AppointmentProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, isOpened])
 
-  const watch = form.watch();
 
   const findPaymentIndex = (type: string) => {
     return form.getValues('details.payments')
@@ -984,7 +1026,6 @@ const Appointment: React.FC<AppointmentProps> = ({
                     form="update-appointment"
                     type="submit"
                     className="bg-green-500 hover:bg-green-600 text-white"
-                    onClick={() => console.log(form.formState.errors)}
                   >
                     Salvar
                   </Button>

@@ -1,7 +1,7 @@
 import { api } from "./api"
 
 
-export const getServices = async ({ test = false, name } : { test?: boolean, name: string }) => {
+export const getServices = async ({ test = false, name } : { test?: boolean, name?: string }) => {
   try {
     const response = await api(test).get(`get-services?name=${name}`);
     return response.data;
@@ -10,9 +10,9 @@ export const getServices = async ({ test = false, name } : { test?: boolean, nam
   }
 }
 
-export const updateServices = async ({ test = false, data } : { test?: boolean, data: object }) => {
+export const AddService = async ({ test = false, data } : { test?: boolean, data: object }) => {
     try {
-      const response = await api(test).post("update-services", data);
+      const response = await api(test).post("add-service", data);
       return response.data;
     } catch (error) {
       console.error('Erro ao salvar os serviços: ', error);
