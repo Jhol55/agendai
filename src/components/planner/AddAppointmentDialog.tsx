@@ -62,8 +62,6 @@ const AddAppointmentDialog: React.FC = () => {
   const { settings } = useSettings();
   const [openClient, setOpenClient] = React.useState(false);
   const [openService, setOpenService] = React.useState(false);
-  const [openStart, setOpenStart] = React.useState(false);
-  const [openEnd, setOpenEnd] = React.useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [clients, setClients] = React.useState<{ id: string, name: string }[]>([]);
   const [services, setServices] = React.useState<ServiceType[]>([]);
@@ -167,7 +165,7 @@ const AddAppointmentDialog: React.FC = () => {
       setIsServiceSearching(true);
       const timeoutId = setTimeout(() => {
         return getServices({ name: serviceSearchValue }).then(data => {
-          setServices(data);
+          setServices(data.services);
           setIsServiceSearching(false);
         })
       }, 1000);

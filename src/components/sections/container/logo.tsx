@@ -15,7 +15,10 @@ export const Logo = () => {
           className="flex items-center gap-4 font-medium text-black dark:text-white whitespace-pre translate-x-2"
         >
           <Image src="/imgs/logo.png" alt="" width={40} height={40} />
-          <Typography variant="h1" className="!text-white !text-sm !font-cursive md:block hidden translate-y-1">AGENDAI</Typography>
+          <Typography variant="h1" className="!text-white !text-md !font-cursive md:block hidden translate-y-1">
+            AGEND
+            <span className="text-red-400">AI</span>
+          </Typography>
         </motion.span>
       </div>
     );

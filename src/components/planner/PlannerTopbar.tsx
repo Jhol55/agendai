@@ -7,8 +7,8 @@ import { ConfigDialog } from "./ConfigDialog";
 
 export const PlannerTopBar = () => {
   return (
-    <div className="flex items-center justify-between absolute left-0 top-0 z-50 w-full">
-      <div className="flex items-center md:gap-6 gap-2 bg-white w-full pb-2 pl-6 pt-4">
+    <div className="flex items-center justify-between absolute left-0 top-0 z-50 w-full bg-[#2B2D42] dark:bg-background">
+      <div className="flex items-center md:gap-6 gap-2 w-full pb-2 pl-4 pt-4">
         <SearchClientInput />
         <Button
           variant="outline"
@@ -18,7 +18,7 @@ export const PlannerTopBar = () => {
           <Typography variant="span" className="md:block hidden">Novo cliente</Typography>
         </Button>
       </div>
-      <div className="flex items-center gap-2 justify-between w-full pb-2 pl-2 pr-6 pt-4 bg-white dark:bg-[#2E2E46]">
+      <div className="flex items-center gap-2 justify-between w-full pb-2 pl-2 pr-4 pt-4 bg-[#2B2D42] dark:bg-background">
         <div></div>
         <div className="flex items-center md:gap-6 gap-4">
           <Notifications />

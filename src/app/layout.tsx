@@ -19,7 +19,7 @@ export default function RootLayout({
         <SettingsProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >

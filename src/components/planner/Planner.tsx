@@ -44,9 +44,9 @@ export type PlannerMainComponentProps = React.HTMLAttributes<HTMLDivElement>;
 
 const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
   return (
-    <div className="flex flex-col p-4 relative">
+    <div className="flex flex-col relative">
       <PlannerTopBar />
-      <div className="mt-14 p-2 bg-white md:h-[87vh] rounded-md">
+      <div className="mt-14 p-4 bg-white dark:bg-background md:h-[92vh] rounded-md">
         <CalendarToolbar />
         <CalendarContent {...props} />
       </div>

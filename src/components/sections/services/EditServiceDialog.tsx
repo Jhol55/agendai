@@ -1,8 +1,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Typography } from "@/components/ui/typography"
-import { IconFilePlus } from "@tabler/icons-react"
+import { IconEdit } from "@tabler/icons-react";
 import { useForm } from "react-hook-form"
 import {
   Form,
@@ -14,32 +13,48 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AddNewServiceSchema, ServiceType } from "@/models/Services"
+import { AddNewServiceSchema, ServiceType, updateServiceSchema } from "@/models/Services"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { TextArea } from "@/components/ui/text-area"
 import { Checkbox } from "@/components/ui/checkbox"
-import { AddService } from "@/services/services"
+import { updateService } from "@/services/services"
 import { cn } from "@/lib/utils"
-import { convertJSONToPDF } from "@/utils/convertToPDF"
-import { convertToBase64 } from "@/utils/convert-to-base64"
 import { toast } from "sonner";
 
+type RawServiceType = {
+  id: string,
+  name: string,
+  price: number,
+  description: string,
+  duration_minutes: number,
+  allow_online: boolean,
+  allow_in_person: boolean,
+  active: boolean
+}
 
-export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
+export const EditServiceDialog = ({
+  onSubmitSuccess,
+  service,
+}: {
+  onSubmitSuccess?: () => void,
+  service: RawServiceType
+}) => {
   const [isOpened, setIsOpened] = useState(false);
-  const [isPending, startAddNewServiceTransition] = useTransition();
+  const [isPending, startUpdateServiceTransition] = useTransition();
 
   const form = useForm<ServiceType>({
-    resolver: zodResolver(AddNewServiceSchema),
+    resolver: zodResolver(updateServiceSchema),
     reValidateMode: "onChange",
     defaultValues: {
-      name: "",
-      description: "",
-      allowOnline: undefined,
-      allowInPerson: undefined,
-      active: true,
-      price: 0
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      allowOnline: service.allow_online,
+      allowInPerson: service.allow_in_person,
+      durationMinutes: service.duration_minutes,
+      active: service.active,
+      price: service.price
     }
   });
 
@@ -50,6 +65,7 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
     // const base64 = await convertToBase64(pdf);
 
     const newService = {
+      id: service.id,
       name: values.name,
       description: values.description,
       allowOnline: values.allowOnline,
@@ -61,11 +77,11 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
       // filename: "services.pdf"
     }
 
-    startAddNewServiceTransition(() => {
+    startUpdateServiceTransition(() => {
       toast.promise(
         () =>
           new Promise((resolve) => {
-            resolve(AddService({ data: newService }));
+            resolve(updateService({ data: newService }));
           }).then(() => {
             setTimeout(() => {
               form.reset();
@@ -74,9 +90,9 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
             }, 500);
           }),
         {
-          loading: "Adicionando novo serviço...",
-          success: "Serviço adicionado com sucesso!",
-          error: "Ocorreu um erro ao adicionar o serviço. Tente novamente!",
+          loading: "Atualizando serviço...",
+          success: "Serviço atualizado com sucesso!",
+          error: "Ocorreu um erro ao atualizar o serviço. Tente novamente!",
         },
       );
     });
@@ -93,9 +109,8 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-[#2B2D42] hover:bg-[#2B2D42]">
-          <IconFilePlus className="h-4 w-4 text-white" />
-          <Typography variant="span" className="md:block hidden !text-white">Novo serviço</Typography>
+        <Button variant="ghost" className="!p-0 hover:bg-transparent">
+          <IconEdit className="!w-5 !h-5" />
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -106,7 +121,7 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
         </DialogHeader>
 
         <Form {...form}>
-          <form id="add-service" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
+          <form id="update-service" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
             <FormField
               control={form.control}
               name="active"
@@ -158,13 +173,14 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
                       placeholder="Nome do serviço..."
                       autoComplete="off"
                       onChange={(e) => field.onChange(e.target.value)}
+                      value={field.value}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex items-center gap-6">            
+            <div className="flex items-center gap-6">
               <FormField
                 control={form.control}
                 name="allowInPerson"
@@ -173,7 +189,10 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Checkbox
-                          checked={field.value}
+                          checked={(() => {
+                            console.log(field.value)
+                            return field.value
+                          })()}
                           onCheckedChange={(checked: boolean) => {
                             field.onChange(checked);
                             form.clearErrors("allowOnline");
@@ -219,9 +238,10 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
                   <FormLabel className="text-left">Descrição</FormLabel>
                   <FormControl>
                     <TextArea
-                      className="!min-h-14"
+                      className="!min-h-16"
                       placeholder="Descrição do serviço..."
                       onChange={(e) => field.onChange(e.target.value)}
+                      value={field.value}
                     />
                   </FormControl>
                   <FormMessage />
@@ -286,7 +306,7 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
           </form>
           <DialogFooter className="px-[1.5rem] mb-6">
             <Button
-              form="add-service"
+              form="update-service"
               type="submit"
               className="bg-green-500 hover:bg-green-600 text-white"
             >

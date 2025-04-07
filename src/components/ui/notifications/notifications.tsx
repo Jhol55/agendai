@@ -48,7 +48,7 @@ export function Notifications() {
   const [message, setMessage] = useState<MessageProps | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState<undefined | number>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [trigger, setTrigger] = useState(false);
@@ -59,9 +59,9 @@ export function Notifications() {
   useEffect(() => {
     setIsLoading(message ? false : true);
     getNotifications({ page }).then(data => {
-      setNotifications(data.notifications);
-      setTotalPages(data.totalPages);
-      setUnreadCount(data.unreadCount);
+      setNotifications(data?.notifications);
+      setTotalPages(data?.totalPages);
+      setUnreadCount(data?.unreadCount);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger, page])
@@ -150,28 +150,28 @@ export function Notifications() {
   return (
     <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
       <DropdownMenuTrigger asChild className="relative">
-        <Button variant="outline" size="icon" className="rounded-full w-8 h-8">
+        <Button variant="ghost" size="icon" className="rounded-full !p-0 hover:bg-transparent">
           {
             isOpened
-              ? <IconMailOpened className="h-4 w-4 -translate-y-[1px]" />
-              : <IconMail className="h-4 w-4" />
+              ? <IconMailOpened className="!h-5 !w-5 -translate-y-[1px] !text-neutral-200" />
+              : <IconMail className="!h-5 !w-5 !text-neutral-200" />
           }
           <span className="sr-only">Toggle user menu</span>
           <div className="absolute flex items-center justify-center -top-3 -right-1 rounded-full h-5 w-5 shrink-0 text-xs bg-red-500 dark:bg-red-500 pointer-events-none">
-            <Typography variant="p" className="!text-neutral-100">{!isLoading ? unreadCount >= 99 ? 99 : unreadCount : null}</Typography>
+            <Typography variant="span" className="!text-neutral-100 !text-xs">{unreadCount !== undefined ? unreadCount >= 99 ? 99 : unreadCount : null}</Typography>
             <Loading display={isLoading} className="absolute !scale-[0.2]" />
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:max-w-md max-w-[90%] max-h-[90vh] md:mx-10 mx-auto" side="top" align="center">
+      <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:w-[50rem] md:max-w-md max-w-[90%] max-h-[90vh] md:mx-10 mx-auto" side="top" align="center">
         <Card className="w-full border-0 bg-background dark:bg-neutral-900">
           <CardHeader className="!px-8 !pb-4">
             <CardTitle className="text-xl">Notificações</CardTitle>
             <div className="flex items-center">
               <CardDescription className="whitespace-nowrap">{
-                unreadCount == 0
+                unreadCount !== undefined && unreadCount == 0
                   ? "Não há novas mensagens no momento."
-                  : `Você tem ${unreadCount} ${unreadCount > 1
+                  : `Você tem ${unreadCount} ${unreadCount !== undefined && unreadCount > 1
                     ? "mensagens novas não lidas"
                     : "mensagem nova não lida"}.`
               }
@@ -234,7 +234,7 @@ export function Notifications() {
                   </div>
                 </div>
                 : (isLoading &&
-                  <div className="flex justify-center items-center h-full w-full">
+                  <div className="flex justify-center items-center w-full h-full">
                     <Loading display={isLoading} className="!scale-[0.5]" />
                   </div>
                 ))}

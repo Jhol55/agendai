@@ -1,35 +1,41 @@
 import { OperatingHoursDialog } from "./OperatingHoursDialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AdditionalSettingsDialog } from "./AdditionalSettingsDialog";
 import { Button } from "../ui/button";
-import { IconSettings } from "@tabler/icons-react";
+import { IconSettings, IconChevronUp, IconChevronDown } from "@tabler/icons-react";
 import { Typography } from "../ui/typography";
 import { useState } from "react";
 
 
 export const ConfigDialog = () => {
     const [isOpened, setIsOpened] = useState(false);
-    
+
     return (
         <DropdownMenu open={isOpened} onOpenChange={setIsOpened} >
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="outline"
                     onClick={() => setIsOpened(true)}
-                    className="rounded-full"
+                    className="flex gap-[4px] rounded-full"
                 >
                     <IconSettings className="!h-4 !w-4" />
-                    <Typography variant="span" className="md:block hidden">Configurações</Typography>
+                    {/* <Typography variant="span" className="md:block hidden">
+                        Configurações
+                    </Typography> */}
+                    {isOpened
+                        ? <IconChevronUp className="translate-y-[1px]" />
+                        : <IconChevronDown className="translate-y-[1px]" />
+                    }
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mr-7 bg-background">

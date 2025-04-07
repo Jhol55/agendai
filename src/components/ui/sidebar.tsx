@@ -113,7 +113,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "sticky left-0 h-screen px-4 py-4 hidden md:flex md:flex-col bg-[#2B2D42] dark:bg-[#2E2E46] w-[60px] flex-shrink-0",
+          "sticky left-0 h-screen px-4 py-4 hidden md:flex md:flex-col bg-[#2B2D42] dark:bg-neutral-800 w-[60px] flex-shrink-0",
           "",
           className
         )}
@@ -126,7 +126,7 @@ export const DesktopSidebar = ({
             setTimeout(() => {
               setOpen(false);
               setIsLoading?.(false);
-            }, 500)         
+            }, 400)         
           } else {
             setOpen(false);
           }

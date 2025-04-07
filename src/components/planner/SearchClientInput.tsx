@@ -43,12 +43,12 @@ export const SearchClientInput = ({ onSelect }: { onSelect?: (client: { id: stri
           aria-expanded={!!(clientSearchValue && isOpened)}
           className="w-72 flex justify-between relative border-none"
         >
-          <div className="absolute left-0 flex items-center w-full border rounded-md">
+          <div className="absolute left-0 flex items-center w-full border rounded-md dark:!bg-neutral-900">
             <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
               ref={inputRef}
               placeholder="Procurar um cliente..."
-              className="w-full border-none z-50 rounded-md"
+              className="w-full border-none z-50 rounded-md !bg-transparent"
               onInput={(e) => setClientSearchValue((e.target as HTMLInputElement).value)}
             />
           </div>

@@ -71,23 +71,27 @@ export function DataTable<TData, TValue>({
       })
       return newSelectedRows
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
   useEffect(() => {
     setIsLoading(true);
-    const timeout = setTimeout(() => {
+    setTimeout(() => {
       setIsLoading(false);
     }, 5000)
 
-    return () => clearTimeout(timeout);
+    if (data.length) {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 700)
+    }
   }, [data])
 
   return (
-    <div className={cn("flex rounded-md border border-neutral-200 dark:border-neutral-800", className)}>
-      <div className={"relative w-full h-full max-h-[calc(100vh-100px)] md:max-h-[calc(100vh-110px)] overflow-auto rounded-md"}>
+    <div className={cn("flex rounded-md border border-neutral-200 dark:border-neutral-800")}>
+      <div className={cn("relative w-full h-full max-h-[calc(100vh-140px)] md:max-h-[calc(100vh-110px)] overflow-auto rounded-md", className)}>
         <Table>
-          <TableHeader className="sticky top-0 bg-[#F8F9FA] dark:bg-neutral-900">
+          <TableHeader className="sticky top-0 z-50 bg-[#F8F9FA] dark:bg-neutral-800">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -106,7 +110,7 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {(data?.length && !isLoading) && table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

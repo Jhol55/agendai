@@ -83,18 +83,18 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           <div className="flex gap-2">
             <Button
               variant={viewMode === "day" ? "default" : "outline"}
-              className={cn(viewMode === "day" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:text-white text-black hover:bg-[#2B2D42] dark:hover:bg-neutral-700")}
+              className={cn(viewMode === "day" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfDay(new Date()),
                 to: endOfDay(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200" ,"md:block hidden")}>Dia</Typography>
-              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200", "md:hidden block")}>D</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-green-400" ,"md:block hidden")}>Dia</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>D</Typography>
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "outline"}
-              className={cn(viewMode === "week" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:text-white text-black hover:bg-[#2B2D42] dark:hover:bg-neutral-700")}
+              className={cn(viewMode === "week" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfWeek(new Date(), {
                   locale: { options: { weekStartsOn: 0 } },
@@ -102,19 +102,19 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfWeek(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200" ,"md:block hidden")}>Semana</Typography>
-              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200", "md:hidden block")}>S</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-green-400" ,"md:block hidden")}>Semana</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>S</Typography>
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
-              className={cn(viewMode === "month" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:text-white text-black hover:bg-[#2B2D42] dark:hover:bg-neutral-700")}
+              className={cn(viewMode === "month" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfMonth(new Date()),
                 to: endOfMonth(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200" ,"md:block hidden")}>Mês</Typography>
-              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200", "md:hidden block")}>M</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-green-400" ,"md:block hidden")}>Mês</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>M</Typography>
             </Button>
           </div>      
           <div className="flex gap-2 items-center">

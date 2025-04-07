@@ -296,7 +296,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       setIsServiceSearching(true);
       const timeoutId = setTimeout(() => {
         return getServices({ name: serviceSearchValue }).then(data => {
-          setServices(data);
+          setServices(data.services);
           setIsServiceSearching(false);
         })
       }, 1000);
