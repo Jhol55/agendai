@@ -508,12 +508,12 @@ const Editor = React.forwardRef(function Editor(
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-      setIsLoading(true);
-      const timeout = setTimeout(() => {
-        setIsLoading(false);
-      }, 5000)
-      return () => clearTimeout(timeout);
-    }, [value])
+    setIsLoading(true);
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000)
+    return () => clearTimeout(timeout);
+  }, [value])
 
   return (
     <div
@@ -529,7 +529,9 @@ const Editor = React.forwardRef(function Editor(
             customStyle={{
               margin: 0,
               padding: 0,
-              background: "#fff",
+              background: theme === "dark"
+                ? "#171717"
+                : "#ffffff",
               backgroundColor: "#171717",
               fontSize: "1rem",
               height: "100%",

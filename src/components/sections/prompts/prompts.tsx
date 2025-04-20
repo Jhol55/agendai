@@ -107,7 +107,7 @@ export const Prompts = () => {
               key={agent}
               value={prompt}
               onValueChange={content => handleOnValueChange(content)}
-              containerClassName={cn(activeTab === agent ? "block dark:bg-[#171717] bg-white" : "hidden")}
+              containerClassName={cn(activeTab === agent ? "block dark:bg-[#171717]" : "hidden")}
             />
           ))}
         </div>
