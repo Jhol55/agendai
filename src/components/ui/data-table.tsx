@@ -18,12 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Loading } from "./loading/loading"
 import { motion } from "framer-motion"
 import { Typography } from "./typography"
-import { useDarkMode } from "@/hooks/use-dark-mode"
+
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -54,25 +54,25 @@ export function DataTable<TData, TValue>({
   })
 
   useEffect(() => {
-    onRowSelection?.(table.getFilteredSelectedRowModel().rows)
+    onRowSelection?.(table.getFilteredSelectedRowModel().rows);
   }, [onRowSelection, rowSelection, table])
 
 
-  useEffect(() => {
-    onChange?.()
-    setRowSelection(() => {
-      const selectedRows = table.getFilteredSelectedRowModel().rows as Row<TData>[] & { original: TData & { id: number } }[];
-      const newSelectedRows: { original: { id: number } }[] = []
-      if (!selectedRows?.length) return {}
-      data.map((id, index) => {
-        if (selectedRows[index]?.original.id === id) {
-          newSelectedRows.push(selectedRows[index])
-        }
-      })
-      return newSelectedRows
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
+  // useEffect(() => {
+  //   onChange?.()
+  //   setRowSelection(() => {
+  //     const selectedRows = table.getFilteredSelectedRowModel().rows as Row<TData>[] & { original: TData & { id: number } }[];
+  //     const newSelectedRows: { original: { id: number } }[] = []
+  //     if (!selectedRows?.length) return {}
+  //     data.map((id, index) => {
+  //       if (selectedRows[index]?.original.id === id) {
+  //         newSelectedRows.push(selectedRows[index])
+  //       }
+  //     })
+  //     return newSelectedRows
+  //   });
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [data])
 
   useEffect(() => {
     setIsLoading(true);

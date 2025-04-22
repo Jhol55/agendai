@@ -27,3 +27,12 @@ export const updateService = async ({ test = false, data }: { test?: boolean, da
     console.error('Erro ao atualizar o serviço: ', error);
   }
 }
+
+export const deleteServices = async ({ test = false, data }: { test?: boolean, data: object }) => {
+  try {
+    const response = await api(test).post("delete-services", data);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar os serviços: ', error);
+  }
+}

@@ -1,5 +1,5 @@
 import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { Typography } from "@/components/ui/typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AddNewServiceDialog } from "./AddNewServiceDialog";
@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IconEdit } from "@tabler/icons-react";
 import { EditServiceDialog } from "./EditServiceDialog";
+import { RemoveServicesDialog } from "./RemoveServicesDialog";
 
 type RawServiceType = {
   id: string,
@@ -42,8 +43,9 @@ export const Services = () => {
   const [totalPages, setTotalPages] = useState(1);
   const handleUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
   const [serviceSearchValue, setServiceSearchValue] = useState("");
+  const [selectedServices, setSelectedServices] = useState<Row<RawServiceType>[]>([]);
 
-  const columns: ColumnDef<RawServiceType>[] = [
+  const columns = useMemo<ColumnDef<RawServiceType>[]>(() => [
     {
       id: "select",
       header: ({ table }) => (
@@ -140,7 +142,7 @@ export const Services = () => {
         </Typography>
       ),
     },
-  ];
+  ], [handleUpdate]);
 
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
@@ -170,6 +172,10 @@ export const Services = () => {
     return [page - 1, page, page + 1];
   };
 
+  const handleRowSelection = useCallback((rows: Row<RawServiceType>[]) => {
+    setSelectedServices(rows);
+  }, []);
+
   return (
     <section className="w-full h-[calc(100vh-100px)] bg-transparent dark:bg-background">
       <div className="absolute left-0 pt-4 pb-2 px-4 w-full flex items-center justify-between bg-background">
@@ -184,10 +190,13 @@ export const Services = () => {
             }
           }}
         />
-        <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />
+        <div className="flex gap-2">
+          {/* <RemoveServicesDialog services={selectedServices} /> */}
+          <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />
+        </div>
       </div>
       <div className="py-2 px-4 mt-14 flex flex-col gap-2 flex-1 w-full p-2 bg-background rounded-md">
-        <DataTable columns={columns} data={services || []} className="bg-background max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]" />
+        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]" />
         <Pagination className="m-2">
           <PaginationContent>
             <PaginationItem>
