@@ -5,7 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AddNewServiceDialog } from "./AddNewServiceDialog";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getServices } from "@/services/services";
-import { ServiceType } from "@/models/Services";
 import { Check, X } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -19,10 +18,8 @@ import {
 } from "@/components/ui/pagination"
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { IconEdit } from "@tabler/icons-react";
 import { EditServiceDialog } from "./EditServiceDialog";
-import { RemoveServicesDialog } from "./RemoveServicesDialog";
+
 
 type RawServiceType = {
   id: string,
@@ -147,8 +144,8 @@ export const Services = () => {
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
       getServices({ name: serviceSearchValue }).then(data => {
-        setServices(data.services);
-        setTotalPages(data.totalPages);
+        setServices(data?.services);
+        setTotalPages(data?.totalPages);
       });
     }, 1000);
     return () => clearTimeout(timeoutId);

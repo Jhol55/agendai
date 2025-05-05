@@ -28,6 +28,7 @@ import { Checkbox } from "../ui/checkbox";
 import { useState, useEffect, forwardRef, useCallback } from "react";
 import { getOperatingHours, updateOperatingHours } from "@/services/operatingHours";
 import { z } from "zod";
+import { BlockTimeSlotsDialog } from "./BlockTimeSlotsDialog";
 
 
 type daysOfWeekType = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"
@@ -224,8 +225,11 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, object>((props, r
               </section>
             ))}
           </form>
-          <DialogFooter className="pr-[2.4rem] mb-6 w-full">          
-            <Button form="operating-hours" type="submit" className="bg-green-500 hover:bg-green-600 text-white">Salvar</Button>
+          <DialogFooter className="pr-[2.4rem] pl-6 mb-6 w-full">      
+            <div className="flex justify-between w-full">
+              <BlockTimeSlotsDialog />
+              <Button form="operating-hours" type="submit" className="bg-green-500 hover:bg-green-600 text-white">Salvar</Button>
+            </div>
           </DialogFooter>
         </Form>
       </DialogContent>

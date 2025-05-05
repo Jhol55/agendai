@@ -165,7 +165,7 @@ const AddAppointmentDialog: React.FC = () => {
       setIsServiceSearching(true);
       const timeoutId = setTimeout(() => {
         return getServices({ name: serviceSearchValue }).then(data => {
-          setServices(data.services);
+          setServices(data?.services);
           setIsServiceSearching(false);
         })
       }, 1000);

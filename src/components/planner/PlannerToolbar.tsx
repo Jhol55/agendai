@@ -83,7 +83,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           <div className="flex gap-2">
             <Button
               variant={viewMode === "day" ? "default" : "outline"}
-              className={cn(viewMode === "day" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
+              className={cn(viewMode === "day" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:border-neutral-700/60 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfDay(new Date()),
                 to: endOfDay(new Date()),
@@ -94,7 +94,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "outline"}
-              className={cn(viewMode === "week" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
+              className={cn(viewMode === "week" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:border-neutral-700/60 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfWeek(new Date(), {
                   locale: { options: { weekStartsOn: 0 } },
@@ -107,7 +107,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
-              className={cn(viewMode === "month" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-[#2B2D42]")}
+              className={cn(viewMode === "month" && "border bg-[#2B2D42] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border-neutral-700/60 dark:text-white text-black hover:bg-[#2B2D42]")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfMonth(new Date()),
                 to: endOfMonth(new Date()),

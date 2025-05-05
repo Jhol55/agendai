@@ -16,6 +16,7 @@ import { DateRange } from "react-day-picker";
 import { Loading } from "../ui/loading/loading";
 import { toast } from "sonner";
 import { PlannerTopBar } from "./PlannerTopbar";
+import { Separator } from "../ui/separator";
 
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -47,6 +48,7 @@ const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
     <div className="flex flex-col relative">
       <PlannerTopBar />
       <div className="mt-14 p-4 bg-white dark:bg-background md:h-[92vh] rounded-md">
+        <Separator orientation="horizontal" className="!mb-4" />
         <CalendarToolbar />
         <CalendarContent {...props} />
       </div>

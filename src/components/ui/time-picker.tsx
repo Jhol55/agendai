@@ -87,6 +87,8 @@ export function TimePicker({
       if (date && new Date(date).getTime() !== new Date(value).getTime()) {
         onChange?.(new Date(value))
       }
+    } else {
+      setDate(undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);

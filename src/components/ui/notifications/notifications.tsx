@@ -149,7 +149,7 @@ export function Notifications() {
 
   return (
     <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
-      <DropdownMenuTrigger asChild className="relative">
+      <DropdownMenuTrigger asChild className="relative translate-y-2">
         <Button variant="ghost" size="icon" className="rounded-full !p-0 hover:bg-transparent">
           {
             isOpened

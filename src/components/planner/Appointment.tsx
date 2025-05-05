@@ -198,10 +198,10 @@ const Appointment: React.FC<AppointmentProps> = ({
               })()
             }))
         }
-      });
-      setIsLoading(false);
+      });     
+      setIsLoading(!isOpened);     
     }, 1000)
-  }, [appointment, form]);
+  }, [appointment, form, isOpened]);
 
   function onSubmit(values: z.infer<typeof updateAppointmentSchema>) {
     const originalPayments = appointment.details.payments
@@ -255,9 +255,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                 }));
             }).then(() => {
               setTimeout(() => {
-                handleUpdate();
+                handleUpdate();             
                 setIsOpened(false);
-                setAutoEndDate(undefined);
+                setAutoEndDate(undefined);              
               }, 500);
             }),
           {
@@ -296,7 +296,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       setIsServiceSearching(true);
       const timeoutId = setTimeout(() => {
         return getServices({ name: serviceSearchValue }).then(data => {
-          setServices(data.services);
+          setServices(data?.services);
           setIsServiceSearching(false);
         })
       }, 1000);
@@ -332,7 +332,7 @@ const Appointment: React.FC<AppointmentProps> = ({
   return (
     <Card ref={ref} className={cn(
       viewMode === "month" ? "w-full" : "w-[10rem]",
-      "!items-start dark:hover:bg-neutral-700 hover:bg-[#F8F9FA] bg-white dark:bg-neutral-800 group transition-colors duration-150")} onDoubleClick={() => setIsOpened(true)}>
+      "!items-start dark:hover:bg-neutral-700 hover:bg-[#F8F9FA] bg-white dark:bg-neutral-800 dark:border-neutral-700/60 group transition-colors duration-150")} onDoubleClick={() => setIsOpened(true)}>
       <CardHeader className="flex flex-row items-center justify-between p-1">
         <Badge variant={"outline"} className="border-none ml-1 hover:cursor-grab group-hover:dark:bg-neutral-900 group-hover:bg-neutral-200 group-hover:border-neutral-300 dark:border-neutral-700 group-hover:dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
           {appointment.details.service}
@@ -1053,12 +1053,12 @@ const Appointment: React.FC<AppointmentProps> = ({
                     <TooltipTrigger className="cursor-default">
                       {appointment.details.online
                         ? <IconVideo className={cn(
-                          "w-4 h-4",
+                          "w-4 h-4 text-white/90",
                           appointment.status === "confirmed" && "text-green-600",
                           appointment.status === "canceled" && "text-red-600"
                         )} />
                         : <IconMapPin className={cn(
-                          "w-4 h-4",
+                          "w-4 h-4 text-white/90",
                           appointment.status === "confirmed" && "text-green-600",
                           appointment.status === "canceled" && "text-red-600"
                         )} />
@@ -1110,7 +1110,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                           ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
                             ? "text-green-600"
                             : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                              ? ""
+                              ? "text-white/90"
                               : "text-red-600"
                         )}
                       />
@@ -1152,7 +1152,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                           ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
                             ? "text-green-600"
                             : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                              ? ""
+                              ? "text-white/90"
                               : "text-red-600"
                         )}
                       />
@@ -1187,10 +1187,10 @@ const Appointment: React.FC<AppointmentProps> = ({
             </div>
           </div>
           <div className="flex flex-col items-center justify-center gap-1 text-xs mr-2">
-            <span className="whitespace-nowrap max-w-28 overflow-hidden truncate font-medium">{appointment.title}</span>
+            <span className="whitespace-nowrap max-w-28 overflow-hidden dark:text-white/90 truncate font-medium">{appointment.title}</span>
             <div className="flex gap-2">
-              {viewMode === "month" && <span>{appointment.start.toLocaleDateString("pt-BR")}</span>}
-              <span className="whitespace-nowrap font-medium">
+              {viewMode === "month" && <span className="dark:text-white/90">{appointment.start.toLocaleDateString("pt-BR")}</span>}
+              <span className="whitespace-nowrap font-medium dark:text-white/90">
                 {format(new Date(appointment.start), "kk:mm")} -{" "}
                 {format(new Date(appointment.end), "kk:mm")}
               </span>

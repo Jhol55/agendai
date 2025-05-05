@@ -12,7 +12,6 @@ export const PlannerTopBar = () => {
         <SearchClientInput />
         <Button
           variant="outline"
-          className="rounded-2xl"
         >
           <IconUserPlus className="w-4 h-4" />
           <Typography variant="span" className="md:block hidden">Novo cliente</Typography>

@@ -31,11 +31,11 @@ export default function Admin() {
   }, [activeTab]);
 
   return (
-    <div className="flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full min-h-[100vh]">
+    <div className="flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full min-h-[100vh] relative">
       <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10" initialActiveLabel={links[activeTab].label}>
+        <SidebarBody className="" initialActiveLabel={links[activeTab].label}>
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            <Logo />
+            <Logo open={open} />
             <div className={"mt-20 flex flex-col gap-2"}>
               {links.map(({ icon, label }, idx) => (
                 <SidebarButton
@@ -55,8 +55,8 @@ export default function Admin() {
           initial={{ y: "-100%", opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "100%", opacity: 0 }}
-          transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="relative flex w-full flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-[#F8F9FA] dark:bg-neutral-900"
+          transition={{ duration: 0.2, ease: "easeIn" }}
+          className="relative -z-0 flex w-full flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-[#F8F9FA] dark:bg-neutral-900"
         >
           {links[activeTab].content}
         </motion.div>
