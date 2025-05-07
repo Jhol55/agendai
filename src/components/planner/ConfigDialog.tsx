@@ -1,59 +1,81 @@
 import { OperatingHoursDialog } from "./OperatingHoursDialog";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AdditionalSettingsDialog } from "./AdditionalSettingsDialog";
 import { Button } from "../ui/button";
 import { IconSettings, IconChevronUp, IconChevronDown } from "@tabler/icons-react";
 import { Typography } from "../ui/typography";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 
 export const ConfigDialog = () => {
-    const [isOpened, setIsOpened] = useState(false);
+  const [isOpened, setIsOpened] = useState(false);
+  const [canHide, setCanHide] = useState(false);
 
-    return (
-        <DropdownMenu open={isOpened} onOpenChange={setIsOpened} >
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="outline"
-                    onClick={() => setIsOpened(true)}
-                    className="flex gap-[4px] rounded-full"
-                >
-                    <IconSettings className="!h-4 !w-4" />
-                    {/* <Typography variant="span" className="md:block hidden">
+  return (
+    <DropdownMenu open={isOpened} onOpenChange={setIsOpened} >
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          onClick={() => setIsOpened(true)}
+          className="flex gap-[4px] rounded-full"
+        >
+          <IconSettings className="!h-4 !w-4" />
+          {/* <Typography variant="span" className="md:block hidden">
                         Configurações
                     </Typography> */}
-                    {isOpened
-                        ? <IconChevronUp className="translate-y-[1px]" />
-                        : <IconChevronDown className="translate-y-[1px]" />
-                    }
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mr-7 bg-background">
-                <DropdownMenuLabel>
-                    <Typography variant="span">
-                        Configurações
-                    </Typography>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup className="flex flex-col justify-center p-2 gap-2">
-                    <DropdownMenuItem className="!p-0 m-2" asChild>
-                        <OperatingHoursDialog />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="!p-0 m-2" asChild>
-                        <AdditionalSettingsDialog />
-                    </DropdownMenuItem>
-                </DropdownMenuGroup>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    )
+          {isOpened && !canHide
+            ? <IconChevronUp className="translate-y-[1px]" />
+            : <IconChevronDown className="translate-y-[1px]" />
+          }
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className={cn("w-56 mr-7 bg-background", canHide && "hidden")}>
+        <DropdownMenuLabel>
+          <Typography variant="span">
+            Configurações
+          </Typography>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup className="flex flex-col justify-center p-2 gap-2">
+          <DropdownMenuItem className="!p-0 m-2" asChild>
+            <OperatingHoursDialog
+              onClick={() => setCanHide(true)}
+              onClose={() => {
+                setTimeout(() => {
+                  setIsOpened(false);
+                }, 500);
+                setTimeout(() => {
+                  setCanHide(false);
+                }, 600);
+              }}
+            />
+          </DropdownMenuItem>
+          <DropdownMenuItem className="!p-0 m-2" asChild>
+            <AdditionalSettingsDialog
+              onClick={() => setCanHide(true)}
+              onClose={() => {
+                setTimeout(() => {
+                  setIsOpened(false);
+                }, 500);
+                setTimeout(() => {
+                  setCanHide(false);
+                }, 600);
+              }}
+            />
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }

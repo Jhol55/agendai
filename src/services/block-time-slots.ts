@@ -18,3 +18,12 @@ export const GetBlockedTimeSlots = async ({ test = false }: { test?: boolean }) 
     console.error('Erro ao carregar exceções: ', error);
   }
 }
+
+export const RemoveBlockedTimeSlot = async ({ test = false, data }: { test?: boolean, data: object }) => {
+  try {
+    const response = await api(test).post('remove-blocked-time-slot', data);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao excluir exceção: ', error);
+  }
+}

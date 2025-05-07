@@ -88,6 +88,7 @@ export const getLabelsForView = (
   viewMode: 'day' | 'week' | 'month' | 'year',
   dateRange: { start: Date; end: Date }
 ): string[] => {
+  // console.log(dateRange.start, dateRange.end)
   switch (viewMode) {
     case 'day':
       return eachHourOfInterval({ start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) })

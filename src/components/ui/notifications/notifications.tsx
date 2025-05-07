@@ -207,7 +207,7 @@ export function Notifications() {
                 <div className="flex flex-col justify-center items-center h-full w-full px-6 pb-6">
                   <div className="flex flex-col justify-center items-center border rounded-md h-full w-full p-6 gap-4 dark:bg-background dark:border-neutral-800 bg-[#F8F9FA]">
                     <div className="flex gap-2">
-                      <Typography variant="span" className="text-justify">Segue abaixo os detalhes do agendamento realizado pelo assistente:</Typography>
+                      <Typography variant="span" className="text-justify">Detalhes do agendamento realizado pelo assistente:</Typography>
                     </div>
                     <div className="flex flex-col gap-1 h-full w-full">
                       <div className="flex gap-2 ">

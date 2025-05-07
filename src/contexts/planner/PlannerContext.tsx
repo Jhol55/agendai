@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
-import { startOfDay, endOfDay, startOfWeek } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, eachHourOfInterval, eachMinuteOfInterval } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { getLabelsForView } from "@/utils/utils";
 
 interface PlannerContextType {
   viewMode: "day" | "week" | "month" | "year";
   timeLabels: string[];
+  hourLabels: Date[];
   dateRange: DateRange | undefined;
   currentDateRange: DateRange | undefined;
   setDateRange: (dateRange: DateRange) => void;
@@ -14,6 +15,7 @@ interface PlannerContextType {
 const defaultContextValue: PlannerContextType = {
   viewMode: "week", // default starting view
   timeLabels: [],
+  hourLabels: [],
   dateRange: { from: startOfWeek(new Date()), to: endOfDay(new Date()) },
   currentDateRange: { from: startOfDay(new Date()), to: endOfDay(new Date()) },
   setDateRange: (dateRange: DateRange) => {
@@ -44,8 +46,19 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, [viewMode, dateRange]);
 
+  const hourLabels = useMemo(() => {
+    return eachMinuteOfInterval(
+      {
+        start: startOfDay(new Date()),
+        end: endOfDay(new Date()),
+      },
+      { step: 30 } // a cada 30 minutos
+    );
+  }, []);
+
   const value = {
     timeLabels,
+    hourLabels,
     dateRange,
     setDateRange,
     viewMode: viewMode as "day" | "week" | "month" | "year",

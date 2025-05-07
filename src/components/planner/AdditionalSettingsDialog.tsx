@@ -35,10 +35,17 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { Typography } from "../ui/typography";
 import { Separator } from "../ui/separator";
 
-export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: () => void }>(({ onClose, ...props }, ref) => {
+export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: () => void, onClick?: () => void }>(({ onClose, onClick, ...props }, ref) => {
   const [isOpened, setIsOpened] = useState(false);
   const [isPending, startOnSubmitTransition] = useTransition();
   const { settings, updateSettings } = useSettings();
+
+  const handleDialogToggle = (open: boolean) => {
+    setIsOpened(open);
+    if (!open) {
+      onClose?.()
+    }
+  };
 
   const [isRescheduleDeadlineUnitOpen, setIsRescheduleDeadlineUnitOpen] = useState(false);
 
@@ -147,7 +154,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
 
     });
     setTimeout(() => {
-      setIsOpened(false);
+      handleDialogToggle(false);
     }, 1000);
   }
 
@@ -157,9 +164,15 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
   ];
 
   return (
-    <Dialog open={isOpened} onOpenChange={setIsOpened}>
+    <Dialog open={isOpened} onOpenChange={handleDialogToggle}>
       <DialogTrigger asChild>
-        <Button className="w-full" variant="outline">Configurações adicionais</Button>
+        <Button
+          className="w-full"
+          variant="outline"
+          onClick={onClick}
+        >
+          Configurações adicionais
+        </Button>
       </DialogTrigger>
       {settings &&
         <DialogContent

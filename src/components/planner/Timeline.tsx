@@ -50,11 +50,11 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
     <TableHeader>
       <TableRow className="bg-background">
         {/* <TableHead></TableHead> */}
-        {timeLabels.map((label, index) => (
+        {["", ...timeLabels].map((label, index) => (
           <TableHead
             key={index}
             className={cn(
-              "sticky bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-r-neutral-700 hover:dark:border-r-neutral-700",
+              "sticky bg-background last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-neutral-700 hover:dark:border-neutral-700",
               viewMode !== "day" && "top-0",
               shouldDisplayIcon({ index, viewMode })
                 ? "z-30" : "z-20"

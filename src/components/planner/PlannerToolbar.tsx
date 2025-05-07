@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useCalendar } from "@/contexts/planner/PlannerContext";
 import { cn } from "@/lib/utils";
-import { endOfMonth, format, getDaysInMonth, startOfMonth } from "date-fns";
+import { addMonths, endOfMonth, format, getDaysInMonth, startOfMonth, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { addDays, subDays, startOfDay, endOfDay, endOfWeek, startOfWeek } from "date-fns";
@@ -42,17 +42,33 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   }
 
   const moveForward = () => {
+    if (viewMode === "month") {
+      const newMonth = addMonths(range.from as Date, 1);
+      return {
+        from: startOfMonth(newMonth),
+        to: endOfMonth(newMonth),
+      };
+    }
     return {
       from: addDays(range.from as Date, getDays(viewMode)),
       to: addDays(range.to as Date, getDays(viewMode)),
     };
   };
+
   const moveBack = () => {
+    if (viewMode === "month") {
+      const newMonth = subMonths(range.from as Date, 1);
+      return {
+        from: startOfMonth(newMonth),
+        to: endOfMonth(newMonth),
+      };
+    } 
     return {
       from: subDays(range.from as Date, getDays(viewMode)),
       to: subDays(range.to as Date, getDays(viewMode)),
     };
   };
+  
   const moveToToday = () => {
     return {
       from: viewMode === "day"

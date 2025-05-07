@@ -40,8 +40,8 @@ const DropTableCell: FC<DropTableCellProps> = ({
   }, [columnIndex, resourceId, viewMode]);
   
   return (
-    <TableCell className={cn("first:border-0 last:border-0 border dark:border-x-neutral-700 border-b-0 bg-background w-[calc(100%/7)]", isOver ? "bg-primary-foreground" : "bg-background"  )} ref={ref} {...props}>
-      <div className="grid grid-flow-row grid-cols gap-2 w-full justify-items-center">{children}</div>
+    <TableCell className={cn("relative first:border-0 last:border-0 border dark:border-x-neutral-700 border-b-0 !p-1 bg-background w-[calc(100%/7)]", isOver ? "bg-primary-foreground" : "bg-background"  )} ref={ref} {...props}>
+      <div className="absolute right-0 top-0 grid grid-flow-row grid-cols gap-2 w-full justify-items-center">{children}</div>
     </TableCell>
   );
 };

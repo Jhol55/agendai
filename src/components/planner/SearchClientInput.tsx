@@ -41,7 +41,7 @@ export const SearchClientInput = ({ onSelect }: { onSelect?: (client: { id: stri
           variant="outline"
           role="combobox"
           aria-expanded={!!(clientSearchValue && isOpened)}
-          className="w-72 flex justify-between relative border-none"
+          className="md:w-72 w-64 flex justify-between relative border-none"
         >
           <div className="absolute left-0 flex items-center w-full border rounded-md dark:!bg-neutral-900">
             <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />

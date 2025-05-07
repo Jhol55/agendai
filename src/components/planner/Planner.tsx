@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState, useTransition } from "react";
+import React, { FC, useEffect, useRef, useState, useTransition } from "react";
 import CalendarToolbar from "./PlannerToolbar";
 import Appointment from "./Appointment";
 import { Appointment as AppointmentType, Resource } from "@/models";
@@ -17,6 +17,7 @@ import { Loading } from "../ui/loading/loading";
 import { toast } from "sonner";
 import { PlannerTopBar } from "./PlannerTopbar";
 import { Separator } from "../ui/separator";
+import { format } from "date-fns";
 
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -58,10 +59,19 @@ const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
 
 type CalendarContentProps = React.HTMLAttributes<HTMLDivElement>
 const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
-  const { viewMode, dateRange, timeLabels } = useCalendar();
+  const { viewMode, dateRange, timeLabels, hourLabels } = useCalendar();
   const { resources, appointments, updateAppointment } = usePlannerData();
   const [isPending, startOnDropTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
+
+  const [tableBodyHeight, setTableBodyHeight] = useState<number | null>(null);
+  const tableBodyRef = useRef<HTMLTableSectionElement>(null);
+
+  useEffect(() => {
+    if (tableBodyRef.current) {
+      setTableBodyHeight(tableBodyRef.current.offsetHeight);
+    }
+  }, [appointments, isLoading])
 
   useEffect(() => {
     setIsLoading(true);
@@ -127,43 +137,63 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
     });
   }, [appointments, resources, updateAppointment, viewMode]);
 
+  function getTopPositionFromTime(timeStr: string): number {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return (hours * (34 * 2)) + (minutes * 1.12);
+  }
+
   return (appointments &&
     <div className="flex md:max-h-[calc(88vh_-_theme(spacing.16))] max-h-[calc(81vh_-_theme(spacing.16))] flex-col border rounded-md border-neutral-200 dark:border-neutral-700">
       <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent">
         <Table>
           <Timeline />
-          <TableBody>
+          <TableBody ref={tableBodyRef}>
             {resources.map((resource) => (
-              <TableRow key={resource.id} className={cn(isLoading && "hidden")}>
-                {/* <ResourceTableCell resourceItem={resource} /> */}
-                {timeLabels?.map((label, index) => (
-                  <DropTableCell
-                    resourceId={resource.id}
-                    columnIndex={index}
-                    key={index}
-                  >
-                    {appointments
-                      .filter(
-                        (appt) =>
-                          filterAppointments(
-                            appt,
-                            index,
-                            dateRange,
-                            viewMode,
-                          ) && appt.resourceId === resource.id,
-                      )
-                      .sort((a, b) => a.start.getTime() - b.start.getTime())
-                      .map((appt) => (
-                        <Appointment
-                          appointment={appt}
-                          columnIndex={index}
-                          resourceId={resource.id}
-                          key={appt.id}
-                        />
-                      ))}
-                  </DropTableCell>
-                ))}
-              </TableRow>
+              hourLabels.map((hour, rowIndex) => (
+                <TableRow key={resource.id} className={cn("max-h-[34px] min-h-[34px] h-[34px]" ,isLoading && "hidden")}>
+                  <td className="text-center dark:text-neutral-200/80">{format(hour, 'HH:mm')}</td>
+                  {/* <ResourceTableCell resourceItem={resource} /> */}
+                  {["", ...timeLabels]?.map((label, index) => (
+                    timeLabels.length !== index &&
+                    <DropTableCell
+                      resourceId={resource.id}
+                      columnIndex={index}
+                      key={index}
+                      className="relative hover:bg-muted/50"
+                    >
+                      {rowIndex === 0 &&
+                        <td className="absolute w-full border md:border-b-0 border-t-0" style={{ height: `${tableBodyHeight}px` }}>
+                          <div className="relative h-full w-full">
+                            {appointments
+                              .filter(
+                                (appt) =>
+                                  filterAppointments(
+                                    appt,
+                                    index,
+                                    dateRange,
+                                    viewMode,
+                                  ) && appt.resourceId === resource.id,
+                              )
+                              .sort((a, b) => a.start.getTime() - b.start.getTime())
+                              .map((appt) => (
+                                <div
+                                  className="absolute z-10 left-[1px] w-[99%] max-w-[99%]"
+                                  style={{ top: getTopPositionFromTime(format(appt.start, 'HH:mm')) + 2 }}
+                                  key={appt.id}
+                                >
+                                  <Appointment
+                                    appointment={appt}
+                                    columnIndex={index}
+                                    resourceId={resource.id}
+                                  />
+                                </div>
+                              ))}
+                          </div>
+                        </td>}
+                    </DropTableCell>
+                  ))}
+                </TableRow>
+              ))
             ))}
           </TableBody>
         </Table>

@@ -331,10 +331,10 @@ const Appointment: React.FC<AppointmentProps> = ({
 
   return (
     <Card ref={ref} className={cn(
-      viewMode === "month" ? "w-full" : "w-[10rem]",
-      "!items-start dark:hover:bg-neutral-700 hover:bg-[#F8F9FA] bg-white dark:bg-neutral-800 dark:border-neutral-700/60 group transition-colors duration-150")} onDoubleClick={() => setIsOpened(true)}>
+      viewMode === "month" ? "w-full" : "w-full max-w-full rounded-none !p-0 !m-0 h-[30px]",
+      "z-50 !items-start dark:hover:bg-neutral-700 hover:bg-[#F8F9FA] bg-white dark:bg-neutral-800 dark:border-neutral-700/60 group transition-colors duration-150")} onDoubleClick={() => setIsOpened(true)}>
       <CardHeader className="flex flex-row items-center justify-between p-1">
-        <Badge variant={"outline"} className="border-none ml-1 hover:cursor-grab group-hover:dark:bg-neutral-900 group-hover:bg-neutral-200 group-hover:border-neutral-300 dark:border-neutral-700 group-hover:dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
+        <Badge variant={"outline"} className="border-none rounded-none ml-1 hover:cursor-grab group-hover:dark:bg-neutral-900/70 group-hover:bg-neutral-200 group-hover:border-neutral-300 dark:border-neutral-700 group-hover:dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
           {appointment.details.service}
         </Badge>
         <Dialog open={isOpened} onOpenChange={setIsOpened}>
@@ -1040,7 +1040,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         </Dialog>
       </CardHeader>
       <CardContent
-        className={cn("pb-1.5 !px-0", {
+        className={cn("pb-1.5 !px-0 hidden", {
           "cursor-grabbing bg-muted opacity-50": isDragging,
         })}
       >
@@ -1140,7 +1140,6 @@ const Appointment: React.FC<AppointmentProps> = ({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-
               </div>
               <div className="flex justify-center items-center">
                 <TooltipProvider>
@@ -1186,7 +1185,7 @@ const Appointment: React.FC<AppointmentProps> = ({
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-center justify-center gap-1 text-xs mr-2">
+          {/* <div className="flex flex-col items-center justify-center gap-1 text-xs mr-2">
             <span className="whitespace-nowrap max-w-28 overflow-hidden dark:text-white/90 truncate font-medium">{appointment.title}</span>
             <div className="flex gap-2">
               {viewMode === "month" && <span className="dark:text-white/90">{appointment.start.toLocaleDateString("pt-BR")}</span>}
@@ -1195,7 +1194,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                 {format(new Date(appointment.end), "kk:mm")}
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
       </CardContent>
     </Card>
