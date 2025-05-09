@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState, useTransition } from "react";
+import React, { FC, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import CalendarToolbar from "./PlannerToolbar";
 import Appointment from "./Appointment";
 import { Appointment as AppointmentType, Resource } from "@/models";
@@ -12,12 +12,11 @@ import { Table, TableBody, TableRow } from "@/components/ui/table";
 import { calculateNewDates, cn, filterAppointments } from "@/utils/utils";
 import DropTableCell from "./DropTableCell";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { DateRange } from "react-day-picker";
 import { Loading } from "../ui/loading/loading";
 import { toast } from "sonner";
 import { PlannerTopBar } from "./PlannerTopbar";
 import { Separator } from "../ui/separator";
-import { format } from "date-fns";
+import { differenceInMinutes, format, parse } from "date-fns";
 
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -61,15 +60,21 @@ type CalendarContentProps = React.HTMLAttributes<HTMLDivElement>
 const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const { viewMode, dateRange, timeLabels, hourLabels } = useCalendar();
   const { resources, appointments, updateAppointment } = usePlannerData();
-  const [isPending, startOnDropTransition] = useTransition();
+  const [isOnDropTransitionPending, startOnDropTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
+  const [isResizing, setIsResizing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isOnSubmitTransitionPending, startOnSubmitTransition] = useTransition();
 
-  const [tableBodyHeight, setTableBodyHeight] = useState<number | null>(null);
+  const [tableBodyDimensions, setTableBodyDimensions] = useState<{ width?: number; height?: number } | null>(null);
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
 
   useEffect(() => {
     if (tableBodyRef.current) {
-      setTableBodyHeight(tableBodyRef.current.offsetHeight);
+      setTableBodyDimensions({
+        width: tableBodyRef.current.offsetWidth,
+        height: tableBodyRef.current.offsetHeight
+      });
     }
   }, [appointments, isLoading])
 
@@ -84,14 +89,27 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
     return () => clearTimeout(timeout);
   }, [appointments])
 
+
   useEffect(() => {
     return monitorForElements({
       async onDrop({ source, location }) {
         const destination = location.current.dropTargets[0]?.data;
         const sourceData = source.data;
-        const appointment = sourceData.appointment as AppointmentType
+        const appointment = sourceData.appointment as AppointmentType;
 
-        if (!destination || !sourceData || !appointment) return;
+        const startY = location.initial.input.clientY;
+        const currentY = location.current.input.clientY;
+        const slotHeight = 1.134 * 30;
+        const deltaY = currentY - startY;
+        const slotsCrossed = Math.round(deltaY / slotHeight);
+        const minutesMoved = slotsCrossed * 30;
+
+        setTimeout(() => setIsDragging(true), 1);
+
+        if (!destination || !sourceData || !appointment) {
+          setTimeout(() => setIsDragging(false), 2);
+          return;
+        }
 
         const newResource = resources.find(
           (res) => res.id === destination.resourceId,
@@ -103,8 +121,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
           destination.columnIndex as unknown as number,
           sourceData.columnIndex as unknown as number,
           {
-            from: appointment.start,
-            to: appointment.end,
+            from: new Date(appointment.start.getTime() + minutesMoved * 60_000),
+            to: new Date(appointment.end.getTime() + minutesMoved * 60_000),
           },
         );
 
@@ -124,7 +142,9 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                       }))
                     },
                     resourceId: newResource.id,
-                  }));
+                  }))
+              }).then(() => {
+                setIsDragging(false);
               }),
             {
               loading: "Atualizando compromisso...",
@@ -135,11 +155,131 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         });
       },
     });
-  }, [appointments, resources, updateAppointment, viewMode]);
+  }, [resources, updateAppointment, viewMode]);
 
   function getTopPositionFromTime(timeStr: string): number {
     const [hours, minutes] = timeStr.split(":").map(Number);
     return (hours * (34 * 2)) + (minutes * 1.12);
+  }
+
+  function groupOverlappingAppointments(appointments: AppointmentType[]) {
+    const clusters: AppointmentType[][] = [];
+
+    for (const appt of appointments) {
+      let added = false;
+
+      for (const cluster of clusters) {
+        if (
+          cluster.some(other =>
+            appt.start.getTime() < other.end.getTime() &&
+            other.start.getTime() < appt.end.getTime()
+          )
+        ) {
+          cluster.push(appt);
+          added = true;
+          break;
+        }
+      }
+
+      if (!added) {
+        clusters.push([appt]);
+      }
+    }
+
+    return clusters;
+  }
+
+  function startResizing(
+    e: React.MouseEvent,
+    appointment: AppointmentType,
+    direction: "top" | "bottom"
+  ) {
+    e.preventDefault();
+
+    setIsResizing(true);
+
+    const appointmentDiv = (e.target as HTMLElement).closest(".handle-resize") as HTMLElement;
+    if (!appointmentDiv) return;
+
+    const startY = e.clientY;
+    const originalStart = new Date(appointment.start);
+    const originalEnd = new Date(appointment.end);
+
+    const originalTop = appointmentDiv.offsetTop;
+    const originalHeight = appointmentDiv.offsetHeight;
+
+    function onMouseMove(moveEvent: MouseEvent) {
+      const deltaY = moveEvent.clientY - startY;
+      const slotHeight = 1.134 * 30;
+      const slotsCrossed = direction === "bottom" ? Math.ceil(deltaY / slotHeight) : Math.round(deltaY / slotHeight);
+      const minutesMoved = slotsCrossed * 30;
+      const pixelsMoved = minutesMoved * 1.134;
+
+      let newStart = new Date(originalStart);
+      let newEnd = new Date(originalEnd);
+
+      if (direction === "bottom") {
+        newEnd = new Date(originalEnd.getTime() + minutesMoved * 60_000);
+        if (differenceInMinutes(newEnd, newStart) < 30) return;
+
+        const newHeight = originalHeight + pixelsMoved;
+        appointmentDiv.style.height = `${newHeight}px`;
+      } else {
+        newStart = new Date(originalStart.getTime() + minutesMoved * 60_000);
+        if (differenceInMinutes(newEnd, newStart) < 30) return;
+
+        const newTop = originalTop + pixelsMoved;
+        const newHeight = originalHeight - pixelsMoved;
+
+        appointmentDiv.style.top = `${newTop}px`;
+        appointmentDiv.style.height = `${newHeight}px`;
+      }
+    }
+
+    function onMouseUp(moveEvent: MouseEvent) {
+      const deltaY = moveEvent.clientY - startY;
+      const slotHeight = 1.134 * 30;
+      const slotsCrossed = direction === "bottom" ? Math.ceil(deltaY / slotHeight) : Math.round(deltaY / slotHeight);
+      const minutesMoved = slotsCrossed * 30;
+
+      let newStart = new Date(originalStart);
+      let newEnd = new Date(originalEnd);
+
+      if (direction === "bottom") {
+        newEnd = new Date(originalEnd.getTime() + minutesMoved * 60_000);
+        if (differenceInMinutes(newEnd, newStart) < 30) return;
+      } else {
+        newStart = new Date(originalStart.getTime() + minutesMoved * 60_000);
+        if (differenceInMinutes(newEnd, newStart) < 30) return;
+      }
+
+      startOnSubmitTransition(() => {
+        toast.promise(
+          () =>
+            new Promise((resolve) => {
+              resolve(
+                updateAppointment({
+                  ...appointment,
+                  start: newStart,
+                  end: newEnd,
+                }));
+            }).then(() => {
+              setIsResizing(false);
+            }),
+          {
+            loading: "Atualizando compromisso...",
+            success: "Compromisso atualizado com sucesso!",
+            error: "Ocorreu um erro ao atualizar o compromisso. Tente novamente!",
+          },
+        );
+      })
+
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    }
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
   }
 
   return (appointments &&
@@ -150,46 +290,89 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
           <TableBody ref={tableBodyRef}>
             {resources.map((resource) => (
               hourLabels.map((hour, rowIndex) => (
-                <TableRow key={resource.id} className={cn("max-h-[34px] min-h-[34px] h-[34px]" ,isLoading && "hidden")}>
-                  <td className="text-center dark:text-neutral-200/80">{format(hour, 'HH:mm')}</td>
-                  {/* <ResourceTableCell resourceItem={resource} /> */}
-                  {["", ...timeLabels]?.map((label, index) => (
+                <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px]", isLoading && "hidden")}>
+                  <td className="text-center dark:text-neutral-100 !min-w-[50px] w-[50px] !max-w-[50px]">
+                    {format(hour, 'HH:mm')}
+                  </td>
+
+                  {["", ...timeLabels]?.map((_, index) => (
                     timeLabels.length !== index &&
                     <DropTableCell
                       resourceId={resource.id}
                       columnIndex={index}
                       key={index}
-                      className="relative hover:bg-muted/50"
+                      className={cn(
+                        "relative hover:bg-muted/50",
+                        isResizing && "cursor-n-resize",
+                      )}
+                      style={{ minWidth: `${(tableBodyDimensions?.width ? (tableBodyDimensions?.width - 70) / 7 : 0)}px` }}
                     >
-                      {rowIndex === 0 &&
-                        <td className="absolute w-full border md:border-b-0 border-t-0" style={{ height: `${tableBodyHeight}px` }}>
-                          <div className="relative h-full w-full">
-                            {appointments
+                      {rowIndex === 0 && (
+                        <div
+                          className="absolute w-full border md:border-b-0 border-t-0"
+                          style={{ height: `${tableBodyDimensions?.height}px` }}
+                        >
+                          {(() => {
+                            const visibleAppointments = appointments
                               .filter(
                                 (appt) =>
-                                  filterAppointments(
-                                    appt,
-                                    index,
-                                    dateRange,
-                                    viewMode,
-                                  ) && appt.resourceId === resource.id,
-                              )
-                              .sort((a, b) => a.start.getTime() - b.start.getTime())
-                              .map((appt) => (
-                                <div
-                                  className="absolute z-10 left-[1px] w-[99%] max-w-[99%]"
-                                  style={{ top: getTopPositionFromTime(format(appt.start, 'HH:mm')) + 2 }}
-                                  key={appt.id}
-                                >
-                                  <Appointment
-                                    appointment={appt}
-                                    columnIndex={index}
-                                    resourceId={resource.id}
-                                  />
-                                </div>
-                              ))}
-                          </div>
-                        </td>}
+                                  filterAppointments(appt, index, dateRange, viewMode) &&
+                                  appt.resourceId === resource.id
+                              );
+
+                            const clusters = groupOverlappingAppointments(visibleAppointments);
+
+                            return clusters.flatMap((cluster) =>
+                              cluster
+                                .sort((a, b) => a.start.getTime() - b.start.getTime())
+                                .map((appt, position) => {
+                                  const widthPercent = 100 / cluster.length;
+                                  const leftPercent = widthPercent * position;
+
+                                  return (
+                                    <div
+                                      className={cn(
+                                        "absolute z-10 handle-resize cursor-pointer",
+                                        isResizing && "cursor-s-resize",
+                                        isDragging && "pointer-events-none"
+                                      )}
+                                      style={{
+                                        top: getTopPositionFromTime(format(appt.start, "HH:mm")) + 2,
+                                        width: `${widthPercent}%`,
+                                        left: `${leftPercent}%`,
+                                        maxWidth: `${widthPercent}%`,
+                                        height: `${(1.134 * differenceInMinutes(appt.end, appt.start)) - 4}px`
+                                      }}
+                                      key={appt.id}
+                                    >
+                                      <div className="relative w-[98%] translate-x-[1%] h-full">
+                                        <div
+                                          className={cn(
+                                            "absolute top-0 left-0 right-0 h-1 w-full bg-transparent z-50",
+                                            !isResizing && "cursor-n-resize"
+                                          )}
+                                          onMouseDown={(e) => isResizing ? undefined : startResizing(e, appt, "top")}
+                                        />
+                                        <div
+                                          className={cn(
+                                            "absolute bottom-0 left-0 right-0 h-1 w-full bg-transparent z-50",
+                                            !isResizing && "cursor-s-resize"
+                                          )}
+                                          onMouseDown={(e) => isResizing ? undefined : startResizing(e, appt, "bottom")}
+                                        />
+                                        <Appointment
+                                          appointment={appt}
+                                          columnIndex={index}
+                                          resourceId={resource.id}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                            );
+                          })()}
+                        </div>
+                      )}
                     </DropTableCell>
                   ))}
                 </TableRow>

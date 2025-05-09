@@ -29,7 +29,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
   function shouldDisplayIcon({ viewMode, index }: { viewMode: "day" | "week" | "month" | "year", index: number }) {
     const today = new Date();
-    return index === (viewMode === "day" ? today.getHours() : today.getDay())
+    return index === (viewMode === "day" ? today.getHours() : today.getDay()) + 1
       && (dateRange?.from && today >= dateRange?.from)
       && (dateRange?.to && today <= dateRange?.to)
   }
@@ -54,13 +54,13 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           <TableHead
             key={index}
             className={cn(
-              "sticky bg-background last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-neutral-700 hover:dark:border-neutral-700",
+              "sticky bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
               viewMode !== "day" && "top-0",
               shouldDisplayIcon({ index, viewMode })
                 ? "z-30" : "z-20"
             )}
           >
-            <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200/60 !text-black/60">
+            <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200 !text-black/60">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>
@@ -72,9 +72,9 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                             <IconClock className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
                           </div>
                           : viewMode === "week"
-                            ? <div className="flex items-center min-w-10">
+                            ? 
                               <IconCalendarPin className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
-                            </div>
+                            
                             : null
                       }
                     </TooltipTrigger>

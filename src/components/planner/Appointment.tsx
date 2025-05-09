@@ -88,12 +88,14 @@ interface AppointmentProps {
   appointment: AppointmentType;
   resourceId: string;
   columnIndex: number;
+  className?: string;
 }
 
 const Appointment: React.FC<AppointmentProps> = ({
   appointment,
   resourceId,
   columnIndex,
+  className
 }) => {
   const { updateAppointment, removeAppointment, handleUpdate } = usePlannerData();
   const { viewMode } = useCalendar();
@@ -331,10 +333,13 @@ const Appointment: React.FC<AppointmentProps> = ({
 
   return (
     <Card ref={ref} className={cn(
-      viewMode === "month" ? "w-full" : "w-full max-w-full rounded-none !p-0 !m-0 h-[30px]",
-      "z-50 !items-start dark:hover:bg-neutral-700 hover:bg-[#F8F9FA] bg-white dark:bg-neutral-800 dark:border-neutral-700/60 group transition-colors duration-150")} onDoubleClick={() => setIsOpened(true)}>
-      <CardHeader className="flex flex-row items-center justify-between p-1">
-        <Badge variant={"outline"} className="border-none rounded-none ml-1 hover:cursor-grab group-hover:dark:bg-neutral-900/70 group-hover:bg-neutral-200 group-hover:border-neutral-300 dark:border-neutral-700 group-hover:dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
+      "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start bg-white dark:bg-neutral-800 dark:border-neutral-700/60", 
+      "group transition-colors duration-150",
+      className
+    )} 
+      onDoubleClick={() => setIsOpened(true)}>
+      <CardHeader className="absolute w-full flex flex-row items-center justify-between p-1">
+        <Badge variant={"outline"} className="border-none rounded-sm ml-1 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
           {appointment.details.service}
         </Badge>
         <Dialog open={isOpened} onOpenChange={setIsOpened}>
