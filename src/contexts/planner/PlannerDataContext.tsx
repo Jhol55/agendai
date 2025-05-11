@@ -3,6 +3,9 @@ import { AppointmentService, ResourceService } from "@/services/planner/";
 import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
+import { getOperatingHours } from "@/services/operatingHours";
+import { eachMinuteOfInterval, endOfDay } from "date-fns";
+import { getMinMaxCalendarRange } from "@/utils/utils";
 
 interface DataContextType {
   appointments: Appointment[];
@@ -15,6 +18,7 @@ interface DataContextType {
   addResource: (resource: Resource) => void;
   updateResource: (resource: Resource) => void;
   removeResource: (id: string) => void;
+  hourLabels: Date[]
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -26,6 +30,7 @@ export const PlannerDataContextProvider: FC<{
 
   const resourceService = useMemo(() => new ResourceService(initialResources), [initialResources]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [hourLabels, setHourLabels] = useState<Date[]>([]);
   const { dateRange } = useCalendar();
   const [trigger, setTrigger] = useState(false);
   const handleUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
@@ -53,6 +58,32 @@ export const PlannerDataContextProvider: FC<{
         });
     }
   }, [dateRange, trigger]);
+
+  useEffect(() => {
+    getOperatingHours({}).then((data) => {
+      const operatingHoursRange = getMinMaxCalendarRange(data);
+      const appointmentsRange = getMinMaxCalendarRange(appointments);
+
+      if (!operatingHoursRange.min || !operatingHoursRange.max) return;
+
+      const min = operatingHoursRange?.min.getTime() < (appointmentsRange.min?.getTime() ?? Infinity)
+        ? operatingHoursRange.min : appointmentsRange.min;
+      const max = operatingHoursRange?.max.getTime() > (appointmentsRange.max?.getTime() ?? -Infinity)
+        ? operatingHoursRange.max : appointmentsRange.max;
+
+      if (!min || !max) return;
+
+      const interval = eachMinuteOfInterval(
+        {
+          start: new Date(min),
+          end: new Date(max),
+        },
+        { step: 30 }
+      );
+
+      setHourLabels(interval);
+    });
+  }, [appointments, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({
@@ -103,6 +134,7 @@ export const PlannerDataContextProvider: FC<{
       resourceService.removeResource(id);
       handleUpdate();
     },
+    hourLabels: hourLabels
   };
 
   return <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>;

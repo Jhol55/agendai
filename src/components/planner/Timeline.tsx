@@ -9,8 +9,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 import { Typography } from "../ui/typography";
+
 
 export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
@@ -48,18 +48,18 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
   return (
     <TableHeader>
-      <TableRow className="bg-background">
-        {/* <TableHead></TableHead> */}
+      <TableRow className="bg-neutral-800 sticky top-0 z-50">
         {["", ...timeLabels].map((label, index) => (
           <TableHead
             key={index}
             className={cn(
-              "sticky bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
-              viewMode !== "day" && "top-0",
+              "bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
               shouldDisplayIcon({ index, viewMode })
                 ? "z-30" : "z-20"
             )}
           >
+            {/* bug fix - th sticky border */}
+            {index === 1 && <div className="absolute top-0 left-0 w-full h-full bg-neutral-800"></div>}
             <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200 !text-black/60">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&
@@ -72,9 +72,8 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                             <IconClock className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
                           </div>
                           : viewMode === "week"
-                            ? 
-                              <IconCalendarPin className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
-                            
+                            ?
+                            <IconCalendarPin className="absolute right-0 w-4 h-4 rounded-md text-green-500" />
                             : null
                       }
                     </TooltipTrigger>

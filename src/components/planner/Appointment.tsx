@@ -74,6 +74,7 @@ import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { useCalendar } from "@/contexts/planner/PlannerContext";
+import { Separator } from "../ui/separator";
 
 type ServiceType = {
   id: string,
@@ -200,8 +201,8 @@ const Appointment: React.FC<AppointmentProps> = ({
               })()
             }))
         }
-      });     
-      setIsLoading(!isOpened);     
+      });
+      setIsLoading(!isOpened);
     }, 1000)
   }, [appointment, form, isOpened]);
 
@@ -257,9 +258,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                 }));
             }).then(() => {
               setTimeout(() => {
-                handleUpdate();             
+                handleUpdate();
                 setIsOpened(false);
-                setAutoEndDate(undefined);              
+                setAutoEndDate(undefined);
               }, 500);
             }),
           {
@@ -333,21 +334,121 @@ const Appointment: React.FC<AppointmentProps> = ({
 
   return (
     <Card ref={ref} className={cn(
-      "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start bg-white dark:bg-neutral-800 dark:border-neutral-700/60", 
+      "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start bg-white dark:bg-purple-700 dark:border-neutral-700/60",
       "group transition-colors duration-150",
       className
-    )} 
-      onDoubleClick={() => setIsOpened(true)}>
+    )}
+      onDoubleClick={(e) => {setIsOpened(true); e.stopPropagation()}}>
       <CardHeader className="absolute w-full flex flex-row items-center justify-between p-1">
-        <Badge variant={"outline"} className="border-none rounded-sm ml-1 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 transition-colors duration-150 truncate px-2 text-xs w-full whitespace-nowrap inline-block">
-          {appointment.details.service}
-        </Badge>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="w-full h-full">
+              <Badge variant={"outline"} className="border-none rounded-sm dark:border-neutral-700 transition-colors duration-150 truncate px-1 text-xs w-full whitespace-nowrap inline-block">
+                <div className="flex justify-start w-full">
+                  {appointment.details.online
+                    ? <IconVideo className={cn(
+                      "w-4 h-4 min-w-4 min-h-4 text-white/90",
+                      appointment.status === "confirmed" && "text-green-600",
+                      appointment.status === "canceled" && "text-red-600"
+                    )} />
+                    : <IconMapPin className={cn(
+                      "w-4 h-4 min-w-4 min-h-4 text-white/90",
+                      appointment.status === "confirmed" && "text-green-600",
+                      appointment.status === "canceled" && "text-red-600"
+                    )} />
+                  }
+                  <Typography variant="p" className="!text-white truncate pl-1">
+                    {appointment.title}
+                  </Typography>
+                </div>
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent onMouseDown={(e) => e.preventDefault()}>
+              <div className="flex flex-col gap-1">
+                <div className="flex gap-1">{
+                  <>
+                    <Typography variant="b" className="text-xs">Modalidade:</Typography>
+                    <Typography variant="p" className="text-xs">
+                      {
+                        appointment.details.online
+                          ? "Online"
+                          : "Presencial"
+                      }
+                    </Typography>
+                  </>
+                }
+                </div>
+                <div className="flex gap-1">{
+                  <>
+                    <Typography variant="b" className="text-xs">Status:</Typography>
+                    <Typography variant="p" className="text-xs">
+                      {
+                        watch.status === "confirmed"
+                          ? "Confirmado"
+                          : watch.status === "canceled"
+                            ? "Cancelado"
+                            : "Pendente"
+                      }
+                    </Typography>
+                  </>
+                }
+                </div>
+                <Separator orientation="horizontal" />
+                <div className="flex flex-col gap-1">
+                  <div className="flex gap-1">{
+                    <>
+                      <Typography variant="b" className="text-xs">Descrição:</Typography>
+                      <Typography variant="p" className="text-xs">Taxa de reserva</Typography>
+                    </>
+                  }
+                  </div>
+                  <div className="flex gap-1">
+                    <Typography variant="b" className="text-xs">Status:</Typography>
+                    <Typography variant="p" className="text-xs">
+                      {
+                        ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
+                          ? "Pago"
+                          : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                            ? "Pendente"
+                            : "Vencido"
+                      }
+                    </Typography>
+                  </div>
+                </div>
+                <Separator orientation="horizontal" />
+                <div className="flex flex-col gap-1">
+                  <div className="flex gap-1">{
+                    <>
+                      <Typography variant="b" className="text-xs">Descrição:</Typography>
+                      <Typography variant="p" className="text-xs">Valor restante</Typography>
+                    </>
+                  }
+                  </div>
+                  <div className="flex gap-1">
+                    <Typography variant="b" className="text-xs">Status:</Typography>
+                    <Typography variant="p" className="text-xs">
+                      {
+                        ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
+                          ? "Pago"
+                          : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                            ? "Pendente"
+                            : "Vencido"
+                      }
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+
         <Dialog open={isOpened} onOpenChange={setIsOpened}>
-          <DialogTrigger className="cursor-pointer !m-0 min-w-4" asChild>
+          {/* <DialogTrigger className="cursor-pointer !m-0 min-w-4" asChild>
             <div className="text-xs">
               <EllipsisVertical className="h-4 w-4" />
             </div>
-          </DialogTrigger>
+          </DialogTrigger> */}
           <DialogContent
             aria-describedby={undefined}
             className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
@@ -1070,7 +1171,6 @@ const Appointment: React.FC<AppointmentProps> = ({
                       }
                     </TooltipTrigger>
                     <TooltipContent>
-
                       <div className="flex flex-col gap-1">
                         <div className="flex gap-1">{
                           <>

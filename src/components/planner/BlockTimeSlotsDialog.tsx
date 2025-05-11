@@ -29,6 +29,7 @@ import { ColumnDef, Row } from "@tanstack/react-table";
 import { Typography } from "@/components/ui/typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IconChevronLeft, IconPlus, IconTrash } from "@tabler/icons-react";
+import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 
 interface BlockTimeSlotsProps {
   type?: "period" | "dayOfWeek"
@@ -168,6 +169,8 @@ export const BlockTimeSlotsDialog = () => {
       setExceptions(data);
     })
   }, [isFormVisible])
+
+  const { handleUpdate } = usePlannerData();
 
   const onSubmit = async (values: z.infer<typeof blockedTimesSchema>) => {
     startOnSubmitTransition(() => {

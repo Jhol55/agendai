@@ -55,9 +55,9 @@ type ServiceType = {
   allow_in_person: boolean
 }
 
-const AddAppointmentDialog: React.FC = () => {
+const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?: boolean, onOpenChange?: (open: boolean) => void, className?: string }) => {
   const { addAppointment } = usePlannerData();
-  const [isOpened, setIsOpened] = useState(false);
+  const [isOpened, setIsOpened] = useState(open);
   const [isPending, startAddAppointmentTransition] = useTransition();
   const { settings } = useSettings();
   const [openClient, setOpenClient] = React.useState(false);
@@ -191,6 +191,19 @@ const AddAppointmentDialog: React.FC = () => {
     }
   }, [form, currentService])
 
+  useEffect(() => {
+    if (open !== isOpened) {
+      setIsOpened(open);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (onOpenChange) {
+      onOpenChange(isOpened);
+    }
+  }, [isOpened, onOpenChange]);
+
   const findPaymentIndex = (type: string) => {
     return form.getValues('details.payments').findIndex(payment => payment.type === type);
   }
@@ -201,7 +214,7 @@ const AddAppointmentDialog: React.FC = () => {
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-[#2B2D42] hover:bg-[#2B2D42]">
+        <Button variant="outline" className={cn("bg-[#2B2D42] hover:bg-[#2B2D42]", className)}>
           <IconCalendarPlus className="h-4 w-4 text-white" />
           <Typography variant="span" className="md:block hidden !text-white">Novo compromisso</Typography>
         </Button>

@@ -30,6 +30,8 @@ import { getOperatingHours, updateOperatingHours } from "@/services/operatingHou
 import { z } from "zod";
 import { BlockTimeSlotsDialog } from "./BlockTimeSlotsDialog";
 import { Loading } from "../ui/loading/loading";
+import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
+import { useCalendar } from "@/contexts/planner/PlannerContext";
 
 type daysOfWeekType = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"
 
@@ -37,6 +39,8 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
   ({ onClose, onClick }, ref) => {
     const [isOpened, setIsOpened] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const { handleUpdate } = usePlannerData();
+    const { handlePlannerUpdate } = useCalendar();
 
     const handleDialogToggle = (open: boolean) => {
       setIsOpened(open);
@@ -126,7 +130,11 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
     }, [form, isOpened]);
 
     const onSubmit = (values: z.infer<typeof operatingHoursSchema>) => {
-      updateOperatingHours({ data: values });
+      updateOperatingHours({ data: values }).then(() => {
+        setTimeout(() => {
+          handleUpdate(); 
+        }, 100)             
+      });
       setTimeout(() => {
         form.clearErrors();
         handleDialogToggle(false);

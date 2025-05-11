@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from "react";
 import { startOfDay, endOfDay, startOfWeek, eachHourOfInterval, eachMinuteOfInterval } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { getLabelsForView } from "@/utils/utils";
+import { getLabelsForView, getMinMaxCalendarRange } from "@/utils/utils";
+import { getOperatingHours } from "@/services/operatingHours";
+
 
 interface PlannerContextType {
   viewMode: "day" | "week" | "month" | "year";
@@ -10,6 +12,7 @@ interface PlannerContextType {
   dateRange: DateRange | undefined;
   currentDateRange: DateRange | undefined;
   setDateRange: (dateRange: DateRange) => void;
+  handlePlannerUpdate: () => void;
 }
 
 const defaultContextValue: PlannerContextType = {
@@ -21,6 +24,7 @@ const defaultContextValue: PlannerContextType = {
   setDateRange: (dateRange: DateRange) => {
     console.log(dateRange);
   },
+  handlePlannerUpdate: () => null
 };
 
 const PlannerContext = createContext<PlannerContextType>(defaultContextValue);
@@ -29,6 +33,9 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [hourLabels, setHourLabels] = useState<Date[]>([]);
+  const [trigger, setTrigger] = useState(false);
+  const handlePlannerUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
 
   const viewMode = useMemo(() => {
     const days =
@@ -46,15 +53,23 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, [viewMode, dateRange]);
 
-  const hourLabels = useMemo(() => {
-    return eachMinuteOfInterval(
-      {
-        start: startOfDay(new Date()),
-        end: endOfDay(new Date()),
-      },
-      { step: 30 } // a cada 30 minutos
-    );
-  }, []);
+  useEffect(() => {
+    getOperatingHours({}).then((data) => {
+      const { min, max } = getMinMaxCalendarRange(data);
+
+      if (!min || !max) return;
+
+      const interval = eachMinuteOfInterval(
+        {
+          start: new Date(min),
+          end: endOfDay(new Date(max)),
+        },
+        { step: 30 }
+      );
+
+      setHourLabels(interval);
+    });
+  }, [trigger]);
 
   const value = {
     timeLabels,
@@ -63,6 +78,7 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
     setDateRange,
     viewMode: viewMode as "day" | "week" | "month" | "year",
     currentDateRange: dateRange,
+    handlePlannerUpdate
   };
 
   return (

@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge"
 import { Appointment } from "@/models/Appointment";
 import { ptBR } from 'date-fns/locale';
 
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -69,6 +70,7 @@ const isAppointmentInSlot = (
       );
     case "week":
       return (
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         apptDate.getDay() - (6 - differenceInDays(new Date(dateRange.to!), new Date(dateRange.from))) === index &&
         isSameWeek(apptDate, dateRange.from)
       );
@@ -88,7 +90,6 @@ export const getLabelsForView = (
   viewMode: 'day' | 'week' | 'month' | 'year',
   dateRange: { start: Date; end: Date }
 ): string[] => {
-  // console.log(dateRange.start, dateRange.end)
   switch (viewMode) {
     case 'day':
       return eachHourOfInterval({ start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) })
@@ -108,3 +109,44 @@ export const getLabelsForView = (
 };
 
 
+
+
+export function getMinMaxCalendarRange(
+  schedules: { start_time?: string | Date, end_time?: string | Date, start?: string | Date, end?: string | Date }[]
+) {
+  if (schedules.length === 0) {
+    return { min: null, max: null };
+  }
+
+  function updateDatesToToday(dates: string[]) {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+  
+    return dates.map(dateStr => {
+      const [_, time] = dateStr.split(',').map(s => s.trim());
+      return `${day}/${month}/${year}, ${time}`;
+    });
+  }
+
+  const normalizedStart = updateDatesToToday(schedules.map(s => new Date(s.start_time ?? s.start ?? "")?.toLocaleString()));
+  const normalizedEnd = updateDatesToToday(schedules.map(s => new Date(s.end_time ?? s.end ?? "")?.toLocaleString()));
+
+  const startTimes = normalizedStart
+    .map(s => new Date(s).getTime())
+    .filter(time => !isNaN(time));
+
+  const endTimes = normalizedEnd
+    .map(s => new Date(s).getTime())
+    .filter(time => !isNaN(time));
+
+  if (startTimes.length === 0 || endTimes.length === 0) {
+    return { min: null, max: null };
+  }
+
+  const min = new Date(Math.min(...startTimes));
+  const max = new Date(Math.max(...endTimes));
+
+  return { min, max };
+}
