@@ -1,5 +1,24 @@
 import { z } from "zod"
 
+export interface BlockTimeSlotsProps {
+  type?: "period" | "dayOfWeek"
+  start?: Date
+  end?: Date
+  is_recurring: boolean
+  day_of_week?: number
+  description?: string
+}
+
+export interface UpdatedBlockTimeSlotsProps {
+  start: Date
+  end: Date
+  is_recurring: boolean
+  day_of_week?: number
+  description?: string
+}
+
+
+
 export const blockedTimesSchema = z.object({
   type: z.string().optional(),
   start: z.date({

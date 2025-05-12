@@ -1,14 +1,20 @@
-import React, { createContext, useContext, useState, ReactNode, FC, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { createContext, useContext, useState, ReactNode, FC, useEffect, useMemo, useRef, useCallback, Dispatch, SetStateAction } from "react";
 import { AppointmentService, ResourceService } from "@/services/planner/";
 import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
 import { getOperatingHours } from "@/services/operatingHours";
-import { eachMinuteOfInterval, endOfDay } from "date-fns";
+import { eachMinuteOfInterval } from "date-fns";
 import { getMinMaxCalendarRange } from "@/utils/utils";
+import { OperatingHoursProps } from "@/models/OperatingHours";
+import { getBlockedTimeSlots } from "@/services/block-time-slots";
+import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 
 interface DataContextType {
   appointments: Appointment[];
+  setAppointments: Dispatch<SetStateAction<Appointment[]>>;
+  operatingHours: OperatingHoursProps[];
+  blockedTimeSlots: UpdatedBlockTimeSlotsProps[];
   resources: Resource[];
   handleUpdate: () => void;
   addAppointment: (appointment: Appointment) => void;
@@ -30,6 +36,8 @@ export const PlannerDataContextProvider: FC<{
 
   const resourceService = useMemo(() => new ResourceService(initialResources), [initialResources]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [operatingHours, setOperatingHours] = useState<OperatingHoursProps[]>([]);
+  const [blockedTimeSlots, setBlockedTimeSlots] = useState<UpdatedBlockTimeSlotsProps[]>([])
   const [hourLabels, setHourLabels] = useState<Date[]>([]);
   const { dateRange } = useCalendar();
   const [trigger, setTrigger] = useState(false);
@@ -81,9 +89,40 @@ export const PlannerDataContextProvider: FC<{
         { step: 30 }
       );
 
+      setOperatingHours(data);
       setHourLabels(interval);
     });
-  }, [appointments, trigger]);
+
+    function getDateForWeekdayInRange(
+      dayOfWeek: number, // 0 (Sunday) to 6 (Saturday)
+      rangeStart: Date,
+      rangeEnd: Date,
+      dateTime: Date
+    ): Date | null {
+      const current = new Date(rangeStart);
+
+      while (current <= rangeEnd) {
+        if (current.getDay() === dayOfWeek) {
+          return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
+        }
+        current.setDate(current.getDate() + 1);
+      }
+      return null;
+    }
+
+    getBlockedTimeSlots({}).then((data) => {
+      setBlockedTimeSlots(
+        data.map((slot: { start: string; end: string; is_recurring: boolean, day_of_week: number | null }) => ({
+          ...slot,
+          start: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
+            ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start))
+            : new Date(slot.start),
+          end: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
+            ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end))
+            : new Date(slot.end),
+        })));
+    });
+  }, [appointments, dateRange, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({
@@ -105,6 +144,10 @@ export const PlannerDataContextProvider: FC<{
 
   const contextValue: DataContextType = {
     appointments,
+    setAppointments,
+    operatingHours,
+    blockedTimeSlots,
+    hourLabels,
     resources: resourceService.getResources(),
     handleUpdate: handleUpdate,
     addAppointment: async (appointment) => {
@@ -134,7 +177,6 @@ export const PlannerDataContextProvider: FC<{
       resourceService.removeResource(id);
       handleUpdate();
     },
-    hourLabels: hourLabels
   };
 
   return <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>;

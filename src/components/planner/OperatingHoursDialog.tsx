@@ -40,7 +40,6 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
     const [isOpened, setIsOpened] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { handleUpdate } = usePlannerData();
-    const { handlePlannerUpdate } = useCalendar();
 
     const handleDialogToggle = (open: boolean) => {
       setIsOpened(open);

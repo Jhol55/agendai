@@ -10,7 +10,7 @@ export const AddBlockedTimeSlot = async ({ test = false, data }: { test?: boolea
   }
 }
 
-export const GetBlockedTimeSlots = async ({ test = false }: { test?: boolean }) => {
+export const getBlockedTimeSlots = async ({ test = false }: { test?: boolean }) => {
   try {
     const response = await api(test).get('get-blocked-time-slot');
     return response.data;
@@ -19,7 +19,7 @@ export const GetBlockedTimeSlots = async ({ test = false }: { test?: boolean }) 
   }
 }
 
-export const RemoveBlockedTimeSlot = async ({ test = false, data }: { test?: boolean, data: object }) => {
+export const removeBlockedTimeSlot = async ({ test = false, data }: { test?: boolean, data: object }) => {
   try {
     const response = await api(test).post('remove-blocked-time-slot', data);
     return response.data;

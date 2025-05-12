@@ -55,7 +55,7 @@ type ServiceType = {
   allow_in_person: boolean
 }
 
-const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?: boolean, onOpenChange?: (open: boolean) => void, className?: string }) => {
+const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className }: { open?: boolean, startDate?: Date, onOpenChange?: (open: boolean) => void, className?: string }) => {
   const { addAppointment } = usePlannerData();
   const [isOpened, setIsOpened] = useState(open);
   const [isPending, startAddAppointmentTransition] = useTransition();
@@ -140,11 +140,17 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
           success: "Compromisso adicionado com sucesso!",
           error: "Ocorreu um erro ao adicionar o compromisso. Tente novamente!",
         },
-      );   
+      );
     });
   }
 
   const watch = form.watch();
+
+  useEffect(() => {
+    if (startDate) {
+      form.setValue("start", startDate)
+    }
+  }, [form, startDate])
 
   useEffect(() => {
     if (clientSearchValue) {
@@ -195,7 +201,7 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
     if (open !== isOpened) {
       setIsOpened(open);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   useEffect(() => {
@@ -410,6 +416,31 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
                                           ? Number(settings.scheduling[settings.scheduling.findIndex(item => item.type === "tax")].value)
                                           : 0);
                                       form.setValue(`details.payments.${serviceIndex}.value`, service.price - (watch.details.payments[feeIndex].value || 0));
+
+                                      if (startDate) {
+                                        const newDate = new Date(startDate);
+                                        newDate.setMinutes(newDate.getMinutes() + (service.duration_minutes || 0));
+                                        setAutoEndDate(newDate);
+
+                                        form.setValue(`details.payments.${feeIndex}.dueDate`, (() => {
+                                          let dueDate = new Date(
+                                            startDate.getTime() - Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "tax_deadline_value")].value) * 86400000
+                                          )
+                                          if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                                            dueDate = new Date()
+                                          }
+                                          return dueDate
+                                        })())
+                                        form.setValue(`details.payments.${serviceIndex}.dueDate`, (() => {
+                                          let dueDate = new Date(
+                                            startDate.getTime() + Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "payment_deadline_value")].value) * 86400000
+                                          )
+                                          if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                                            dueDate = new Date()
+                                          }
+                                          return dueDate
+                                        })())
+                                      }
                                     }}
                                     className="cursor-pointer"
                                   >
@@ -482,6 +513,7 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
                   <FormLabel className="text-left">Início</FormLabel>
                   <FormControl>
                     <TimePicker
+                      value={startDate}
                       placeholder="Selecione uma data e um horário"
                       onChange={(date) => {
                         field.onChange(date);
@@ -508,7 +540,7 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
                               dueDate = new Date()
                             }
                             return dueDate
-                          })())                 
+                          })())
                         }
                       }}
                       onClick={() => setIsCalendarOpen(true)}
@@ -517,7 +549,7 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
                           setIsCalendarOpen(false);
                         }
                       }}
-                      disabled={!durationMinutes}
+                      disabled={!durationMinutes && !startDate}
                     />
                   </FormControl>
                   <FormMessage />
@@ -598,7 +630,7 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
                               setIsCalendarOpen(false);
                             }
                           }}
-                          disabled={!watch.start}
+                          disabled={!watch.start || !currentService}
                         />
                       </FormControl>
                     </FormItem>
@@ -701,7 +733,7 @@ const AddAppointmentDialog = ({ open = false, onOpenChange, className }: { open?
                               setIsCalendarOpen(false);
                             }
                           }}
-                          disabled={!watch.start}
+                          disabled={!watch.start || !currentService}
                         />
                       </FormControl>
                     </FormItem>

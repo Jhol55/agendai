@@ -18,6 +18,7 @@ import { PlannerTopBar } from "./PlannerTopbar";
 import { Separator } from "../ui/separator";
 import { differenceInMinutes, format, parse } from "date-fns";
 import AddAppointmentDialog from "./AddAppointmentDialog";
+import { BlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -60,7 +61,7 @@ const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
 type CalendarContentProps = React.HTMLAttributes<HTMLDivElement>
 const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const { viewMode, dateRange, timeLabels } = useCalendar();
-  const { resources, appointments, updateAppointment, hourLabels, handleUpdate } = usePlannerData();
+  const { resources, appointments, updateAppointment, hourLabels, handleUpdate, blockedTimeSlots, setAppointments } = usePlannerData();
   const [isOnDropTransitionPending, startOnDropTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
   const [isResizing, setIsResizing] = useState(false);
@@ -68,7 +69,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const [isOnSubmitTransitionPending, startOnSubmitTransition] = useTransition();
   const [timeMarkerTopPosition, setTimeMarkerTopPosition] = useState<number>(0);
   const [isAddAppointmentOpen, setIsAddAppointmentOpen] = useState(false);
-  
+  const [addAppointmentStartDate, setAddAppointmentStartDate] = useState<Date | undefined>(undefined);
+
   const [tableBodyDimensions, setTableBodyDimensions] = useState<{ width?: number; height?: number } | null>(null);
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
 
@@ -79,7 +81,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         height: tableBodyRef.current.offsetHeight
       });
     }
-  }, [appointments, isLoading])
+  }, [appointments, isLoading, hourLabels])
 
   useEffect(() => {
     setIsLoading(true);
@@ -166,10 +168,22 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
     return ((hours * (34 * 2)) + (minutes * 1.12)) - ((initialHours * (34 * 2)) + (initialMinutes * 1.12));
   }, [hourLabels]);
 
-  function groupOverlappingAppointments(appointments: AppointmentType[]) {
+  function groupOverlappingAppointments(appointments: (AppointmentType | BlockTimeSlotsProps)[]) {
     const clusters: AppointmentType[][] = [];
 
+    function isAppointment(appt: AppointmentType | BlockTimeSlotsProps): appt is AppointmentType {
+      return (
+        appt !== null &&
+        typeof appt === 'object' &&
+        'start' in appt &&
+        'end' in appt &&
+        appt.start instanceof Date &&
+        appt.end instanceof Date
+      );
+    }
+
     for (const appt of appointments) {
+      if (!isAppointment(appt)) continue;
       let added = false;
 
       for (const cluster of clusters) {
@@ -238,6 +252,16 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         appointmentDiv.style.top = `${newTop}px`;
         appointmentDiv.style.height = `${newHeight}px`;
       }
+      
+      // Preview
+      setAppointments(appointments =>
+        appointments.map(originalAppointment => {
+          if (originalAppointment.id === appointment.id) {
+            return { ...originalAppointment, start: newStart, end: newEnd };
+          }
+          return originalAppointment;
+        })
+      );
     }
 
     function onMouseUp(moveEvent: MouseEvent) {
@@ -299,16 +323,16 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
       const nextInterval = intervalMinutes - (minutes % intervalMinutes);
       return (nextInterval * 60 * 1000) - (seconds * 1000 + milliseconds);
     };
-  
+
     const intervalMinutes = 1;
     const timeUntilNext = getTimeUntilNextInterval(intervalMinutes);
-  
+
     let intervalId: ReturnType<typeof setInterval>;
     const timeoutId = setTimeout(() => {
       setTimeMarkerTopPosition(
         getTopPositionFromTime(new Date().toTimeString().slice(0, 5))
       );
-  
+
       intervalId = setInterval(() => {
         setTimeMarkerTopPosition(
           getTopPositionFromTime(new Date().toTimeString().slice(0, 5))
@@ -316,7 +340,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         handleUpdate();
       }, intervalMinutes * 60 * 1000);
     }, timeUntilNext);
-  
+
     return () => {
       clearTimeout(timeoutId);
       if (intervalId) clearInterval(intervalId);
@@ -325,50 +349,70 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
   return (appointments &&
     <div className="flex md:max-h-[calc(88vh_-_theme(spacing.16))] max-h-[calc(81vh_-_theme(spacing.16))] flex-col border rounded-md border-neutral-200 dark:border-neutral-700">
-      <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} />
+      <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} startDate={addAppointmentStartDate} />
       <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent">
         <Table>
           <Timeline />
           <TableBody ref={tableBodyRef} className="relative">
             {resources.map((resource) => (
-              hourLabels.map((hour, rowIndex) => (
+              hourLabels.map((dateTime, rowIndex) => (
                 <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px]", isLoading && "hidden")}>
                   <td className="text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]">
-                    {format(hour, 'HH:mm')}
+                    {format(dateTime, 'HH:mm')}
                     {rowIndex === 0 &&
-                      <div 
-                      className="absolute w-[calc(100%-50px)] left-[50px] border-t border-red-500" 
-                      style={{ 
-                        top: timeMarkerTopPosition
-                      }}
+                      <div
+                        className={cn(
+                          "absolute w-[calc(100%-50px)] left-[50px] border-t border-red-500",
+                          tableBodyDimensions?.height && timeMarkerTopPosition > tableBodyDimensions?.height && "hidden"
+                        )}
+                        style={{
+                          top: timeMarkerTopPosition
+                        }}
                       >
                       </div>}
                   </td>
 
-                  {["", ...timeLabels]?.map((_, index) => (
+                  {["", ...timeLabels]?.map((label, index) => (
                     timeLabels.length !== index &&
                     <DropTableCell
                       resourceId={resource.id}
                       columnIndex={index}
                       key={index}
                       className={cn(
-                        "relative [&:hover:not(:has(.handle-resize:hover))]:bg-muted/50",
+                        "relative",
+                        !isResizing && "[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50",
                         isResizing && "cursor-n-resize",
                       )}
                       style={{ minWidth: `${(tableBodyDimensions?.width ? (tableBodyDimensions?.width - 70) / 7 : 0)}px` }}
-                      onDoubleClick={() => setIsAddAppointmentOpen(true)}
+                      onDoubleClick={(e) => {
+                        if (viewMode !== "month") {
+                          setIsAddAppointmentOpen(true);
+                          const cellDateStr = e.currentTarget.dataset.cellDate;
+                          if (cellDateStr) {
+                            setAddAppointmentStartDate(new Date(cellDateStr));
+                          }
+                        }
+                      }}
+                      data-cell-date={
+                        dateRange?.from
+                          ? new Date(new Date(new Date(dateRange.from.getTime())
+                            .setDate(dateRange.from.getDate() + index))
+                            .setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0))
+                          : undefined
+                      }
                     >
                       {rowIndex === 0 && (
                         <div
                           className="absolute w-full border-r md:border-b-0 border-t-0"
-                          style={{ height: `${tableBodyDimensions?.height}px` }}                         
+                          style={{ height: `${tableBodyDimensions?.height}px` }}
                         >
                           {(() => {
-                            const visibleAppointments = appointments
+                            const visibleAppointments = [...appointments, ...blockedTimeSlots]
+                              .sort((a, b) => a.start.getTime() - b.start.getTime())
                               .filter(
                                 (appt) =>
-                                  filterAppointments(appt, index, dateRange, viewMode) &&
-                                  appt.resourceId === resource.id
+                                  filterAppointments(appt, index, dateRange, viewMode)
+                                
                               );
 
                             const clusters = groupOverlappingAppointments(visibleAppointments);
@@ -386,7 +430,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                         "absolute z-10 handle-resize cursor-pointer",
                                         isResizing && "cursor-s-resize",
                                         isDragging && "pointer-events-none"
-                                      )}                                    
+                                      )}
                                       style={{
                                         top: getTopPositionFromTime(format(appt.start, "HH:mm")) + 2,
                                         width: `${widthPercent}%`,
@@ -396,7 +440,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                       }}
                                       key={appt.id}
                                     >
-                                      <div className="relative w-[98%] translate-x-[1%] h-full">
+                                      <div className="relative w-full h-full px-[1px]">
                                         <div
                                           className={cn(
                                             "absolute top-0 left-0 right-0 h-1 w-full bg-transparent z-50",
@@ -411,11 +455,15 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                           )}
                                           onMouseDown={(e) => isResizing ? undefined : startResizing(e, appt, "bottom")}
                                         />
-                                        <Appointment
-                                          appointment={appt}
-                                          columnIndex={index}
-                                          resourceId={resource.id}
-                                        />
+                                        {appt?.details?.service ?
+                                          <Appointment
+                                            appointment={appt}
+                                            columnIndex={index}
+                                            resourceId={resource.id}
+                                          />
+                                          :
+                                          <div className="bg-red-500 h-full rounded-sm"></div>
+                                        }
                                       </div>
                                     </div>
                                   );

@@ -22,7 +22,7 @@ import { z } from "zod";
 import { blockedTimesSchema } from "@/models/BlockTimeSlots";
 import { cn } from "@/lib/utils";
 import { TimePicker } from "../ui/time-picker";
-import { AddBlockedTimeSlot, GetBlockedTimeSlots } from "@/services/block-time-slots";
+import { AddBlockedTimeSlot, getBlockedTimeSlots } from "@/services/block-time-slots";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef, Row } from "@tanstack/react-table";
@@ -30,17 +30,7 @@ import { Typography } from "@/components/ui/typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IconChevronLeft, IconPlus, IconTrash } from "@tabler/icons-react";
 import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
-
-interface BlockTimeSlotsProps {
-  type?: "period" | "dayOfWeek"
-  start?: Date
-  end?: Date
-  is_recurring: boolean
-  day_of_week?: number
-  description?: string
-}
-
-
+import { BlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 
 
 export const BlockTimeSlotsDialog = () => {
@@ -165,7 +155,7 @@ export const BlockTimeSlotsDialog = () => {
 
 
   useEffect(() => {
-    GetBlockedTimeSlots({}).then(data => {
+    getBlockedTimeSlots({}).then(data => {
       setExceptions(data);
     })
   }, [isFormVisible])

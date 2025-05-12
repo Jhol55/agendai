@@ -8,7 +8,6 @@ import { getOperatingHours } from "@/services/operatingHours";
 interface PlannerContextType {
   viewMode: "day" | "week" | "month" | "year";
   timeLabels: string[];
-  hourLabels: Date[];
   dateRange: DateRange | undefined;
   currentDateRange: DateRange | undefined;
   setDateRange: (dateRange: DateRange) => void;
@@ -18,7 +17,6 @@ interface PlannerContextType {
 const defaultContextValue: PlannerContextType = {
   viewMode: "week", // default starting view
   timeLabels: [],
-  hourLabels: [],
   dateRange: { from: startOfWeek(new Date()), to: endOfDay(new Date()) },
   currentDateRange: { from: startOfDay(new Date()), to: endOfDay(new Date()) },
   setDateRange: (dateRange: DateRange) => {
@@ -33,7 +31,6 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [hourLabels, setHourLabels] = useState<Date[]>([]);
   const [trigger, setTrigger] = useState(false);
   const handlePlannerUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
 
@@ -53,27 +50,8 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, [viewMode, dateRange]);
 
-  useEffect(() => {
-    getOperatingHours({}).then((data) => {
-      const { min, max } = getMinMaxCalendarRange(data);
-
-      if (!min || !max) return;
-
-      const interval = eachMinuteOfInterval(
-        {
-          start: new Date(min),
-          end: endOfDay(new Date(max)),
-        },
-        { step: 30 }
-      );
-
-      setHourLabels(interval);
-    });
-  }, [trigger]);
-
   const value = {
     timeLabels,
-    hourLabels,
     dateRange,
     setDateRange,
     viewMode: viewMode as "day" | "week" | "month" | "year",

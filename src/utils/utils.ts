@@ -4,6 +4,7 @@ import { DateRange } from "react-day-picker";
 import { twMerge } from "tailwind-merge"
 import { Appointment } from "@/models/Appointment";
 import { ptBR } from 'date-fns/locale';
+import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 
 
 export function cn(...inputs: ClassValue[]) {
@@ -39,7 +40,7 @@ export const calculateNewDates = (viewMode: string, index: number, currentIndex:
 
 
 export const filterAppointments = (
-  appt: Appointment,
+  appt: Appointment | UpdatedBlockTimeSlotsProps,
   index: number,
   dateRange: DateRange | undefined,
   viewMode: string,
