@@ -5,8 +5,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -28,7 +26,7 @@ export const ConfigDialog = () => {
         <Button
           variant="outline"
           onClick={() => setIsOpened(true)}
-          className="flex gap-[4px] rounded-full"
+          className="flex gap-[4px] rounded-full dark:!text-neutral-200 !text-neutral-700"
         >
           <IconSettings className="!h-4 !w-4" />
           {/* <Typography variant="span" className="md:block hidden">

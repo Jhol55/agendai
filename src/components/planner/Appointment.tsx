@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { format } from "date-fns";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Appointment as AppointmentType,
@@ -20,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, ChevronsUpDown, EllipsisVertical, Bot } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
@@ -30,7 +27,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,9 +34,7 @@ import {
 } from "@/components/ui/form";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -66,15 +60,15 @@ import {
 import { TimePicker } from "@/components/ui/time-picker";
 import { getClients } from "@/services/clients";
 import { getServices } from "@/services/services";
-import { IconBriefcase, IconUser, IconCalendarDollar, IconCurrencyDollar, IconCircleCheck, IconVideo, IconVideoOff, IconMapPin, IconMapPinOff } from "@tabler/icons-react";
+import { IconBriefcase, IconUser, IconCalendarDollar, IconCurrencyDollar, IconCircleCheck, IconVideo, IconVideoOff, IconMapPin, IconMapPinOff, IconBan } from "@tabler/icons-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { Loading } from "../ui/loading/loading";
 import { Typography } from "../ui/typography";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
-import { useCalendar } from "@/contexts/planner/PlannerContext";
 import { Separator } from "../ui/separator";
+import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 
 type ServiceType = {
   id: string,
@@ -86,7 +80,7 @@ type ServiceType = {
 }
 
 interface AppointmentProps {
-  appointment: AppointmentType;
+  appointment: AppointmentType & UpdatedBlockTimeSlotsProps;
   resourceId: string;
   columnIndex: number;
   className?: string;
@@ -98,11 +92,9 @@ const Appointment: React.FC<AppointmentProps> = ({
   columnIndex,
   className
 }) => {
-  const { updateAppointment, removeAppointment, handleUpdate } = usePlannerData();
-  const { viewMode } = useCalendar();
+  const { updateAppointment, removeAppointment, handleUpdate, isDragging, isResizing } = usePlannerData();
   const [isPending, startOnSubmitTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
   const [isRemoveAppointmentOpen, setIsRemoveAppointmentOpen] = useState(false);
   const [openClient, setOpenClient] = React.useState(false);
@@ -121,92 +113,95 @@ const Appointment: React.FC<AppointmentProps> = ({
   const [isServiceRefundOpen, setIsServiceRefundOpen] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const element = ref.current!;
-    return draggable({
-      element,
-      getInitialData: () => ({
-        appointment: appointment,
-        columnIndex: columnIndex,
-        resourceId: resourceId,
-      }),
-      onDragStart: () => setIsDragging(true),
-      onDrop: () => {
-        setIsDragging(false)
-      },
-    });
+    if (!isDragging && !isResizing) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const element = ref.current!;
+      return draggable({
+        element,
+        getInitialData: () => ({
+          appointment: appointment,
+          columnIndex: columnIndex,
+          resourceId: resourceId,
+        }),
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointment]);
 
+  const defaultValues = useMemo(() => ({
+    title: appointment.title,
+    clientId: appointment.clientId,
+    start: new Date(appointment.start) ?? new Date(),
+    end: new Date(appointment.end) ?? new Date(),
+    status: appointment.status,
+    details: {
+      service: appointment.details?.service,
+      serviceId: appointment.details?.serviceId,
+      durationMinutes: appointment.details?.durationMinutes,
+      online: appointment.details?.online,
+      payments: (appointment?.details?.payments || [])
+        .sort((a, b) => a.type.localeCompare(b.type))
+        .filter(payment => payment.status !== "refunded")
+        .map(payment => ({
+          ...payment,
+          sendPaymentLink: false,
+          dueDate: (() => {
+            const [year, month, day] = String(payment.dueDate).split("-").map(Number);
+            let date = new Date(year, month - 1, day);
+            if (isNaN(date.getTime())) {
+              date = payment.dueDate;
+            }
+            return date;
+          })()
+        }))
+    }
+  }), [appointment]);
+
   const form = useForm<z.infer<typeof updateAppointmentSchema>>({
     resolver: zodResolver(updateAppointmentSchema),
-    defaultValues: {
-      title: appointment.title,
-      clientId: appointment.clientId,
-      start: new Date(appointment.start) ?? new Date(),
-      end: new Date(appointment.end) ?? new Date(),
-      status: appointment.status,
-      details: {
-        service: appointment.details.service,
-        serviceId: appointment.details.serviceId,
-        durationMinutes: appointment.details.durationMinutes,
-        online: appointment.details.online,
-        payments: appointment.details.payments
-          .sort((a, b) => a.type.localeCompare(b.type))
-          .filter(payment => payment.status !== "refunded")
-          .map(payment => ({
-            ...payment,
-            sendPaymentLink: false,
-            dueDate: (() => {
-              const [year, month, day] = String(payment.dueDate).split("-").map(Number);
-              let date = new Date(year, month - 1, day);
-              if (isNaN(date.getTime())) {
-                date = payment.dueDate
-              }
-              return date
-            })()
-          }))
-      }
-    },
+    defaultValues,
   });
 
   const watch = form.watch();
 
   useEffect(() => {
-    setTimeout(() => {
-      form.reset({
-        title: appointment.title,
-        clientId: appointment.clientId,
-        start: new Date(appointment.start) ?? new Date(),
-        end: new Date(appointment.end) ?? new Date(),
-        status: appointment.status,
-        details: {
-          service: appointment.details.service,
-          serviceId: appointment.details.serviceId,
-          durationMinutes: appointment.details.durationMinutes,
-          online: appointment.details.online,
-          payments: appointment.details.payments
-            .sort((a, b) => a.type.localeCompare(b.type))
-            .filter(payment => payment.status !== "refunded")
-            .map(payment => ({
-              ...payment,
-              sendPaymentLink: false,
-              dueDate: (() => {
-                const [year, month, day] = String(payment.dueDate).split("-").map(Number);
-                let date = new Date(year, month - 1, day);
-                if (isNaN(date.getTime())) {
-                  date = payment.dueDate
-                }
-                return date
-              })()
-            }))
-        }
-      });
-      setIsLoading(!isOpened);
-    }, 1000)
-  }, [appointment, form, isOpened]);
+    if (!isDragging && !isResizing) {
+      const timeoutId = setTimeout(() => {
+        form.reset({
+          title: appointment.title,
+          clientId: appointment.clientId,
+          start: new Date(appointment.start) ?? new Date(),
+          end: new Date(appointment.end) ?? new Date(),
+          status: appointment.status,
+          details: {
+            service: appointment.details?.service,
+            serviceId: appointment.details?.serviceId,
+            durationMinutes: appointment.details?.durationMinutes,
+            online: appointment.details?.online,
+            payments: (appointment?.details?.payments || [])
+              .sort((a, b) => a.type.localeCompare(b.type))
+              .filter(payment => payment.status !== "refunded")
+              .map(payment => ({
+                ...payment,
+                sendPaymentLink: false,
+                dueDate: (() => {
+                  const [year, month, day] = String(payment.dueDate).split("-").map(Number);
+                  let date = new Date(year, month - 1, day);
+                  if (isNaN(date.getTime())) {
+                    date = payment.dueDate
+                  }
+                  return date
+                })()
+              }))
+          }
+        });
+        setIsLoading(!isOpened);
+      }, 500)
+      return () => clearTimeout(timeoutId);
+    }
+  }, [appointment, form, isDragging, isOpened, isResizing]);
 
-  function onSubmit(values: z.infer<typeof updateAppointmentSchema>) {
+  const onSubmit = useCallback((values: z.infer<typeof updateAppointmentSchema>) => {
     const originalPayments = appointment.details.payments
       .sort((a, b) => a.type.localeCompare(b.type))
       .filter(payment => payment.status !== "refunded")
@@ -271,14 +266,14 @@ const Appointment: React.FC<AppointmentProps> = ({
         );
       })
     }
-  }
+  }, [appointment, form, handleUpdate, updateAppointment])
 
-  function onRemove(id: string) {
+  const onRemove = useCallback((id: string) => {
     setTimeout(() => {
       setIsOpened(false);
       removeAppointment(id);
     }, 500);
-  }
+  }, [removeAppointment])
 
   useEffect(() => {
     if (clientSearchValue) {
@@ -324,41 +319,43 @@ const Appointment: React.FC<AppointmentProps> = ({
   }, [form, isOpened])
 
 
-  const findPaymentIndex = (type: string) => {
+  const findPaymentIndex = useCallback((type: string) => {
     return form.getValues('details.payments')
       .findIndex(payment => payment.type === type && payment.status !== "refunded");
-  }
+  }, [form])
 
-  const feeIndex = findPaymentIndex("fee");
-  const serviceIndex = findPaymentIndex("service");
+  const feeIndex = useMemo(() => findPaymentIndex("fee"), [findPaymentIndex]);
+  const serviceIndex = useMemo(() => findPaymentIndex("service"), [findPaymentIndex]);
 
   return (
     <Card ref={ref} className={cn(
-      "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start bg-white dark:bg-purple-700 dark:border-neutral-700/60",
-      "group transition-colors duration-150",
-      className
+      "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start, dark:border-neutral-700/60",
+      "group transition-colors duration-150 handle-ghosting",
+      appointment?.details?.service ? "bg-purple-700 dark:bg-purple-700" : "bg-red-500 dark:bg-red-500",
+      className,
     )}
-      onDoubleClick={(e) => {setIsOpened(true); e.stopPropagation()}}>
+      onDoubleClick={(e) => { setIsOpened(true); e.stopPropagation() }}>
       <CardHeader className="absolute w-full flex flex-row items-center justify-between p-1">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger className="w-full h-full">
-              <Badge variant={"outline"} className="border-none rounded-sm dark:border-neutral-700 transition-colors duration-150 truncate px-1 text-xs w-full whitespace-nowrap inline-block">
+              <Badge variant={"outline"} className="pointer-events-none border-none rounded-sm dark:border-neutral-700 transition-colors duration-150 truncate px-1 text-xs w-full whitespace-nowrap inline-block">
                 <div className="flex justify-start w-full">
-                  {appointment.details.online
-                    ? <IconVideo className={cn(
-                      "w-4 h-4 min-w-4 min-h-4 text-white/90",
-                      appointment.status === "confirmed" && "text-green-600",
-                      appointment.status === "canceled" && "text-red-600"
-                    )} />
-                    : <IconMapPin className={cn(
-                      "w-4 h-4 min-w-4 min-h-4 text-white/90",
-                      appointment.status === "confirmed" && "text-green-600",
-                      appointment.status === "canceled" && "text-red-600"
-                    )} />
-                  }
+                  {appointment?.details?.service
+                    ? appointment.details?.online
+                      ? <IconVideo className={cn(
+                        "w-4 h-4 min-w-4 min-h-4 text-white/90",
+                        appointment.status === "confirmed" && "text-green-600",
+                        appointment.status === "canceled" && "text-red-600"
+                      )} />
+                      : <IconMapPin className={cn(
+                        "w-4 h-4 min-w-4 min-h-4 text-white/90",
+                        appointment.status === "confirmed" && "text-green-600",
+                        appointment.status === "canceled" && "text-red-600"
+                      )} />
+                    : <IconBan className="w-4 h-4 min-w-4 min-h-4 text-white/90" />}
                   <Typography variant="p" className="!text-white truncate pl-1">
-                    {appointment.title}
+                    {appointment?.title ?? appointment?.description}
                   </Typography>
                 </div>
               </Badge>
@@ -370,7 +367,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                     <Typography variant="b" className="text-xs">Modalidade:</Typography>
                     <Typography variant="p" className="text-xs">
                       {
-                        appointment.details.online
+                        appointment.details?.online
                           ? "Online"
                           : "Presencial"
                       }
@@ -451,7 +448,7 @@ const Appointment: React.FC<AppointmentProps> = ({
           </DialogTrigger> */}
           <DialogContent
             aria-describedby={undefined}
-            className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
+            className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
             onInteractOutside={(e) => {
               e.preventDefault();
               if (!openClient && !openService && !isCalendarOpen) {
@@ -479,8 +476,8 @@ const Appointment: React.FC<AppointmentProps> = ({
                               }}
                               variant={field.value === "pending" ? "default" : "outline"}
                               className={cn(
-                                "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white",
-                                field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
+                                "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white dark:!text-white !text-neutral-700",
+                                field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 !text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
                               )}
                               type="button"
                             >
@@ -492,8 +489,8 @@ const Appointment: React.FC<AppointmentProps> = ({
                               }}
                               variant={field.value === "confirmed" ? "default" : "outline"}
                               className={cn(
-                                "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:text-white",
-                                field.value === "confirmed" && "bg-green-500 dark:bg-green-500 text-white hover:bg-green-500 dark:hover:bg-green-500"
+                                "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:!text-white !text-neutral-700",
+                                field.value === "confirmed" && "bg-green-500 dark:bg-green-500 !text-white hover:bg-green-500 dark:hover:bg-green-500"
                               )}
                               type="button"
                             >
@@ -505,8 +502,8 @@ const Appointment: React.FC<AppointmentProps> = ({
                               }}
                               variant={field.value === "canceled" ? "default" : "outline"}
                               className={cn(
-                                "flex-1 sm:w-full hover:bg-red-500 dark:hover:bg-red-500 hover:text-white",
-                                field.value === "canceled" && "bg-red-500 dark:bg-red-500 text-white hover:bg-red-500 dark:hover:bg-red-500"
+                                "flex-1 sm:w-full hover:bg-red-500 dark:hover:bg-red-500 hover:text-white dark:!text-white !text-neutral-700",
+                                field.value === "canceled" && "bg-red-500 dark:bg-red-500 !text-white hover:bg-red-500 dark:hover:bg-red-500"
                               )}
                               type="button"
                             >
@@ -530,7 +527,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                               <Button
                                 variant="outline"
                                 role="combobox"
-                                className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
+                                className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                               >
                                 <div className="flex gap-4 items-center">
                                   <IconUser />
@@ -596,11 +593,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   variant="outline"
                                   role="combobox"
                                   aria-expanded={openService}
-                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
+                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                                 >
                                   <div className="flex gap-4 items-center">
                                     <IconBriefcase />
-                                    {field.value ?? appointment.details.service}
+                                    {field.value ?? appointment?.details?.service}
                                   </div>
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
@@ -633,7 +630,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                           <Check
                                             className={cn(
                                               "mr-2 h-4 w-4",
-                                              (currentService?.id ? currentService.id === service.id : String(appointment.details.serviceId) == service.id) ? "opacity-100" : "opacity-0"
+                                              (currentService?.id ? currentService.id === service.id : String(appointment.details?.serviceId) == service.id) ? "opacity-100" : "opacity-0"
                                             )}
                                           />
                                           <div className="w-full whitespace-nowrap">
@@ -698,13 +695,14 @@ const Appointment: React.FC<AppointmentProps> = ({
                         <FormLabel className="text-left">Início</FormLabel>
                         <FormControl>
                           <TimePicker
+                            className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                             onChange={(date) => {
                               field.onChange(date);
                               if (date) {
                                 const newDate = new Date(date);
-                                newDate.setMinutes(newDate.getMinutes() + (appointment.details.durationMinutes ?? 0));
+                                newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
                                 setAutoEndDate(newDate);
-                                setIsCalendarOpen(false);
+                                setIsCalendarOpen(false);                            
                               }
                             }}
                             onClick={() => setIsCalendarOpen(true)}
@@ -729,6 +727,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                         <FormLabel className="text-left">Fim</FormLabel>
                         <FormControl>
                           <TimePicker
+                            className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                             onChange={(date) => {
                               field.onChange(date);
                               setIsCalendarOpen(false);
@@ -778,8 +777,8 @@ const Appointment: React.FC<AppointmentProps> = ({
                           <FormItem className="flex flex-col w-full">
                             <FormLabel className="text-left">Data de vencimento</FormLabel>
                             <FormControl>
-                              <TimePicker
-                                className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none")}
+                              <TimePicker                   
+                                className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                                 placeholder="Selecione uma data"
                                 value={field.value}
                                 mode="date"
@@ -943,7 +942,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormLabel className="text-left">Data de vencimento</FormLabel>
                             <FormControl>
                               <TimePicker
-                                className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none")}
+                                className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                                 placeholder="Selecione uma data"
                                 value={field.value}
                                 mode="date"
@@ -1146,9 +1145,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         </Dialog>
       </CardHeader>
       <CardContent
-        className={cn("pb-1.5 !px-0 hidden", {
-          "cursor-grabbing bg-muted opacity-50": isDragging,
-        })}
+        className={cn("pb-1.5 !px-0 hidden")}
       >
         <div className="flex flex-col justify-center items-center w-full pl-1.5">
           <div className="flex gap-1.5 truncate text-xs mr-2 mt-1.5 mb-1.5">
@@ -1157,7 +1154,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger className="cursor-default">
-                      {appointment.details.online
+                      {appointment.details?.online
                         ? <IconVideo className={cn(
                           "w-4 h-4 text-white/90",
                           appointment.status === "confirmed" && "text-green-600",
@@ -1177,7 +1174,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <Typography variant="b" className="text-xs">Modalidade:</Typography>
                             <Typography variant="p" className="text-xs">
                               {
-                                appointment.details.online
+                                appointment.details?.online
                                   ? "Online"
                                   : "Presencial"
                               }

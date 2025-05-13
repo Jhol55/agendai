@@ -15,6 +15,10 @@ interface DataContextType {
   setAppointments: Dispatch<SetStateAction<Appointment[]>>;
   operatingHours: OperatingHoursProps[];
   blockedTimeSlots: UpdatedBlockTimeSlotsProps[];
+  isDragging: boolean;
+  isResizing: boolean;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
+  setIsResizing: Dispatch<SetStateAction<boolean>>;
   resources: Resource[];
   handleUpdate: () => void;
   addAppointment: (appointment: Appointment) => void;
@@ -40,13 +44,18 @@ export const PlannerDataContextProvider: FC<{
   const [blockedTimeSlots, setBlockedTimeSlots] = useState<UpdatedBlockTimeSlotsProps[]>([])
   const [hourLabels, setHourLabels] = useState<Date[]>([]);
   const { dateRange } = useCalendar();
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const [trigger, setTrigger] = useState(false);
   const handleUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
 
   const appointmentServiceRef = useRef(new AppointmentService([]));
 
   useMemo(() => {
-    appointmentServiceRef.current = new AppointmentService(appointments);
+    if (!isDragging && !isResizing) {
+      appointmentServiceRef.current = new AppointmentService(appointments);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments]);
 
   useEffect(() => {
@@ -67,68 +76,77 @@ export const PlannerDataContextProvider: FC<{
     }
   }, [dateRange, trigger]);
 
-  useEffect(() => {
-    getOperatingHours({}).then((data) => {
-      const operatingHoursRange = getMinMaxCalendarRange(data);
-      const appointmentsRange = getMinMaxCalendarRange(appointments);
+  const getDateForWeekdayInRange = useCallback((
+    dayOfWeek: number, // 0 (Sunday) to 6 (Saturday)
+    rangeStart: Date,
+    rangeEnd: Date,
+    dateTime: Date
+  ): Date | null => {
+    const current = new Date(rangeStart);
 
-      if (!operatingHoursRange.min || !operatingHoursRange.max) return;
-
-      const min = operatingHoursRange?.min.getTime() < (appointmentsRange.min?.getTime() ?? Infinity)
-        ? operatingHoursRange.min : appointmentsRange.min;
-      const max = operatingHoursRange?.max.getTime() > (appointmentsRange.max?.getTime() ?? -Infinity)
-        ? operatingHoursRange.max : appointmentsRange.max;
-
-      if (!min || !max) return;
-
-      const interval = eachMinuteOfInterval(
-        {
-          start: new Date(min),
-          end: new Date(max),
-        },
-        { step: 30 }
-      );
-
-      setOperatingHours(data);
-      setHourLabels(interval);
-    });
-
-    function getDateForWeekdayInRange(
-      dayOfWeek: number, // 0 (Sunday) to 6 (Saturday)
-      rangeStart: Date,
-      rangeEnd: Date,
-      dateTime: Date
-    ): Date | null {
-      const current = new Date(rangeStart);
-
-      while (current <= rangeEnd) {
-        if (current.getDay() === dayOfWeek) {
-          return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
-        }
-        current.setDate(current.getDate() + 1);
+    while (current <= rangeEnd) {
+      if (current.getDay() === dayOfWeek) {
+        return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
       }
-      return null;
+      current.setDate(current.getDate() + 1);
     }
+    return null;
+  }, []);
 
-    getBlockedTimeSlots({}).then((data) => {
-      setBlockedTimeSlots(
-        data.map((slot: { start: string; end: string; is_recurring: boolean, day_of_week: number | null }) => ({
-          ...slot,
-          start: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
-            ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start))
-            : new Date(slot.start),
-          end: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
-            ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end))
-            : new Date(slot.end),
-        })));
-    });
-  }, [appointments, dateRange, trigger]);
+  useEffect(() => {
+    
+    if (!isDragging && !isResizing) {
+      getOperatingHours({}).then((data) => {
+        const operatingHoursRange = getMinMaxCalendarRange(data);
+        const appointmentsRange = getMinMaxCalendarRange(appointments);
+
+        if (!operatingHoursRange.min || !operatingHoursRange.max) return;
+
+        const min = operatingHoursRange?.min.getTime() < (appointmentsRange.min?.getTime() ?? Infinity)
+          ? operatingHoursRange.min : appointmentsRange.min;
+        const max = operatingHoursRange?.max.getTime() > (appointmentsRange.max?.getTime() ?? -Infinity)
+          ? operatingHoursRange.max : appointmentsRange.max;
+
+        if (!min || !max) return;
+
+        const interval = eachMinuteOfInterval(
+          {
+            start: new Date(min),
+            end: new Date(max),
+          },
+          { step: 30 }
+        );
+
+        setOperatingHours(data);
+        setHourLabels(interval);
+      });
+
+      getBlockedTimeSlots({}).then((data) => {
+        setBlockedTimeSlots(
+          data.map((slot: { start: string; end: string; is_recurring: boolean, day_of_week: number | null }) => ({
+            ...slot,
+            start: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
+              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start))
+              : new Date(slot.start),
+            end: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
+              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end))
+              : new Date(slot.end),
+          })));
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointments, dateRange]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({
       channel: "appointments",
       table: "appointments",
-      onChange: (payload) => setTimeout(() => handleUpdate(), 1000)
+      onChange: (payload) => {
+        const newAppointment = payload.new as { created_by: string };
+        if (newAppointment.created_by !== "user") {
+          setTimeout(() => handleUpdate(), 1000)
+        }
+      }
     })
     const PaymentsSubscription = subscribe({
       channel: "payments",
@@ -148,6 +166,10 @@ export const PlannerDataContextProvider: FC<{
     operatingHours,
     blockedTimeSlots,
     hourLabels,
+    isDragging,
+    setIsDragging,
+    isResizing,
+    setIsResizing,
     resources: resourceService.getResources(),
     handleUpdate: handleUpdate,
     addAppointment: async (appointment) => {

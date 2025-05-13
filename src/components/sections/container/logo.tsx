@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
 import Image from "next/image";
 import { Typography } from "@/components/ui/typography";
-import { opacity } from "pdfkit";
+
 
 
 export const Logo = ({ open }: { open: boolean }) => {

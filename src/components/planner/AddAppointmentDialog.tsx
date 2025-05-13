@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { format } from "date-fns";
 import {
   Form,
@@ -105,7 +105,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
       }
     },
   });
-  function onSubmit(values: z.infer<typeof createAppointmentSchema>) {
+  const onSubmit = useCallback((values: z.infer<typeof createAppointmentSchema>) => {
     const newAppointment: AppointmentType = {
       details: {
         service: values.details.service,
@@ -142,7 +142,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
         },
       );
     });
-  }
+  }, [addAppointment, form])
 
   const watch = form.watch();
 
@@ -210,23 +210,23 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
     }
   }, [isOpened, onOpenChange]);
 
-  const findPaymentIndex = (type: string) => {
+  const findPaymentIndex = useCallback((type: string) => {
     return form.getValues('details.payments').findIndex(payment => payment.type === type);
-  }
+  }, [form])
 
-  const feeIndex = findPaymentIndex("fee");
-  const serviceIndex = findPaymentIndex("service");
+  const feeIndex = useMemo(() => findPaymentIndex("fee"), [findPaymentIndex]);
+  const serviceIndex = useMemo(() => findPaymentIndex("service"), [findPaymentIndex]);
 
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="outline" className={cn("bg-[#2B2D42] hover:bg-[#2B2D42]", className)}>
-          <IconCalendarPlus className="h-4 w-4 text-white" />
-          <Typography variant="span" className="md:block hidden !text-white">Novo compromisso</Typography>
+        <Button variant="outline" className={cn("", className)}>
+          <IconCalendarPlus className="h-4 w-4 dark:text-white text-neutral-900" />
+          <Typography variant="span" className="md:block hidden dark:!text-white">Novo compromisso</Typography>
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
+        className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
         aria-describedby={undefined}
         onInteractOutside={(e) => {
           e.preventDefault();
@@ -254,8 +254,8 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                         }}
                         variant={field.value === "pending" ? "default" : "outline"}
                         className={cn(
-                          "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white",
-                          field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
+                          "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white dark:!text-white !text-neutral-700",
+                          field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 !text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
                         )}
                         type="button"
                       >
@@ -267,8 +267,8 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                         }}
                         variant={field.value === "confirmed" ? "default" : "outline"}
                         className={cn(
-                          "flex-1 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white",
-                          field.value === "confirmed" && "bg-green-500 dark:bg-green-500 text-white hover:bg-green-500 dark:hover:bg-green-500"
+                          "flex-1 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:!text-white !text-neutral-700",
+                          field.value === "confirmed" && "bg-green-500 dark:bg-green-500 !text-white hover:bg-green-500 dark:hover:bg-green-500"
                         )}
                         type="button"
                       >
@@ -280,8 +280,8 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                         }}
                         variant={field.value === "canceled" ? "default" : "outline"}
                         className={cn(
-                          "flex-1 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white",
-                          field.value === "canceled" && "bg-red-500 dark:bg-red-500 text-white hover:bg-red-500 dark:hover:bg-red-500"
+                          "flex-1 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white dark:!text-white !text-neutral-700",
+                          field.value === "canceled" && "bg-red-500 dark:bg-red-500 !text-white hover:bg-red-500 dark:hover:bg-red-500"
                         )}
                         type="button"
                       >
@@ -306,7 +306,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                           variant="outline"
                           role="combobox"
                           aria-expanded={openClient}
-                          className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
+                          className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                         >
                           <div className="flex items-center gap-4">
                             <IconUser />
@@ -375,7 +375,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                             variant="outline"
                             role="combobox"
                             aria-expanded={openService}
-                            className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
+                            className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                           >
                             <div className="flex items-center gap-4">
                               <IconBriefcase />
@@ -498,7 +498,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                           disabled={!currentService?.allow_online}
                         />
                       </FormControl>
-                      <FormLabel className="text-left">Videoconferência</FormLabel>
+                      <FormLabel className="text-left dark:!text-neutral-200">Videoconferência</FormLabel>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -513,6 +513,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                   <FormLabel className="text-left">Início</FormLabel>
                   <FormControl>
                     <TimePicker
+                      className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                       value={startDate}
                       placeholder="Selecione uma data e um horário"
                       onChange={(date) => {
@@ -564,6 +565,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                   <FormLabel className="text-left">Fim</FormLabel>
                   <FormControl>
                     <TimePicker
+                      className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                       placeholder="Selecione uma data e um horário"
                       onChange={(date) => {
                         field.onChange(date);
@@ -614,6 +616,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                       <FormLabel className="text-left">Data de vencimento</FormLabel>
                       <FormControl>
                         <TimePicker
+                          className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                           placeholder="Selecione uma data"
                           value={field.value}
                           mode="date"
@@ -717,6 +720,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                       <FormLabel className="text-left">Data de vencimento</FormLabel>
                       <FormControl>
                         <TimePicker
+                          className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                           placeholder="Selecione uma data"
                           value={field.value}
                           mode="date"

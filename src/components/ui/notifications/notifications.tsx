@@ -153,8 +153,8 @@ export function Notifications() {
         <Button variant="ghost" size="icon" className="rounded-full !p-0 hover:bg-transparent">
           {
             isOpened
-              ? <IconMailOpened className="!h-5 !w-5 -translate-y-[1px] !text-neutral-200" />
-              : <IconMail className="!h-5 !w-5 !text-neutral-200" />
+              ? <IconMailOpened className="!h-5 !w-5 -translate-y-[1px] dark:!text-neutral-200 text-neutral-400" />
+              : <IconMail className="!h-5 !w-5 dark:!text-neutral-200 text-neutral-400" />
           }
           <span className="sr-only">Toggle user menu</span>
           <div className="absolute flex items-center justify-center -top-3 -right-1 rounded-full h-5 w-5 shrink-0 text-xs bg-red-500 dark:bg-red-500 pointer-events-none">
@@ -164,7 +164,7 @@ export function Notifications() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:w-[50rem] md:max-w-md max-w-[90%] max-h-[90vh] md:mx-10 mx-auto" side="top" align="center">
-        <Card className="w-full border-0 bg-background dark:bg-neutral-900">
+        <Card className="w-full border-0 bg-neutral-50 dark:bg-neutral-900">
           <CardHeader className="!px-8 !pb-4">
             <CardTitle className="text-xl">Notificações</CardTitle>
             <div className="flex items-center">
@@ -184,7 +184,7 @@ export function Notifications() {
                 <React.Fragment key={index}>
                   <Button
                     variant="outline"
-                    className={cn("h-full max-h-16 border-none", notification.is_read ? "dark:bg-neutral-900" : "dark:bg-neutral-800/70")}
+                    className={cn("h-full max-h-16 border-none", notification.is_read ? "dark:bg-neutral-900 bg-neutral-50" : "dark:bg-neutral-800/70 bg-neutral-200")}
                     onClick={() => readMessage({ id: notification.ref_id, type: "appointments" })}
                   >
                     <div className="flex flex-col gap-4 w-full">

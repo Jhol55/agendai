@@ -115,19 +115,20 @@ export const getLabelsForView = (
 export function getMinMaxCalendarRange(
   schedules: { start_time?: string | Date, end_time?: string | Date, start?: string | Date, end?: string | Date }[]
 ) {
+  
   if (schedules.length === 0) {
     return { min: null, max: null };
   }
-
+  
   function updateDatesToToday(dates: string[]) {
     const today = new Date();
     const day = String(today.getDate()).padStart(2, '0');
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const year = today.getFullYear();
   
-    return dates.map(dateStr => {
+    return dates.map(dateStr => { 
       const [_, time] = dateStr.split(',').map(s => s.trim());
-      return `${day}/${month}/${year}, ${time}`;
+      return `${year}/${month}/${day}, ${time}`;
     });
   }
 

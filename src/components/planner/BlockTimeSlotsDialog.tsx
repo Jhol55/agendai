@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, useTransition } from "react"
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { Button } from "../ui/button"
 import { Dialog, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "../ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { TextArea } from "@/components/ui/text-area"
@@ -9,7 +9,6 @@ import { format } from "date-fns";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -29,7 +28,6 @@ import { ColumnDef, Row } from "@tanstack/react-table";
 import { Typography } from "@/components/ui/typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IconChevronLeft, IconPlus, IconTrash } from "@tabler/icons-react";
-import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 import { BlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 
 
@@ -58,12 +56,12 @@ export const BlockTimeSlotsDialog = () => {
 
   const watch = form.watch();
 
-  const units: { label: "Período" | "Dia da semana"; value: "period" | "dayOfWeek" }[] = [
+  const units = useMemo(() => [
     { label: "Período", value: "period" },
     { label: "Dia da semana", value: "dayOfWeek" }
-  ];
+  ], []);
 
-  const daysOfWeek: { label: string; value: number }[] = [
+  const daysOfWeek = useMemo(() => [
     { label: "Domingo", value: 0 },
     { label: "Segunda-feira", value: 1 },
     { label: "Terça-feira", value: 2 },
@@ -71,7 +69,7 @@ export const BlockTimeSlotsDialog = () => {
     { label: "Quinta-feira", value: 4 },
     { label: "Sexta-feira", value: 5 },
     { label: "Sábado", value: 6 }
-  ];
+  ], []);
 
 
   const columns = useMemo<ColumnDef<BlockTimeSlotsProps>[]>(() => [
@@ -151,7 +149,7 @@ export const BlockTimeSlotsDialog = () => {
         </Typography>
       ),
     },
-  ], []);
+  ], [daysOfWeek]);
 
 
   useEffect(() => {
@@ -160,9 +158,8 @@ export const BlockTimeSlotsDialog = () => {
     })
   }, [isFormVisible])
 
-  const { handleUpdate } = usePlannerData();
 
-  const onSubmit = async (values: z.infer<typeof blockedTimesSchema>) => {
+  const onSubmit = useCallback((values: z.infer<typeof blockedTimesSchema>) => {
     startOnSubmitTransition(() => {
       toast.promise(
         () =>
@@ -180,7 +177,7 @@ export const BlockTimeSlotsDialog = () => {
     setTimeout(() => {
       setIsFormVisible(false);
     }, 1000);
-  }
+  }, [])
 
   useEffect(() => {
     if (!isOpened) {
@@ -195,7 +192,11 @@ export const BlockTimeSlotsDialog = () => {
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened} >
       <DialogTrigger asChild>
-        <Button variant="outline">Exceções</Button>
+        <Button variant="outline">
+          <Typography variant="span">
+            Exceções
+          </Typography>
+        </Button>
       </DialogTrigger>
       <DialogContent
         className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"

@@ -14,25 +14,24 @@ import { Typography } from "../ui/typography";
 
 export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
-  ...props
 }) => {
   const { timeLabels, dateRange, viewMode } = useCalendar();
   const [trigger, setTrigger] = useState(false);
 
   const handleUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
 
-  function getTimeUntilNextHour() {
+  const getTimeUntilNextHour = useCallback(() => {
     const now = new Date();
     const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
     return nextHour.getTime() - now.getTime();
-  }
+  }, [])
 
-  function shouldDisplayIcon({ viewMode, index }: { viewMode: "day" | "week" | "month" | "year", index: number }) {
+  const shouldDisplayIcon = useCallback(({ viewMode, index }: { viewMode: "day" | "week" | "month" | "year", index: number }) => {
     const today = new Date();
     return index === (viewMode === "day" ? today.getHours() : today.getDay()) + 1
       && (dateRange?.from && today >= dateRange?.from)
       && (dateRange?.to && today <= dateRange?.to)
-  }
+  }, [dateRange?.from, dateRange?.to])
 
   useEffect(() => {
     const timeUntilNextHour = getTimeUntilNextHour();
@@ -44,23 +43,23 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
       return () => clearTimeout(timeoutId);
     }
-  }, [handleUpdate]);
+  }, [getTimeUntilNextHour, handleUpdate]);
 
   return (
     <TableHeader>
-      <TableRow className="bg-neutral-800 sticky top-0 z-50">
+      <TableRow className="dark:bg-neutral-800 bg-neutral-300 sticky top-0 z-50">
         {["", ...timeLabels].map((label, index) => (
           <TableHead
             key={index}
             className={cn(
-              "bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-[#F8F9FA] dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
+              "bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
               shouldDisplayIcon({ index, viewMode })
                 ? "z-30" : "z-20"
             )}
           >
             {/* bug fix - th sticky border */}
-            {index === 1 && <div className="absolute top-0 left-0 w-full h-full bg-neutral-800"></div>}
-            <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200 !text-black/60">
+            {index === 1 && <div className="absolute top-0 left-0 w-full h-full dark:bg-neutral-800 bg-neutral-700"></div>}
+            <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200 !text-neutral-200">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>

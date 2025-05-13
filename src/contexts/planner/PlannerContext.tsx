@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from "react";
-import { startOfDay, endOfDay, startOfWeek, eachHourOfInterval, eachMinuteOfInterval } from "date-fns";
+import React, { createContext, useContext, useState, useMemo } from "react";
+import { startOfDay, endOfDay, startOfWeek } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { getLabelsForView, getMinMaxCalendarRange } from "@/utils/utils";
-import { getOperatingHours } from "@/services/operatingHours";
+import { getLabelsForView } from "@/utils/utils";
 
 
 interface PlannerContextType {
@@ -11,7 +10,6 @@ interface PlannerContextType {
   dateRange: DateRange | undefined;
   currentDateRange: DateRange | undefined;
   setDateRange: (dateRange: DateRange) => void;
-  handlePlannerUpdate: () => void;
 }
 
 const defaultContextValue: PlannerContextType = {
@@ -22,7 +20,6 @@ const defaultContextValue: PlannerContextType = {
   setDateRange: (dateRange: DateRange) => {
     console.log(dateRange);
   },
-  handlePlannerUpdate: () => null
 };
 
 const PlannerContext = createContext<PlannerContextType>(defaultContextValue);
@@ -31,8 +28,6 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [trigger, setTrigger] = useState(false);
-  const handlePlannerUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
 
   const viewMode = useMemo(() => {
     const days =
@@ -56,7 +51,6 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
     setDateRange,
     viewMode: viewMode as "day" | "week" | "month" | "year",
     currentDateRange: dateRange,
-    handlePlannerUpdate
   };
 
   return (

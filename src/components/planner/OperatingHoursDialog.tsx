@@ -2,9 +2,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -13,7 +11,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,7 +28,6 @@ import { z } from "zod";
 import { BlockTimeSlotsDialog } from "./BlockTimeSlotsDialog";
 import { Loading } from "../ui/loading/loading";
 import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
-import { useCalendar } from "@/contexts/planner/PlannerContext";
 
 type daysOfWeekType = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"
 
@@ -41,12 +37,12 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
     const [isLoading, setIsLoading] = useState(true);
     const { handleUpdate } = usePlannerData();
 
-    const handleDialogToggle = (open: boolean) => {
+    const handleDialogToggle = useCallback((open: boolean) => {
       setIsOpened(open);
       if (!open) {
         onClose?.()
       }
-    };
+    }, [onClose]);
 
     const form = useForm<OperatingHoursProps>({
       resolver: zodResolver(operatingHoursSchema),
@@ -128,17 +124,17 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
       }
     }, [form, isOpened]);
 
-    const onSubmit = (values: z.infer<typeof operatingHoursSchema>) => {
+    const onSubmit = useCallback((values: z.infer<typeof operatingHoursSchema>) => {
       updateOperatingHours({ data: values }).then(() => {
         setTimeout(() => {
-          handleUpdate(); 
-        }, 100)             
+          handleUpdate();
+        }, 100)
       });
       setTimeout(() => {
         form.clearErrors();
         handleDialogToggle(false);
       }, 1000);
-    }
+    }, [form, handleDialogToggle, handleUpdate])
 
     return (
       <Dialog open={isOpened} onOpenChange={handleDialogToggle} >
@@ -148,11 +144,13 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
             variant="outline"
             onClick={onClick}
           >
-            Horários de funcionamento
+            <Typography variant="span">
+              Horários de funcionamento
+            </Typography>
           </Button>
         </DialogTrigger>
         <DialogContent
-          className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
+          className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
           aria-describedby={undefined}
           onInteractOutside={(e) => {
             e.preventDefault();
@@ -204,6 +202,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
                           <FormLabel className="text-left hidden">Início</FormLabel>
                           <FormControl>
                             <TimePicker
+                              className="dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                               open={day.pickerOpen.start}
                               onOpenChange={() => toggleOpenPicker(day.name, "start")}
                               mode="time"
@@ -227,6 +226,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
                           <FormLabel className="text-left hidden">Fim</FormLabel>
                           <FormControl>
                             <TimePicker
+                              className="dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
                               open={day.pickerOpen.end}
                               onOpenChange={() => toggleOpenPicker(day.name, "end")}
                               mode="time"

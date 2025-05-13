@@ -21,7 +21,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Tabs, TabContainer, TabPanel, Tab } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
-import { forwardRef, useEffect, useRef, useState, useTransition } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdditionalSettingsProps, AdditionalSettingsSchema } from "@/models/AdditionalSettings";
@@ -40,18 +40,18 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
   const [isPending, startOnSubmitTransition] = useTransition();
   const { settings, updateSettings } = useSettings();
 
-  const handleDialogToggle = (open: boolean) => {
+  const handleDialogToggle = useCallback((open: boolean) => {
     setIsOpened(open);
     if (!open) {
       onClose?.()
     }
-  };
+  }, [onClose]);
 
   const [isRescheduleDeadlineUnitOpen, setIsRescheduleDeadlineUnitOpen] = useState(false);
 
-  const findIndex = ({ type, array = [] }: { type: string, array: { type: string }[] | undefined }): number => {
+  const findIndex = useCallback(({ type, array = [] }: { type: string, array: { type: string }[] | undefined }): number => {
     return array.findIndex(item => item.type === type);
-  };
+  }, []);
 
   const form = useForm<AdditionalSettingsProps>({
     resolver: zodResolver(AdditionalSettingsSchema),
@@ -109,10 +109,10 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
       })
     ), 100)
 
-  }, [form, settings, isOpened])
+  }, [form, settings, isOpened, findIndex])
 
 
-  function onSubmit(values: z.infer<typeof AdditionalSettingsSchema>) {
+  const onSubmit = useCallback((values: z.infer<typeof AdditionalSettingsSchema>) => {
     const newSettings: SettingsState = {
       scheduling: [
         {
@@ -156,7 +156,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
     setTimeout(() => {
       handleDialogToggle(false);
     }, 1000);
-  }
+  }, [findIndex, handleDialogToggle, settings?.scheduling, updateSettings])
 
   const units: { label: "Horas" | "Dias"; value: "hours" | "days" }[] = [
     { label: "Horas", value: "hours" },
@@ -171,7 +171,9 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
           variant="outline"
           onClick={onClick}
         >
-          Configurações adicionais
+          <Typography variant="span">
+            Configurações adicionais
+          </Typography>
         </Button>
       </DialogTrigger>
       {settings &&

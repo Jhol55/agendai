@@ -1,15 +1,86 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Sidebar, SidebarBody, SidebarButton } from "@/components/ui/sidebar"
-import { links } from "@/components/sections/container/links";
 import { Logo } from "@/components/sections/container/logo";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+  IconArrowLeft,
+  IconBrandTabler,
+  IconSettings,
+  IconMessage,
+  IconBrain,
+  IconCode,
+  IconBriefcase,
+  IconCalendarWeek
+} from "@tabler/icons-react";
+import { KnowledgeBases } from "../../components/sections/knowledge-bases/knowledge-bases";
+import { Prompts } from "../../components/sections/prompts/prompts";
+import { Services } from "../../components/sections/services/services";
+import { Scheduler } from "../../components/sections/scheduler/scheduler";
 
 
 export default function Admin() {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(4);
+
+  const links = useMemo(() => [
+    {
+      label: "Dashboard",
+      icon: (
+        <IconBrandTabler className="!h-5 !w-5 flex-shrink-0" />
+      ),
+      content: (
+        <KnowledgeBases />
+      )
+    },
+    {
+      label: "Bases de Conhecimento",
+      icon: (
+        <IconBrain className="!h-5 !w-5 flex-shrink-0" />
+      ),
+      content: (
+        <KnowledgeBases />
+      )
+    },
+    {
+      label: "Prompts",
+      icon: (
+        <IconMessage className="!h-5 !w-5 flex-shrink-0" />
+      ),
+      content: (
+        <Prompts />
+      )
+    },
+    {
+      label: "Serviços",
+      icon: (
+        <IconBriefcase className="!h-5 !w-5 flex-shrink-0" />
+      ),
+      content: (
+        <Services />
+      )
+    },
+    {
+      label: "Agenda",
+      icon: (
+        <IconCalendarWeek className="!h-5 !w-5 flex-shrink-0" />
+      ),
+      content: (
+        <Scheduler />
+      )
+    },
+    {
+      label: "Logout",
+      href: "#",
+      icon: (
+        <IconArrowLeft className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
+      ),
+      content: (
+        <></>
+      )
+    },
+  ], []);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -56,7 +127,7 @@ export default function Admin() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "100%", opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeIn" }}
-          className="relative -z-0 flex w-full flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-[#F8F9FA] dark:bg-neutral-900"
+          className="relative -z-0 flex w-full flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-100 dark:bg-neutral-900"
         >
           {links[activeTab].content}
         </motion.div>
