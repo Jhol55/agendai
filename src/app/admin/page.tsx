@@ -18,11 +18,13 @@ import { KnowledgeBases } from "../../components/sections/knowledge-bases/knowle
 import { Prompts } from "../../components/sections/prompts/prompts";
 import { Services } from "../../components/sections/services/services";
 import { Scheduler } from "../../components/sections/scheduler/scheduler";
+import { useSettings } from "@/hooks/use-settings";
 
 
 export default function Admin() {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(4);
+  const { zoom } = useSettings();
 
   const links = useMemo(() => [
     {
@@ -102,7 +104,9 @@ export default function Admin() {
   }, [activeTab]);
 
   return (
-    <div className="flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full min-h-[100vh] relative">
+    <div className="flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full relative" 
+    style={{ minHeight: `calc(100vh / ${zoom})`, zoom }}
+    >
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="" initialActiveLabel={links[activeTab].label}>
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -127,7 +131,7 @@ export default function Admin() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "100%", opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeIn" }}
-          className="relative -z-0 flex w-full flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-100 dark:bg-neutral-900"
+          className="relative -z-0 flex w-full min-h-screen flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-100 dark:bg-neutral-900"
         >
           {links[activeTab].content}
         </motion.div>

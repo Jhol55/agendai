@@ -438,8 +438,6 @@ const Appointment: React.FC<AppointmentProps> = ({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
-
         <Dialog open={isOpened} onOpenChange={setIsOpened}>
           {/* <DialogTrigger className="cursor-pointer !m-0 min-w-4" asChild>
             <div className="text-xs">
@@ -448,7 +446,7 @@ const Appointment: React.FC<AppointmentProps> = ({
           </DialogTrigger> */}
           <DialogContent
             aria-describedby={undefined}
-            className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
+            className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"           
             onInteractOutside={(e) => {
               e.preventDefault();
               if (!openClient && !openService && !isCalendarOpen) {

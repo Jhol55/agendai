@@ -7,6 +7,7 @@ import { Typography } from "./typography";
 import { Button } from "./button";
 import useWindowSize from "@/hooks/use-window-size";
 import { ModeToggle } from "./ModeToggle";
+import { useSettings } from "@/hooks/use-settings";
 
 
 interface SidebarContextProps {
@@ -101,6 +102,7 @@ export const DesktopSidebar = ({
 }: React.ComponentProps<typeof motion.div>) => {
   const { open, setOpen, animate, isLoading, setIsLoading } = useSidebar();
   const { isMobile } = useWindowSize();
+  const { zoom } = useSettings();
 
   useEffect(() => {
     if (animate && open && !isMobile) {
@@ -112,8 +114,9 @@ export const DesktopSidebar = ({
   return (
     <>
       <motion.div
+      style={{ height: `calc(100vh / ${zoom})` }}
         className={cn(
-          "absolute left-0 h-screen px-4 py-4 hidden md:flex md:flex-col bg-neutral-700 dark:bg-neutral-800 flex-shrink-0 z-50 border-r border-r-neutral-700",
+          "absolute left-0 px-4 py-4 hidden md:flex md:flex-col bg-neutral-700 dark:bg-neutral-800 flex-shrink-0 z-50 border-r border-r-neutral-700",
           "",
           className
         )}

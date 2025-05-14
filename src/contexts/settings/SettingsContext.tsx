@@ -1,13 +1,15 @@
 import { SettingsService } from '@/services/planner';
 import { SettingsContextProps, SettingsState, } from './SettingsContext.type';
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 
 
 export const SettingsContext = createContext<SettingsContextProps | null>(null);
 
 export const SettingsProvider = ({
+  zoom,
   children,
 }: {
+  zoom: number;
   children?: React.ReactNode;
 }) => {
 
@@ -29,7 +31,8 @@ export const SettingsProvider = ({
       const response = await settingsService.updateSettings({ data });
       handleUpdate();
       return response;
-    }
+    },
+    zoom
   }
 
   return (

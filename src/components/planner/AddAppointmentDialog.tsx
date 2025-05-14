@@ -317,7 +317,9 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="p-0 popover-content-width-fix">
+                      <PopoverContent
+                        className="p-0 popover-content-width-fix"
+                      >
                         <Command className="pl-1">
                           <CommandInput
                             placeholder="Nome..."

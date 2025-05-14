@@ -19,6 +19,8 @@ import { Separator } from "../ui/separator";
 import { differenceInMinutes, format, parse } from "date-fns";
 import AddAppointmentDialog from "./AddAppointmentDialog";
 import { BlockTimeSlotsProps, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
+import { useSettings } from "@/hooks/use-settings";
+import useWindowSize from "@/hooks/use-window-size";
 
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -47,11 +49,17 @@ Planner.displayName = "Planner";
 
 export type PlannerMainComponentProps = React.HTMLAttributes<HTMLDivElement>;
 
+
 const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
+  const { zoom } = useSettings();
+  const { isMobile } = useWindowSize()
+
   return (
     <div className="flex flex-col relative">
       <PlannerTopBar />
-      <div className="mt-14 p-4 bg-neutral-50 dark:bg-background md:h-[92vh] rounded-md">
+      <div className="mt-14 p-4 bg-neutral-50 dark:bg-background rounded-md" 
+      // style={{ height: `calc(${(100).toFixed(3)}vh${isMobile ? ' - 30rem' : ' - 3.5rem'})` }}
+      >
         {/* <Separator orientation="horizontal" className="!mb-4" /> */}
         <CalendarToolbar />
         <CalendarContent {...props} />
@@ -65,6 +73,8 @@ PlannerMainComponent.displayName = "PlannerMainComponent";
 type CalendarContentProps = React.HTMLAttributes<HTMLDivElement>
 const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const { viewMode, dateRange, timeLabels } = useCalendar();
+  const { zoom } = useSettings();
+  const { isMobile } = useWindowSize();
   const {
     resources, appointments, updateAppointment, hourLabels, handleUpdate,
     blockedTimeSlots, setAppointments, isDragging, setIsDragging, isResizing, setIsResizing
@@ -87,35 +97,35 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         });
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, appointments, hourLabels])
 
   useEffect(() => {
     if (!isDragging && !isResizing) {
-    const timeout = setTimeout(() => {
-      const cards = document.querySelectorAll(".handle-ghosting");
+      const timeout = setTimeout(() => {
+        const cards = document.querySelectorAll(".handle-ghosting");
 
-      function handleDragStart(event: Event) {
-        const dragEvent = event as DragEvent;
-        if (dragEvent?.dataTransfer) {
-          dragEvent.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
+        function handleDragStart(event: Event) {
+          const dragEvent = event as DragEvent;
+          if (dragEvent?.dataTransfer) {
+            dragEvent.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
+          }
         }
-      }
 
-      cards.forEach(card => {
-        card.addEventListener("dragstart", handleDragStart);
-      });
-
-      return () => {
         cards.forEach(card => {
-          card.removeEventListener("dragstart", handleDragStart);
+          card.addEventListener("dragstart", handleDragStart);
         });
-      };
-    }, 500);
 
-    return () => clearTimeout(timeout);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => {
+          cards.forEach(card => {
+            card.removeEventListener("dragstart", handleDragStart);
+          });
+        };
+      }, 500);
+
+      return () => clearTimeout(timeout);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments]);
 
   useEffect(() => {
@@ -124,12 +134,12 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
   useEffect(() => {
     if (!isDragging && !isResizing) {
-    const timeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timeout);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      const timeout = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments])
 
   const getTopPositionFromTime = useCallback((timeStr: string): number => {
@@ -141,9 +151,9 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   useEffect(() => {
     return monitorForElements({
       async onDragStart({ source }) {
-        setIsDragging(true);       
+        setIsDragging(true);
       },
-      async onDrag({ source, location}) {
+      async onDrag({ source, location }) {
         const destination = location.current.dropTargets[0]?.data;
         const sourceData = source.data;
         const appointment = sourceData.appointment as AppointmentType;
@@ -174,7 +184,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
             to: newEnd,
           },
         );
-        
+
         const top = getTopPositionFromTime(format(newStart, "HH:mm")) + 2;
         appointmentDiv.style.top = `${top}px`
 
@@ -472,7 +482,10 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   // }, [handleUpdate, getTopPositionFromTime]);
 
   return (appointments &&
-    <div className="flex md:max-h-[calc(88vh_-_theme(spacing.16))] max-h-[calc(81vh_-_theme(spacing.16))] flex-col border rounded-md border-neutral-200 dark:border-neutral-700 bg-neutral-00">
+    <div
+      className="flex flex-col border rounded-md overflow-hidden border-neutral-200 dark:border-neutral-700"
+      style={{ height: `calc(${(100).toFixed(3)}vh${isMobile ? ' - 6rem' : ' - 3.5rem'})` }}
+    >
       <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} startDate={addAppointmentStartDate} />
       <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent">
         <Table>

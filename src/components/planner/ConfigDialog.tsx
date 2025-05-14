@@ -14,14 +14,16 @@ import { IconSettings, IconChevronUp, IconChevronDown } from "@tabler/icons-reac
 import { Typography } from "../ui/typography";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSettings } from "@/hooks/use-settings";
 
 
 export const ConfigDialog = () => {
   const [isOpened, setIsOpened] = useState(false);
   const [canHide, setCanHide] = useState(false);
+  const { zoom } = useSettings();
 
   return (
-    <DropdownMenu open={isOpened} onOpenChange={setIsOpened} >
+    <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -38,42 +40,48 @@ export const ConfigDialog = () => {
           }
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className={cn("w-56 mr-7 bg-background", canHide && "hidden")}>
-        <DropdownMenuLabel>
-          <Typography variant="span">
-            Configurações
-          </Typography>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup className="flex flex-col justify-center p-2 gap-2">
-          <DropdownMenuItem className="!p-0 m-2" asChild>
-            <OperatingHoursDialog
-              onClick={() => setCanHide(true)}
-              onClose={() => {
-                setTimeout(() => {
-                  setIsOpened(false);
-                }, 500);
-                setTimeout(() => {
-                  setCanHide(false);
-                }, 600);
-              }}
-            />
-          </DropdownMenuItem>
-          <DropdownMenuItem className="!p-0 m-2" asChild>
-            <AdditionalSettingsDialog
-              onClick={() => setCanHide(true)}
-              onClose={() => {
-                setTimeout(() => {
-                  setIsOpened(false);
-                }, 500);
-                setTimeout(() => {
-                  setCanHide(false);
-                }, 600);
-              }}
-            />
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
+        <DropdownMenuContent side="top"
+          style={{ zoom }}
+          className={cn("w-56 bg-background mr-7", canHide && "hidden")}
+          // style={{
+          //   marginLeft: zoom === 0.9 ? `calc(10% + ${(window.innerWidth * zoom) / 2}px)` : ""
+          // }}    
+        >
+          <DropdownMenuLabel>
+            <Typography variant="span">
+              Configurações
+            </Typography>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup className="flex flex-col justify-center p-2 gap-2">
+            <DropdownMenuItem className="!p-0 m-2" asChild>
+              <OperatingHoursDialog
+                onClick={() => setCanHide(true)}
+                onClose={() => {
+                  setTimeout(() => {
+                    setIsOpened(false);
+                  }, 500);
+                  setTimeout(() => {
+                    setCanHide(false);
+                  }, 600);
+                }}
+              />
+            </DropdownMenuItem>
+            <DropdownMenuItem className="!p-0 m-2" asChild>
+              <AdditionalSettingsDialog
+                onClick={() => setCanHide(true)}
+                onClose={() => {
+                  setTimeout(() => {
+                    setIsOpened(false);
+                  }, 500);
+                  setTimeout(() => {
+                    setCanHide(false);
+                  }, 600);
+                }}
+              />
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
     </DropdownMenu>
   )
 }

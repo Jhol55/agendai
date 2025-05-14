@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 import { dateTimeFormatOptions } from "@/constants/dateTimeFormatOptions";
 import React from "react";
+import { useSettings } from "@/hooks/use-settings";
 
 
 interface NotificationProps {
@@ -54,7 +55,8 @@ export function Notifications() {
   const [trigger, setTrigger] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
   const handleUpdate = useCallback(() => setTrigger(!trigger), [trigger])
-  const toastRef = useRef<string | number | undefined>(undefined)
+  const toastRef = useRef<string | number | undefined>(undefined);
+  const { zoom } = useSettings();
 
   useEffect(() => {
     setIsLoading(message ? false : true);
@@ -163,7 +165,9 @@ export function Notifications() {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:w-[50rem] md:max-w-md max-w-[90%] max-h-[90vh] md:mx-10 mx-auto" side="top" align="center">
+      <DropdownMenuContent 
+      className="bg-background dark:bg-neutral-900 !p-0 sm:w-full w-screen md:w-[50rem] md:max-w-md max-w-[90%] max-h-[90vh] md:mx-10 mx-auto" side="top" align="center"
+      >
         <Card className="w-full border-0 bg-neutral-50 dark:bg-neutral-900">
           <CardHeader className="!px-8 !pb-4">
             <CardTitle className="text-xl">Notificações</CardTitle>

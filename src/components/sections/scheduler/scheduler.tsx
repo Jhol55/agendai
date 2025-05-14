@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Resource } from "@/models";
 import Planner from "@/components/planner/Planner";
+import { useSettings } from "@/hooks/use-settings";
 
 export function Scheduler() {
   const [resources, setResources] = useState<Resource[]>([]);
@@ -20,12 +21,12 @@ export function Scheduler() {
   }, []);
 
   return (
-    <div className="flex w-full flex-col">
-      <main className="flex flex-col gap-4 md:gap-8">
+    
+      <main className="flex flex-col w-full h-full">
         <Planner
           initialResources={resources}
         />
       </main>
-    </div>
+    
   );
 }
