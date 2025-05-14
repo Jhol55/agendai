@@ -21,6 +21,7 @@ import AddAppointmentDialog from "./AddAppointmentDialog";
 import { BlockTimeSlotsProps, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 import { useSettings } from "@/hooks/use-settings";
 import useWindowSize from "@/hooks/use-window-size";
+import OtherAppointment from "./OtherAppointment";
 
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -57,7 +58,7 @@ const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
   return (
     <div className="flex flex-col relative">
       <PlannerTopBar />
-      <div className="mt-14 p-4 bg-neutral-50 dark:bg-background rounded-md" 
+      <div className="mt-14 p-4 bg-neutral-50 dark:bg-background rounded-md"
       // style={{ height: `calc(${(100).toFixed(3)}vh${isMobile ? ' - 30rem' : ' - 3.5rem'})` }}
       >
         {/* <Separator orientation="horizontal" className="!mb-4" /> */}
@@ -73,16 +74,14 @@ PlannerMainComponent.displayName = "PlannerMainComponent";
 type CalendarContentProps = React.HTMLAttributes<HTMLDivElement>
 const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const { viewMode, dateRange, timeLabels } = useCalendar();
-  const { zoom } = useSettings();
   const { isMobile } = useWindowSize();
   const {
-    resources, appointments, updateAppointment, hourLabels, handleUpdate,
+    resources, appointments, updateAppointment, hourLabels,
     blockedTimeSlots, setAppointments, isDragging, setIsDragging, isResizing, setIsResizing
   } = usePlannerData();
   const [isOnDropTransitionPending, startOnDropTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
   const [isOnSubmitTransitionPending, startOnSubmitTransition] = useTransition();
-  // const [timeMarkerTopPosition, setTimeMarkerTopPosition] = useState<number>(0);
   const [isAddAppointmentOpen, setIsAddAppointmentOpen] = useState(false);
   const [addAppointmentStartDate, setAddAppointmentStartDate] = useState<Date | undefined>(undefined);
   const [tableBodyDimensions, setTableBodyDimensions] = useState<{ width?: number; height?: number } | null>(null);
@@ -121,7 +120,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
             card.removeEventListener("dragstart", handleDragStart);
           });
         };
-      }, 500);
+      }, 1);
 
       return () => clearTimeout(timeout);
     }
@@ -148,10 +147,12 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
     return ((hours * (34 * 2)) + (minutes * 1.12)) - ((initialHours * (34 * 2)) + (initialMinutes * 1.12));
   }, [hourLabels]);
 
+  const [initialScrollOffset, setInitialScrollOffset] = useState(0);
   useEffect(() => {
     return monitorForElements({
       async onDragStart({ source }) {
         setIsDragging(true);
+        setInitialScrollOffset(document.getElementById("calendar-overflow-container")?.scrollTop || 0);
       },
       async onDrag({ source, location }) {
         const destination = location.current.dropTargets[0]?.data;
@@ -160,8 +161,10 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         const appointmentDiv = source.element.closest(".handle-resize") as HTMLElement;
         if (!appointmentDiv) return;
 
+        const calendarOverflowContainer = document.getElementById("calendar-overflow-container");
+        const currentScrollOffset = calendarOverflowContainer?.scrollTop || 0;
         const startY = location.initial.input.clientY;
-        const currentY = location.current.input.clientY;
+        const currentY = location.current.input.clientY + (currentScrollOffset - initialScrollOffset);
         const slotHeight = 1.134 * 30;
         const deltaY = currentY - startY;
         const slotsCrossed = Math.round(deltaY / slotHeight);
@@ -175,6 +178,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         const newStart = new Date(appointment.start.getTime() + minutesMoved * 60_000);
         const newEnd = new Date(appointment.end.getTime() + minutesMoved * 60_000);
 
+        if (differenceInMinutes(newEnd, newStart) < 30) return;
+
         const newDates = calculateNewDates(
           viewMode,
           destination.columnIndex as unknown as number,
@@ -186,7 +191,22 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         );
 
         const top = getTopPositionFromTime(format(newStart, "HH:mm")) + 2;
-        appointmentDiv.style.top = `${top}px`
+
+        // Scroll 
+        const rect = calendarOverflowContainer?.getBoundingClientRect();
+        if (calendarOverflowContainer) {
+          const container = calendarOverflowContainer;
+          if (top - currentScrollOffset > (rect?.height || 0) - 112) {
+            container.scrollBy({ top: 34, behavior: 'smooth' });
+          }
+          if (top - currentScrollOffset < 112) {
+            container.scrollBy({ top: -34, behavior: 'smooth' });
+          }
+        }
+
+        setTimeout(() => {
+          appointmentDiv.style.top = `${top}px`
+        }, 0)
 
         // Preview
         setAppointments(prev => {
@@ -222,14 +242,13 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         const sourceData = source.data;
         const appointment = sourceData.appointment as AppointmentType;
 
+        const currentScrollOffset = document.getElementById("calendar-overflow-container")?.scrollTop || 0;
         const startY = location.initial.input.clientY;
-        const currentY = location.current.input.clientY;
+        const currentY = location.current.input.clientY + (currentScrollOffset - initialScrollOffset);
         const slotHeight = 1.134 * 30;
         const deltaY = currentY - startY;
         const slotsCrossed = Math.round(deltaY / slotHeight);
         const minutesMoved = slotsCrossed * 30;
-
-        setTimeout(() => setIsDragging(true), 1);
 
         if (!destination || !sourceData || !appointment) {
           setTimeout(() => setIsDragging(false), 2);
@@ -245,6 +264,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
             to: new Date(appointment.end.getTime() + minutesMoved * 60_000),
           },
         );
+
+        setTimeout(() => setIsDragging(false), 50);
 
         startOnDropTransition(() => {
           toast.promise(
@@ -262,8 +283,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                       }))
                     },
                   }))
-              }).then(() => {
-                setIsDragging(false);
               }),
             {
               loading: "Atualizando compromisso...",
@@ -274,7 +293,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         });
       },
     });
-  }, [getTopPositionFromTime, resources, setAppointments, setIsDragging, updateAppointment, viewMode]);
+  }, [getTopPositionFromTime, initialScrollOffset, resources, setAppointments, setIsDragging, updateAppointment, viewMode]);
 
   const groupOverlappingAppointments = useCallback((appointments: (AppointmentType | BlockTimeSlotsProps)[]) => {
     const clusters: AppointmentType[][] = [];
@@ -444,42 +463,44 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   }, [setAppointments, setIsResizing, updateAppointment])
 
 
-  // useEffect(() => {
-  //   setTimeMarkerTopPosition(
-  //     getTopPositionFromTime(new Date().toTimeString().slice(0, 5))
-  //   );
+  const assignAppointmentsToColumns = useCallback((appointments: AppointmentType[]) => {
+    const columns: AppointmentType[][] = [];
 
-  //   const getTimeUntilNextInterval = (intervalMinutes: number) => {
-  //     const now = new Date();
-  //     const minutes = now.getMinutes();
-  //     const seconds = now.getSeconds();
-  //     const milliseconds = now.getMilliseconds();
-  //     const nextInterval = intervalMinutes - (minutes % intervalMinutes);
-  //     return (nextInterval * 60 * 1000) - (seconds * 1000 + milliseconds);
-  //   };
+    for (const appt of appointments) {
+      let placed = false;
 
-  //   const intervalMinutes = 1;
-  //   const timeUntilNext = getTimeUntilNextInterval(intervalMinutes);
+      for (const column of columns) {
+        const hasConflict = column.some(other =>
+          appt.start < other.end && appt.end > other.start
+        );
 
-  //   let intervalId: ReturnType<typeof setInterval>;
-  //   const timeoutId = setTimeout(() => {
-  //     setTimeMarkerTopPosition(
-  //       getTopPositionFromTime(new Date().toTimeString().slice(0, 5))
-  //     );
+        if (!hasConflict) {
+          column.push(appt);
+          placed = true;
+          break;
+        }
+      }
 
-  //     intervalId = setInterval(() => {
-  //       setTimeMarkerTopPosition(
-  //         getTopPositionFromTime(new Date().toTimeString().slice(0, 5))
-  //       );
-  //       handleUpdate();
-  //     }, intervalMinutes * 60 * 1000);
-  //   }, timeUntilNext);
+      if (!placed) {
+        columns.push([appt]);
+      }
+    }
 
-  //   return () => {
-  //     clearTimeout(timeoutId);
-  //     if (intervalId) clearInterval(intervalId);
-  //   };
-  // }, [handleUpdate, getTopPositionFromTime]);
+    const apptMap = new Map<AppointmentType, number>();
+
+    columns.forEach((column, columnIndex) => {
+      for (const appt of column) {
+        apptMap.set(appt, columnIndex);
+      }
+    });
+
+    return {
+      columnsCount: columns.length,
+      apptMap,
+      columns
+    };
+  }, [])
+
 
   return (appointments &&
     <div
@@ -487,7 +508,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
       style={{ height: `calc(${(100).toFixed(3)}vh${isMobile ? ' - 6rem' : ' - 3.5rem'})` }}
     >
       <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} startDate={addAppointmentStartDate} />
-      <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent">
+      <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent" id="calendar-overflow-container">
         <Table>
           <Timeline />
           <TableBody ref={tableBodyRef} className="relative">
@@ -496,17 +517,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                 <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px]", isLoading && "hidden")}>
                   <td className="text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]">
                     {format(dateTime, 'HH:mm')}
-                    {/* {rowIndex === 0 &&
-                      <div
-                        className={cn(
-                          "absolute w-[calc(100%-50px)] left-[50px] border-t border-red-500",
-                          tableBodyDimensions?.height && timeMarkerTopPosition > tableBodyDimensions?.height && "hidden"
-                        )}
-                        style={{
-                          top: timeMarkerTopPosition
-                        }}
-                      >
-                      </div>} */}
                   </td>
 
                   {["", ...timeLabels]?.map((label, index) => (
@@ -516,8 +526,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                       columnIndex={index}
                       key={index}
                       className={cn(
-                        "relative",
-                        !isResizing && "[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50",
+                        "relative border border-b-0",
+                        !isResizing && "dark:[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50 [&:hover:not(:has(.handle-resize:hover))]:bg-neutral-100",
                         isResizing && "cursor-n-resize",
                       )}
                       style={{ minWidth: `${(tableBodyDimensions?.width ? (tableBodyDimensions?.width - 70) / 7 : 0)}px` }}
@@ -540,12 +550,12 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                     >
                       {rowIndex === 0 && (
                         <div
-                          className="absolute w-full border-r md:border-b-0 border-t-0"
+                          className="absolute w-full md:border-b-0 border-t-0"
                           style={{ height: `${tableBodyDimensions?.height}px` }}
                         >
                           {(() => {
                             const visibleAppointments = [...appointments, ...blockedTimeSlots]
-                              .sort((a, b) => a.start.getTime() - b.start.getTime())
+                              .sort((a, b) => a?.start?.getTime() - b?.start?.getTime())
                               .filter(
                                 (appt) =>
                                   filterAppointments(appt, index, dateRange, viewMode)
@@ -553,12 +563,27 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
                             const clusters = groupOverlappingAppointments(visibleAppointments);
 
-                            return clusters.flatMap((cluster) =>
-                              cluster
-                                .sort((a, b) => a?.title?.localeCompare(b?.title))
-                                .map((appt, position) => {
-                                  const widthPercent = 100 / cluster.length;
-                                  const leftPercent = widthPercent * position;
+                            return clusters.flatMap((cluster) => {
+                              const { columnsCount, apptMap, columns } = assignAppointmentsToColumns(cluster);
+                              return cluster                                                     
+                                .map((appt) => {
+                                  const columnIndex = apptMap.get(appt) ?? 0;
+                                  let colSpan = 1;
+
+                                  for (let i = columnIndex + 1; i < columnsCount; i++) {
+                                    const nextColumn = columns[i];
+
+                                    const hasConflict = nextColumn.some(other =>
+                                      appt.start < other.end && appt.end > other.start
+                                    );
+
+                                    if (hasConflict) break;
+
+                                    colSpan++;
+                                  }
+
+                                  const widthPercent = (100 / columnsCount) * colSpan;
+                                  const leftPercent = (100 / columnsCount) * columnIndex;
 
                                   return (
                                     <div
@@ -600,7 +625,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                     </div>
                                   );
                                 })
-                            );
+                            });
                           })()}
                         </div>
                       )}
@@ -611,8 +636,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
             ))}
           </TableBody>
         </Table>
-        <div className={cn(isLoading && "!flex dark:bg-background bg-neutral-50", "w-full justify-center items-center hidden")}>
-          <Loading display={isLoading} className="!scale-[0.5]" />
+        <div className={cn(isLoading && "!flex dark:bg-background bg-neutral-50", "w-full justify-center hidden")}>
+          <Loading display={isLoading} className="!scale-[0.5] mt-10" />
         </div>
       </div>
     </div>

@@ -52,7 +52,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           <TableHead
             key={index}
             className={cn(
-              "bg-background border-r last:border-r-0 text-center max-w-full whitespace-nowrap bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
+              "bg-background text-center max-w-full whitespace-nowrap bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
               shouldDisplayIcon({ index, viewMode })
                 ? "z-30" : "z-20"
             )}

@@ -68,7 +68,9 @@ import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { Separator } from "../ui/separator";
-import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
+import { blockedTimesSchema, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
+import { AddBlockedTimeSlot } from "@/services/block-time-slots";
+import { TextArea } from "../ui/text-area";
 
 type ServiceType = {
   id: string,
@@ -111,6 +113,9 @@ const Appointment: React.FC<AppointmentProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isFeeRefundOpen, setIsFeeRefundOpen] = useState(false);
   const [isServiceRefundOpen, setIsServiceRefundOpen] = useState(false);
+  const [type, setType] = useState<string>("");
+  const [isTypeOpen, setIsTypeOpen] = useState(false);
+  const [isDayOfWeekOpen, setIsDayOfWeekOpen] = useState(false);
 
   useEffect(() => {
     if (!isDragging && !isResizing) {
@@ -157,12 +162,28 @@ const Appointment: React.FC<AppointmentProps> = ({
     }
   }), [appointment]);
 
+  const otherDefaultValues = useMemo(() => ({
+    type: appointment.is_recurring ? "dayOfWeek" : "period",
+    start: appointment.start,
+    end: appointment.end,
+    is_recurring: appointment.is_recurring,
+    day_of_week: appointment.day_of_week,
+    description: appointment.description,
+  }), [appointment]);
+
   const form = useForm<z.infer<typeof updateAppointmentSchema>>({
     resolver: zodResolver(updateAppointmentSchema),
-    defaultValues,
+    defaultValues: defaultValues,
+  });
+
+  const otherForm = useForm<z.infer<typeof blockedTimesSchema>>({
+    resolver: zodResolver(blockedTimesSchema),
+    defaultValues: otherDefaultValues,
   });
 
   const watch = form.watch();
+  const otherWatch = otherForm.watch();
+
 
   useEffect(() => {
     if (!isDragging && !isResizing) {
@@ -251,7 +272,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                   ...appointment,
                   ...values,
                 }));
-            }).then(() => {
+            }).then((data) => {
               setTimeout(() => {
                 handleUpdate();
                 setIsOpened(false);
@@ -267,6 +288,23 @@ const Appointment: React.FC<AppointmentProps> = ({
       })
     }
   }, [appointment, form, handleUpdate, updateAppointment])
+
+  const onSubmitOther = useCallback((values: z.infer<typeof blockedTimesSchema>) => {
+    startOnSubmitTransition(() => {
+      toast.promise(
+        () =>
+          new Promise((resolve) => {
+            resolve(AddBlockedTimeSlot({ data: values }));
+          }),
+        {
+          loading: "Adicionando exceção...",
+          success: "Exceção adicionada com sucesso.",
+          error: "Falha ao adicionar exceção!"
+        },
+      );
+
+    });
+  }, [])
 
   const onRemove = useCallback((id: string) => {
     setTimeout(() => {
@@ -324,8 +362,33 @@ const Appointment: React.FC<AppointmentProps> = ({
       .findIndex(payment => payment.type === type && payment.status !== "refunded");
   }, [form])
 
-  const feeIndex = useMemo(() => findPaymentIndex("fee"), [findPaymentIndex]);
-  const serviceIndex = useMemo(() => findPaymentIndex("service"), [findPaymentIndex]);
+  const feeIndex = useMemo(() => appointment?.details?.service ? findPaymentIndex("fee") : 0, [appointment?.details?.service, findPaymentIndex]);
+  const serviceIndex = useMemo(() => appointment?.details?.service ? findPaymentIndex("service") : 0, [appointment?.details?.service, findPaymentIndex]);
+
+  const units = useMemo(() => [
+    { label: "Período", value: "period" },
+    { label: "Dia da semana", value: "dayOfWeek" }
+  ], []);
+
+  const daysOfWeek = useMemo(() => [
+    { label: "Domingo", value: 0 },
+    { label: "Segunda-feira", value: 1 },
+    { label: "Terça-feira", value: 2 },
+    { label: "Quarta-feira", value: 3 },
+    { label: "Quinta-feira", value: 4 },
+    { label: "Sexta-feira", value: 5 },
+    { label: "Sábado", value: 6 }
+  ], []);
+
+  // useEffect(() => {
+  //   if (!appointment?.details?.service) {
+  //     console.log(appointment)
+  //     otherForm.setValue("type", appointment?.is_recurring ? "dayOfWeek" : "period");
+  //     if (appointment?.is_recurring) {
+  //       otherForm.setValue("day_of_week", appointment?.day_of_week);
+  //     }
+  //   }
+  // }, [appointment, otherForm])
 
   return (
     <Card ref={ref} className={cn(
@@ -336,117 +399,30 @@ const Appointment: React.FC<AppointmentProps> = ({
     )}
       onDoubleClick={(e) => { setIsOpened(true); e.stopPropagation() }}>
       <CardHeader className="absolute w-full flex flex-row items-center justify-between p-1">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger className="w-full h-full">
-              <Badge variant={"outline"} className="pointer-events-none border-none rounded-sm dark:border-neutral-700 transition-colors duration-150 truncate px-1 text-xs w-full whitespace-nowrap inline-block">
-                <div className="flex justify-start w-full">
-                  {appointment?.details?.service
-                    ? appointment.details?.online
-                      ? <IconVideo className={cn(
-                        "w-4 h-4 min-w-4 min-h-4 text-white/90",
-                        appointment.status === "confirmed" && "text-green-600",
-                        appointment.status === "canceled" && "text-red-600"
-                      )} />
-                      : <IconMapPin className={cn(
-                        "w-4 h-4 min-w-4 min-h-4 text-white/90",
-                        appointment.status === "confirmed" && "text-green-600",
-                        appointment.status === "canceled" && "text-red-600"
-                      )} />
-                    : <IconBan className="w-4 h-4 min-w-4 min-h-4 text-white/90" />}
-                  <Typography variant="p" className="!text-white truncate pl-1">
-                    {appointment?.title ?? appointment?.description}
-                  </Typography>
-                </div>
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent onMouseDown={(e) => e.preventDefault()}>
-              <div className="flex flex-col gap-1">
-                <div className="flex gap-1">{
-                  <>
-                    <Typography variant="b" className="text-xs">Modalidade:</Typography>
-                    <Typography variant="p" className="text-xs">
-                      {
-                        appointment.details?.online
-                          ? "Online"
-                          : "Presencial"
-                      }
-                    </Typography>
-                  </>
-                }
-                </div>
-                <div className="flex gap-1">{
-                  <>
-                    <Typography variant="b" className="text-xs">Status:</Typography>
-                    <Typography variant="p" className="text-xs">
-                      {
-                        watch.status === "confirmed"
-                          ? "Confirmado"
-                          : watch.status === "canceled"
-                            ? "Cancelado"
-                            : "Pendente"
-                      }
-                    </Typography>
-                  </>
-                }
-                </div>
-                <Separator orientation="horizontal" />
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-1">{
-                    <>
-                      <Typography variant="b" className="text-xs">Descrição:</Typography>
-                      <Typography variant="p" className="text-xs">Taxa de reserva</Typography>
-                    </>
-                  }
-                  </div>
-                  <div className="flex gap-1">
-                    <Typography variant="b" className="text-xs">Status:</Typography>
-                    <Typography variant="p" className="text-xs">
-                      {
-                        ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
-                          ? "Pago"
-                          : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                            ? "Pendente"
-                            : "Vencido"
-                      }
-                    </Typography>
-                  </div>
-                </div>
-                <Separator orientation="horizontal" />
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-1">{
-                    <>
-                      <Typography variant="b" className="text-xs">Descrição:</Typography>
-                      <Typography variant="p" className="text-xs">Valor restante</Typography>
-                    </>
-                  }
-                  </div>
-                  <div className="flex gap-1">
-                    <Typography variant="b" className="text-xs">Status:</Typography>
-                    <Typography variant="p" className="text-xs">
-                      {
-                        ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
-                          ? "Pago"
-                          : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                            ? "Pendente"
-                            : "Vencido"
-                      }
-                    </Typography>
-                  </div>
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Badge variant={"outline"} className="pointer-events-none border-none rounded-sm dark:border-neutral-700 transition-colors duration-150 truncate px-1 text-xs w-full whitespace-nowrap inline-block">
+          <div className="flex justify-start w-full">
+            {appointment?.details?.service
+              ? appointment.details?.online
+                ? <IconVideo className={cn(
+                  "w-4 h-4 min-w-4 min-h-4 text-white/90",
+                  appointment.status === "confirmed" && "text-green-600",
+                  appointment.status === "canceled" && "text-red-600"
+                )} />
+                : <IconMapPin className={cn(
+                  "w-4 h-4 min-w-4 min-h-4 text-white/90",
+                  appointment.status === "confirmed" && "text-green-600",
+                  appointment.status === "canceled" && "text-red-600"
+                )} />
+              : <IconBan className="w-4 h-4 min-w-4 min-h-4 text-white/90" />}
+            <Typography variant="p" className="!text-white truncate pl-1">
+              {appointment?.title ?? appointment?.description}
+            </Typography>
+          </div>
+        </Badge>
         <Dialog open={isOpened} onOpenChange={setIsOpened}>
-          {/* <DialogTrigger className="cursor-pointer !m-0 min-w-4" asChild>
-            <div className="text-xs">
-              <EllipsisVertical className="h-4 w-4" />
-            </div>
-          </DialogTrigger> */}
           <DialogContent
             aria-describedby={undefined}
-            className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"           
+            className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
             onInteractOutside={(e) => {
               e.preventDefault();
               if (!openClient && !openService && !isCalendarOpen) {
@@ -458,144 +434,79 @@ const Appointment: React.FC<AppointmentProps> = ({
               <DialogTitle>Editar Agendamento</DialogTitle>
             </DialogHeader>
             {!isLoading ? (
-              <Form {...form}>
-                <form id="update-appointment" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col mt-2.5">
-                        <FormLabel className="text-left">Status</FormLabel>
-                        <FormControl>
-                          <div className="flex gap-2 w-full">
-                            <Button
-                              onClick={() => {
-                                field.onChange("pending")
-                              }}
-                              variant={field.value === "pending" ? "default" : "outline"}
-                              className={cn(
-                                "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white dark:!text-white !text-neutral-700",
-                                field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 !text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
-                              )}
-                              type="button"
-                            >
-                              Pendente
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                field.onChange("confirmed")
-                              }}
-                              variant={field.value === "confirmed" ? "default" : "outline"}
-                              className={cn(
-                                "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:!text-white !text-neutral-700",
-                                field.value === "confirmed" && "bg-green-500 dark:bg-green-500 !text-white hover:bg-green-500 dark:hover:bg-green-500"
-                              )}
-                              type="button"
-                            >
-                              Confirmado
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                field.onChange("canceled")
-                              }}
-                              variant={field.value === "canceled" ? "default" : "outline"}
-                              className={cn(
-                                "flex-1 sm:w-full hover:bg-red-500 dark:hover:bg-red-500 hover:text-white dark:!text-white !text-neutral-700",
-                                field.value === "canceled" && "bg-red-500 dark:bg-red-500 !text-white hover:bg-red-500 dark:hover:bg-red-500"
-                              )}
-                              type="button"
-                            >
-                              Cancelado
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Cliente</FormLabel>
-                        <FormControl>
-                          <Popover open={openClient} onOpenChange={setOpenClient} modal>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
-                              >
-                                <div className="flex gap-4 items-center">
-                                  <IconUser />
-                                  {field.value ?? appointment.title}
-                                </div>
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="p-0 popover-content-width-fix">
-                              <Command className="pl-1">
-                                <CommandInput
-                                  placeholder="Nome..."
-                                  className="ml-2"
-                                  onInput={(e) => setClientSearchValue((e.target as HTMLInputElement).value)}
-                                />
-                                <CommandList className={cn(!clientSearchValue && "hidden")}>
-                                  <div className="flex justify-center">
-                                    <Loading display={isClientSearching} className="!scale-[0.3]" />
-                                    {!isClientSearching && <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>}
-                                  </div>
-                                  <CommandGroup>
-                                    {!isClientSearching && clients?.map((client) => (
-                                      <CommandItem
-                                        key={client.id}
-                                        value={client.name}
-                                        onSelect={(value) => {
-                                          field.onChange(value);
-                                          setOpenClient(false);
-                                          setClientSearchValue("");
-                                        }}
-                                        className="cursor-pointer"
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value === client.name ? "opacity-100" : "opacity-0"
-                                          )}
-                                        />
-                                        {client.name}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div>
+              appointment?.details?.service ?
+                <Form {...form}>
+                  <form id="update-appointment" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
                     <FormField
                       control={form.control}
-                      name="details.service"
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col mt-2.5">
+                          <FormLabel className="text-left">Status</FormLabel>
+                          <FormControl>
+                            <div className="flex gap-2 w-full">
+                              <Button
+                                onClick={() => {
+                                  field.onChange("pending")
+                                }}
+                                variant={field.value === "pending" ? "default" : "outline"}
+                                className={cn(
+                                  "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white dark:!text-white !text-neutral-700",
+                                  field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 !text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
+                                )}
+                                type="button"
+                              >
+                                Pendente
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  field.onChange("confirmed")
+                                }}
+                                variant={field.value === "confirmed" ? "default" : "outline"}
+                                className={cn(
+                                  "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:!text-white !text-neutral-700",
+                                  field.value === "confirmed" && "bg-green-500 dark:bg-green-500 !text-white hover:bg-green-500 dark:hover:bg-green-500"
+                                )}
+                                type="button"
+                              >
+                                Confirmado
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  field.onChange("canceled")
+                                }}
+                                variant={field.value === "canceled" ? "default" : "outline"}
+                                className={cn(
+                                  "flex-1 sm:w-full hover:bg-red-500 dark:hover:bg-red-500 hover:text-white dark:!text-white !text-neutral-700",
+                                  field.value === "canceled" && "bg-red-500 dark:bg-red-500 !text-white hover:bg-red-500 dark:hover:bg-red-500"
+                                )}
+                                type="button"
+                              >
+                                Cancelado
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="title"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Serviço</FormLabel>
+                          <FormLabel>Cliente</FormLabel>
                           <FormControl>
-                            <Popover open={openService} onOpenChange={setOpenService} modal>
+                            <Popover open={openClient} onOpenChange={setOpenClient} modal>
                               <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  aria-expanded={openService}
                                   className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                                 >
                                   <div className="flex gap-4 items-center">
-                                    <IconBriefcase />
-                                    {field.value ?? appointment?.details?.service}
+                                    <IconUser />
+                                    {field.value ?? appointment.title}
                                   </div>
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
@@ -605,53 +516,32 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   <CommandInput
                                     placeholder="Nome..."
                                     className="ml-2"
-                                    onInput={(e) => setServiceSearchValue((e.target as HTMLInputElement).value)}
+                                    onInput={(e) => setClientSearchValue((e.target as HTMLInputElement).value)}
                                   />
-                                  <CommandList className={cn(!serviceSearchValue && "hidden")}>
+                                  <CommandList className={cn(!clientSearchValue && "hidden")}>
                                     <div className="flex justify-center">
-                                      <Loading display={isServiceSearching} className="!scale-[0.3]" />
-                                      {!isServiceSearching && <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>}
+                                      <Loading display={isClientSearching} className="!scale-[0.3]" />
+                                      {!isClientSearching && <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>}
                                     </div>
                                     <CommandGroup>
-                                      {!isServiceSearching && services?.map((service) => (
+                                      {!isClientSearching && clients?.map((client) => (
                                         <CommandItem
-                                          key={service.id}
-                                          value={service.name + service.id}
+                                          key={client.id}
+                                          value={client.name}
                                           onSelect={(value) => {
-                                            field.onChange(value.replace(service.id, ""));
-                                            setOpenService(false);
-                                            setServiceSearchValue("");
-                                            setCurrentService(service);
+                                            field.onChange(value);
+                                            setOpenClient(false);
+                                            setClientSearchValue("");
                                           }}
                                           className="cursor-pointer"
                                         >
                                           <Check
                                             className={cn(
                                               "mr-2 h-4 w-4",
-                                              (currentService?.id ? currentService.id === service.id : String(appointment.details?.serviceId) == service.id) ? "opacity-100" : "opacity-0"
+                                              field.value === client.name ? "opacity-100" : "opacity-0"
                                             )}
                                           />
-                                          <div className="w-full whitespace-nowrap">
-                                            {service.name}
-                                          </div>
-                                          <div className="flex w-full justify-between">
-                                            <div className="flex gap-1 items-center">
-                                              {service.allow_online
-                                                ? <IconVideo className="w-4 h-4" />
-                                                : <IconVideoOff className="w-4 h-4 text-red-600" />
-                                              }
-                                              {service.allow_in_person
-                                                ? <IconMapPin className="w-4 h-4" />
-                                                : <IconMapPinOff className="w-4 h-4 text-red-600" />
-                                              }
-                                            </div>
-                                            <div>
-                                              {service?.price?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                            </div>
-                                            <div>
-                                              {service.duration_minutes} min
-                                            </div>
-                                          </div>
+                                          {client.name}
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
@@ -664,476 +554,773 @@ const Appointment: React.FC<AppointmentProps> = ({
                         </FormItem>
                       )}
                     />
+                    <div>
+                      <FormField
+                        control={form.control}
+                        name="details.service"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Serviço</FormLabel>
+                            <FormControl>
+                              <Popover open={openService} onOpenChange={setOpenService} modal>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openService}
+                                    className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
+                                  >
+                                    <div className="flex gap-4 items-center">
+                                      <IconBriefcase />
+                                      {field.value ?? appointment?.details?.service}
+                                    </div>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 popover-content-width-fix">
+                                  <Command className="pl-1">
+                                    <CommandInput
+                                      placeholder="Nome..."
+                                      className="ml-2"
+                                      onInput={(e) => setServiceSearchValue((e.target as HTMLInputElement).value)}
+                                    />
+                                    <CommandList className={cn(!serviceSearchValue && "hidden")}>
+                                      <div className="flex justify-center">
+                                        <Loading display={isServiceSearching} className="!scale-[0.3]" />
+                                        {!isServiceSearching && <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>}
+                                      </div>
+                                      <CommandGroup>
+                                        {!isServiceSearching && services?.map((service) => (
+                                          <CommandItem
+                                            key={service.id}
+                                            value={service.name + service.id}
+                                            onSelect={(value) => {
+                                              field.onChange(value.replace(service.id, ""));
+                                              setOpenService(false);
+                                              setServiceSearchValue("");
+                                              setCurrentService(service);
+                                            }}
+                                            className="cursor-pointer"
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                (currentService?.id ? currentService.id === service.id : String(appointment.details?.serviceId) == service.id) ? "opacity-100" : "opacity-0"
+                                              )}
+                                            />
+                                            <div className="w-full whitespace-nowrap">
+                                              {service.name}
+                                            </div>
+                                            <div className="flex w-full justify-between">
+                                              <div className="flex gap-1 items-center">
+                                                {service.allow_online
+                                                  ? <IconVideo className="w-4 h-4" />
+                                                  : <IconVideoOff className="w-4 h-4 text-red-600" />
+                                                }
+                                                {service.allow_in_person
+                                                  ? <IconMapPin className="w-4 h-4" />
+                                                  : <IconMapPinOff className="w-4 h-4 text-red-600" />
+                                                }
+                                              </div>
+                                              <div>
+                                                {service?.price?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                              </div>
+                                              <div>
+                                                {service.duration_minutes} min
+                                              </div>
+                                            </div>
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="details.online"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col mt-2.5">
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={(checked: boolean) => {
+                                    field.onChange(checked);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-left">Videoconferência</FormLabel>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <FormField
                       control={form.control}
-                      name="details.online"
+                      name="start"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col mt-2.5">
-                          <div className="flex items-center gap-2">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={(checked: boolean) => {
-                                  field.onChange(checked);
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="text-left">Videoconferência</FormLabel>
-                          </div>
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-left">Início</FormLabel>
+                          <FormControl>
+                            <TimePicker
+                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                              onChange={(date) => {
+                                field.onChange(date);
+                                if (date) {
+                                  const newDate = new Date(date);
+                                  newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
+                                  setAutoEndDate(newDate);
+                                  setIsCalendarOpen(false);
+                                }
+                              }}
+                              onClick={() => setIsCalendarOpen(true)}
+                              onInteractOutside={(e) => {
+                                if (isCalendarOpen) {
+                                  setIsCalendarOpen(false);
+                                }
+                              }}
+                              value={appointment.start}
+                              disabled={!appointment.start}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="start"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-left">Início</FormLabel>
-                        <FormControl>
-                          <TimePicker
-                            className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                            onChange={(date) => {
-                              field.onChange(date);
-                              if (date) {
-                                const newDate = new Date(date);
-                                newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
-                                setAutoEndDate(newDate);
-                                setIsCalendarOpen(false);                            
-                              }
-                            }}
-                            onClick={() => setIsCalendarOpen(true)}
-                            onInteractOutside={(e) => {
-                              if (isCalendarOpen) {
+                    <FormField
+                      control={form.control}
+                      name="end"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-left">Fim</FormLabel>
+                          <FormControl>
+                            <TimePicker
+                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                              onChange={(date) => {
+                                field.onChange(date);
                                 setIsCalendarOpen(false);
-                              }
-                            }}
-                            value={appointment.start}
-                            disabled={!appointment.start}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="end"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-left">Fim</FormLabel>
-                        <FormControl>
-                          <TimePicker
-                            className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                            onChange={(date) => {
-                              field.onChange(date);
-                              setIsCalendarOpen(false);
-                            }}
-                            onClick={() => setIsCalendarOpen(true)}
-                            onInteractOutside={(e) => {
-                              if (isCalendarOpen) {
-                                setIsCalendarOpen(false);
-                              }
-                            }}
-                            value={autoEndDate ?? appointment.end}
-                            disabled={!appointment.end}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex flex-col items-center w-full">
-                    <div className="flex items-center gap-2 w-full">
-                      <FormField
-                        control={form.control}
-                        name={`details.payments.${feeIndex}.value`}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col w-full">
-                            <FormLabel className="text-left">Taxa de reserva</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Valor"
-                                spellCheck={false}
-                                value={Number(field.value ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                onChange={(e) => {
-                                  const numericValue = e.target.value.replace(/\D/g, "");
-                                  field.onChange(numericValue ? Number(numericValue) / 100 : "");
-                                }}
-                                className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none")}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`details.payments.${feeIndex}.dueDate`}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col w-full">
-                            <FormLabel className="text-left">Data de vencimento</FormLabel>
-                            <FormControl>
-                              <TimePicker                   
-                                className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
-                                placeholder="Selecione uma data"
-                                value={field.value}
-                                mode="date"
-                                onChange={(date) => {
-                                  field.onChange(date);
-                                  setIsCalendarOpen(false)
-                                  if (date) {
-                                    form.clearErrors([`details.payments.${feeIndex}.dueDate`])
-                                  }
-                                }}
-                                onClick={() => setIsCalendarOpen(true)}
-                                onInteractOutside={(e) => {
-                                  if (isCalendarOpen) {
-                                    setIsCalendarOpen(false);
-                                  }
-                                }}
-                                disabled={!watch.start}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="flex items-center w-full">
-                      <FormField
-                        control={form.control}
-                        name={`details.payments.${feeIndex}.sendPaymentLink`}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col gap-2 mt-2.5 w-full">
-                            <div className="flex gap-2 items-center !mr-auto">
+                              }}
+                              onClick={() => setIsCalendarOpen(true)}
+                              onInteractOutside={(e) => {
+                                if (isCalendarOpen) {
+                                  setIsCalendarOpen(false);
+                                }
+                              }}
+                              value={autoEndDate ?? appointment.end}
+                              disabled={!appointment.end}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex flex-col items-center w-full">
+                      <div className="flex items-center gap-2 w-full">
+                        <FormField
+                          control={form.control}
+                          name={`details.payments.${feeIndex}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col w-full">
+                              <FormLabel className="text-left">Taxa de reserva</FormLabel>
                               <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={(checked: boolean) => {
-                                    field.onChange(checked);
-                                    if (checked) {
-                                      form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
+                                <Input
+                                  placeholder="Valor"
+                                  spellCheck={false}
+                                  value={Number(field.value ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                  onChange={(e) => {
+                                    const numericValue = e.target.value.replace(/\D/g, "");
+                                    field.onChange(numericValue ? Number(numericValue) / 100 : "");
+                                  }}
+                                  className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none")}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`details.payments.${feeIndex}.dueDate`}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col w-full">
+                              <FormLabel className="text-left">Data de vencimento</FormLabel>
+                              <FormControl>
+                                <TimePicker
+                                  className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
+                                  placeholder="Selecione uma data"
+                                  value={field.value}
+                                  mode="date"
+                                  onChange={(date) => {
+                                    field.onChange(date);
+                                    setIsCalendarOpen(false)
+                                    if (date) {
+                                      form.clearErrors([`details.payments.${feeIndex}.dueDate`])
                                     }
                                   }}
-                                  disabled={["received", "confirmed"].includes(watch.details.payments[feeIndex].status)}
-                                />
-                              </FormControl>
-                              <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex w-full justify-between">
-                        <FormField
-                          control={form.control}
-                          name={`details.payments.${feeIndex}.status`}
-                          render={({ field }) => (
-                            <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
-                              <div className="flex gap-2 items-center !mr-auto">
-                                <FormControl>
-                                  {watch.details.payments[feeIndex]?.billingType !== "cash" && watch.details.payments[feeIndex]?.billingType !== null && watch.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
-                                    ? (
-                                      <AlertDialog open={isFeeRefundOpen} onOpenChange={setIsFeeRefundOpen}>
-                                        <AlertDialogTrigger className="flex items-center">
-                                          <Checkbox
-                                            checked={["received", "confirmed"].includes(field.value)}
-                                            onClick={() => setIsFeeRefundOpen(true)}
-                                            disabled={watch.details.payments[feeIndex].sendPaymentLink}
-                                          />
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle asChild>
-                                              <Typography
-                                                variant="h2"
-                                              >
-                                                Tem certeza que deseja continuar?
-                                              </Typography>
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              <Typography
-                                                variant="span"
-                                                secondary
-                                              >
-                                                Esta ação estornará o pagamento selecionado e não poderá ser desfeita após salvar o formulário.
-                                              </Typography>
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                field.onChange(field.value);
-                                                setIsFeeRefundOpen(false);
-                                              }}
-                                            >
-                                              Voltar
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                              className="bg-red-500 hover:bg-red-600 text-white"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                setIsFeeRefundOpen(false);
-                                                field.onChange("pending");
-                                              }}
-                                            >
-                                              Continuar
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-
-                                    ) : (
-                                      <Checkbox
-                                        checked={["received", "confirmed"].includes(field.value)}
-                                        onCheckedChange={(checked: boolean) => {
-                                          field.onChange(checked ? "received" : "pending");
-                                          if (checked) {
-                                            form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
-                                          }
-                                        }}
-                                        disabled={watch.details.payments[feeIndex].sendPaymentLink}
-                                      />
-                                    )}
-                                </FormControl>
-                                <FormLabel className="text-left !mt-[1px]">Recebido</FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <FormMessage className="mt-2.5 w-full">
-                      {form?.formState?.errors?.details?.payments?.[feeIndex]?.dueDate?.message || ""}
-                    </FormMessage>
-                  </div>
-                  <div className="flex flex-col items-center w-full">
-                    <div className="flex items-center gap-2 w-full">
-                      <FormField
-                        control={form.control}
-                        name={`details.payments.${serviceIndex}.value`}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col w-full">
-                            <FormLabel className="text-left">Valor restante</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Valor"
-                                spellCheck={false}
-                                value={Number(field.value ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                onChange={(e) => {
-                                  const numericValue = e.target.value.replace(/\D/g, "");
-                                  field.onChange(numericValue ? Number(numericValue) / 100 : "");
-                                }}
-                                className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none")}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`details.payments.${serviceIndex}.dueDate`}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col w-full">
-                            <FormLabel className="text-left">Data de vencimento</FormLabel>
-                            <FormControl>
-                              <TimePicker
-                                className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
-                                placeholder="Selecione uma data"
-                                value={field.value}
-                                mode="date"
-                                onChange={(date) => {
-                                  field.onChange(date);
-                                  setIsCalendarOpen(false);
-                                  if (date) {
-                                    form.clearErrors([`details.payments.${serviceIndex}.dueDate`])
-                                  }
-                                }}
-                                onClick={() => setIsCalendarOpen(true)}
-                                onInteractOutside={(e) => {
-                                  if (isCalendarOpen) {
-                                    setIsCalendarOpen(false);
-                                  }
-                                }}
-                                disabled={!watch.start}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="flex items-center w-full">
-                      <FormField
-                        control={form.control}
-                        name={`details.payments.${serviceIndex}.sendPaymentLink`}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col gap-2 mt-2.5 w-full">
-                            <div className="flex gap-2 items-center !mr-auto">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={(checked: boolean) => {
-                                    field.onChange(checked);
+                                  onClick={() => setIsCalendarOpen(true)}
+                                  onInteractOutside={(e) => {
+                                    if (isCalendarOpen) {
+                                      setIsCalendarOpen(false);
+                                    }
                                   }}
-                                  disabled={["received", "confirmed"].includes(watch.details.payments[serviceIndex].status)}
+                                  disabled={!watch.start}
                                 />
                               </FormControl>
-                              <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex w-full justify-between">
-                        <FormField
-                          control={form.control}
-                          name={`details.payments.${serviceIndex}.status`}
-                          render={({ field }) => (
-                            <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
-                              <div className="flex gap-2 items-center !mr-auto">
-                                <FormControl>
-                                  {watch.details.payments[serviceIndex]?.billingType !== "cash" && watch.details.payments[serviceIndex]?.billingType != null && watch.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
-                                    ? (
-                                      <AlertDialog open={isServiceRefundOpen} onOpenChange={setIsServiceRefundOpen}>
-                                        <AlertDialogTrigger className="flex items-center">
-                                          <Checkbox
-                                            checked={["received", "confirmed"].includes(field.value)}
-                                            onClick={() => setIsServiceRefundOpen(true)}
-                                            disabled={watch.details.payments[serviceIndex].sendPaymentLink}
-                                          />
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle asChild>
-                                              <Typography
-                                                variant="h2"
-                                              >
-                                                Tem certeza que deseja continuar?
-                                              </Typography>
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              <Typography
-                                                variant="span"
-                                                secondary
-                                              >
-                                                Esta ação estornará o pagamento selecionado e não poderá ser desfeita após salvar o formulário.
-                                              </Typography>
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                field.onChange(field.value);
-                                                setIsServiceRefundOpen(false);
-                                              }}
-                                            >
-                                              Voltar
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                              className="bg-red-500 hover:bg-red-600 text-white"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                setIsServiceRefundOpen(false);
-                                                field.onChange("pending");
-                                              }}
-                                            >
-                                              Continuar
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    ) : (
-                                      <Checkbox
-                                        checked={["received", "confirmed"].includes(field.value)}
-                                        onCheckedChange={(checked: boolean) => {
-                                          field.onChange(checked ? "received" : "pending");
-                                          if (checked) {
-                                            form.clearErrors([`details.payments.${serviceIndex}.status`, `details.payments.${serviceIndex}.sendPaymentLink`])
-                                          }
-                                        }}
-                                        disabled={watch.details.payments[serviceIndex].sendPaymentLink}
-                                      />
-                                    )}
-                                </FormControl>
-                                <FormLabel className="text-left !mt-[1px]">Recebido</FormLabel>
-                              </div>
                             </FormItem>
                           )}
                         />
                       </div>
-                    </div>
-                    <FormMessage className="mt-2.5 w-full">
-                      {form?.formState?.errors?.details?.payments?.[serviceIndex]?.dueDate?.message || ""}
-                    </FormMessage>
-                  </div>
+                      <div className="flex items-center w-full">
+                        <FormField
+                          control={form.control}
+                          name={`details.payments.${feeIndex}.sendPaymentLink`}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col gap-2 mt-2.5 w-full">
+                              <div className="flex gap-2 items-center !mr-auto">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={(checked: boolean) => {
+                                      field.onChange(checked);
+                                      if (checked) {
+                                        form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
+                                      }
+                                    }}
+                                    disabled={["received", "confirmed"].includes(watch.details.payments[feeIndex].status)}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex w-full justify-between">
+                          <FormField
+                            control={form.control}
+                            name={`details.payments.${feeIndex}.status`}
+                            render={({ field }) => (
+                              <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
+                                <div className="flex gap-2 items-center !mr-auto">
+                                  <FormControl>
+                                    {watch.details.payments[feeIndex]?.billingType !== "cash" && watch.details.payments[feeIndex]?.billingType !== null && watch.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
+                                      ? (
+                                        <AlertDialog open={isFeeRefundOpen} onOpenChange={setIsFeeRefundOpen}>
+                                          <AlertDialogTrigger className="flex items-center">
+                                            <Checkbox
+                                              checked={["received", "confirmed"].includes(field.value)}
+                                              onClick={() => setIsFeeRefundOpen(true)}
+                                              disabled={watch.details.payments[feeIndex].sendPaymentLink}
+                                            />
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle asChild>
+                                                <Typography
+                                                  variant="h2"
+                                                >
+                                                  Tem certeza que deseja continuar?
+                                                </Typography>
+                                              </AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                <Typography
+                                                  variant="span"
+                                                  secondary
+                                                >
+                                                  Esta ação estornará o pagamento selecionado e não poderá ser desfeita após salvar o formulário.
+                                                </Typography>
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  field.onChange(field.value);
+                                                  setIsFeeRefundOpen(false);
+                                                }}
+                                              >
+                                                Voltar
+                                              </AlertDialogCancel>
+                                              <AlertDialogAction
+                                                className="bg-red-500 hover:bg-red-600 text-white"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  setIsFeeRefundOpen(false);
+                                                  field.onChange("pending");
+                                                }}
+                                              >
+                                                Continuar
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
 
-                </form>
-                <DialogFooter className="flex !flex-row w-full justify-end gap-2 px-[2.3rem] mb-6">
-                  <AlertDialog open={isRemoveAppointmentOpen} onOpenChange={setIsRemoveAppointmentOpen}>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        type="button"
-                        className="bg-red-500 hover:bg-red-600 text-white"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setIsRemoveAppointmentOpen(true);
-                        }}
-                      >
-                        Remover
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="w-[90vw] md:w-full rounded-md">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle asChild>
-                          <Typography
-                            variant="h2"
-                          >
-                            Tem certeza que deseja continuar?
-                          </Typography>
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          <Typography
-                            variant="span"
-                            secondary
-                          >
-                            Esta ação não pode ser desfeita. Isso removerá permanentemente o agendamento selecionado.
-                          </Typography>
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setIsRemoveAppointmentOpen(false);
-                          }}
-                        >
-                          Voltar
-                        </AlertDialogCancel>
-                        <AlertDialogAction
+                                      ) : (
+                                        <Checkbox
+                                          checked={["received", "confirmed"].includes(field.value)}
+                                          onCheckedChange={(checked: boolean) => {
+                                            field.onChange(checked ? "received" : "pending");
+                                            if (checked) {
+                                              form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
+                                            }
+                                          }}
+                                          disabled={watch.details.payments[feeIndex].sendPaymentLink}
+                                        />
+                                      )}
+                                  </FormControl>
+                                  <FormLabel className="text-left !mt-[1px]">Recebido</FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <FormMessage className="mt-2.5 w-full">
+                        {form?.formState?.errors?.details?.payments?.[feeIndex]?.dueDate?.message || ""}
+                      </FormMessage>
+                    </div>
+                    <div className="flex flex-col items-center w-full">
+                      <div className="flex items-center gap-2 w-full">
+                        <FormField
+                          control={form.control}
+                          name={`details.payments.${serviceIndex}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col w-full">
+                              <FormLabel className="text-left">Valor restante</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Valor"
+                                  spellCheck={false}
+                                  value={Number(field.value ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                  onChange={(e) => {
+                                    const numericValue = e.target.value.replace(/\D/g, "");
+                                    field.onChange(numericValue ? Number(numericValue) / 100 : "");
+                                  }}
+                                  className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none")}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`details.payments.${serviceIndex}.dueDate`}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col w-full">
+                              <FormLabel className="text-left">Data de vencimento</FormLabel>
+                              <FormControl>
+                                <TimePicker
+                                  className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
+                                  placeholder="Selecione uma data"
+                                  value={field.value}
+                                  mode="date"
+                                  onChange={(date) => {
+                                    field.onChange(date);
+                                    setIsCalendarOpen(false);
+                                    if (date) {
+                                      form.clearErrors([`details.payments.${serviceIndex}.dueDate`])
+                                    }
+                                  }}
+                                  onClick={() => setIsCalendarOpen(true)}
+                                  onInteractOutside={(e) => {
+                                    if (isCalendarOpen) {
+                                      setIsCalendarOpen(false);
+                                    }
+                                  }}
+                                  disabled={!watch.start}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="flex items-center w-full">
+                        <FormField
+                          control={form.control}
+                          name={`details.payments.${serviceIndex}.sendPaymentLink`}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col gap-2 mt-2.5 w-full">
+                              <div className="flex gap-2 items-center !mr-auto">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={(checked: boolean) => {
+                                      field.onChange(checked);
+                                    }}
+                                    disabled={["received", "confirmed"].includes(watch.details.payments[serviceIndex].status)}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex w-full justify-between">
+                          <FormField
+                            control={form.control}
+                            name={`details.payments.${serviceIndex}.status`}
+                            render={({ field }) => (
+                              <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
+                                <div className="flex gap-2 items-center !mr-auto">
+                                  <FormControl>
+                                    {watch.details.payments[serviceIndex]?.billingType !== "cash" && watch.details.payments[serviceIndex]?.billingType != null && watch.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
+                                      ? (
+                                        <AlertDialog open={isServiceRefundOpen} onOpenChange={setIsServiceRefundOpen}>
+                                          <AlertDialogTrigger className="flex items-center">
+                                            <Checkbox
+                                              checked={["received", "confirmed"].includes(field.value)}
+                                              onClick={() => setIsServiceRefundOpen(true)}
+                                              disabled={watch.details.payments[serviceIndex].sendPaymentLink}
+                                            />
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle asChild>
+                                                <Typography
+                                                  variant="h2"
+                                                >
+                                                  Tem certeza que deseja continuar?
+                                                </Typography>
+                                              </AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                <Typography
+                                                  variant="span"
+                                                  secondary
+                                                >
+                                                  Esta ação estornará o pagamento selecionado e não poderá ser desfeita após salvar o formulário.
+                                                </Typography>
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  field.onChange(field.value);
+                                                  setIsServiceRefundOpen(false);
+                                                }}
+                                              >
+                                                Voltar
+                                              </AlertDialogCancel>
+                                              <AlertDialogAction
+                                                className="bg-red-500 hover:bg-red-600 text-white"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  setIsServiceRefundOpen(false);
+                                                  field.onChange("pending");
+                                                }}
+                                              >
+                                                Continuar
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      ) : (
+                                        <Checkbox
+                                          checked={["received", "confirmed"].includes(field.value)}
+                                          onCheckedChange={(checked: boolean) => {
+                                            field.onChange(checked ? "received" : "pending");
+                                            if (checked) {
+                                              form.clearErrors([`details.payments.${serviceIndex}.status`, `details.payments.${serviceIndex}.sendPaymentLink`])
+                                            }
+                                          }}
+                                          disabled={watch.details.payments[serviceIndex].sendPaymentLink}
+                                        />
+                                      )}
+                                  </FormControl>
+                                  <FormLabel className="text-left !mt-[1px]">Recebido</FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <FormMessage className="mt-2.5 w-full">
+                        {form?.formState?.errors?.details?.payments?.[serviceIndex]?.dueDate?.message || ""}
+                      </FormMessage>
+                    </div>
+                  </form>
+                  <DialogFooter className="flex !flex-row w-full justify-end gap-2 px-[2.3rem] mb-6">
+                    <AlertDialog open={isRemoveAppointmentOpen} onOpenChange={setIsRemoveAppointmentOpen}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          type="button"
                           className="bg-red-500 hover:bg-red-600 text-white"
                           onClick={(e) => {
                             e.preventDefault();
-                            setIsRemoveAppointmentOpen(false);
-                            onRemove(appointment.id);
+                            setIsRemoveAppointmentOpen(true);
                           }}
                         >
-                          Continuar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  <Button
-                    form="update-appointment"
-                    type="submit"
-                    className="bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    Salvar
-                  </Button>
-                </DialogFooter>
-              </Form>
+                          Remover
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="w-[90vw] md:w-full rounded-md">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle asChild>
+                            <Typography
+                              variant="h2"
+                            >
+                              Tem certeza que deseja continuar?
+                            </Typography>
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            <Typography
+                              variant="span"
+                              secondary
+                            >
+                              Esta ação não pode ser desfeita. Isso removerá permanentemente o agendamento selecionado.
+                            </Typography>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsRemoveAppointmentOpen(false);
+                            }}
+                          >
+                            Voltar
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsRemoveAppointmentOpen(false);
+                              onRemove(appointment.id);
+                            }}
+                          >
+                            Continuar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <Button
+                      form="update-appointment"
+                      type="submit"
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      Salvar
+                    </Button>
+                  </DialogFooter>
+                </Form>
+                :
+                <Form {...otherForm}>
+                  <form id="update-other" onSubmit={otherForm.handleSubmit(onSubmitOther)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
+                    <FormField
+                      control={otherForm.control}
+                      name={`type`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col w-full">
+                          <FormLabel>Unidade</FormLabel>
+                          <FormControl>
+                            <Popover open={isTypeOpen} onOpenChange={setIsTypeOpen} modal>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={false}
+                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
+                                >
+                                  <div className="flex gap-4">
+                                    {units?.find(unit => unit?.value === field?.value)?.label}
+                                  </div>
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-0 popover-content-width-fix">
+                                <Command className="pl-1">
+                                  <CommandList>
+                                    <CommandGroup>
+                                      {units.map((unit, index) => (
+                                        <CommandItem
+                                          key={index}
+                                          value={unit.value}
+                                          onSelect={(currentValue) => {
+                                            field.onChange(currentValue);
+                                            otherForm.setValue("is_recurring", currentValue === "dayOfWeek");
+                                            otherForm.setValue("day_of_week", undefined)
+                                            otherForm.clearErrors();
+                                            setTimeout(() => {
+                                              setIsTypeOpen(false);
+                                              setType(currentValue);
+                                            }, 100)
+                                          }}
+                                          className="cursor-pointer"
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === unit.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {unit.label}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {otherWatch?.is_recurring &&
+                      <FormField
+                        control={otherForm.control}
+                        name={`day_of_week`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col w-full">
+                            <FormLabel>Dia</FormLabel>
+                            <FormControl>
+                              <Popover open={isDayOfWeekOpen} onOpenChange={setIsDayOfWeekOpen} modal>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={false}
+                                    className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
+                                  >
+                                    <div className="flex gap-4">
+                                      {daysOfWeek?.find(dayOfWeek => dayOfWeek.value === field.value)?.label}
+                                    </div>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 popover-content-width-fix">
+                                  <Command className="pl-1">
+                                    <CommandList>
+                                      <CommandGroup>
+                                        {daysOfWeek.map((dayOfWeek, index) => (
+                                          <CommandItem
+                                            key={index}
+                                            value={dayOfWeek.label}
+                                            onSelect={(currentValue) => {
+                                              field.onChange(dayOfWeek.value);
+                                              setTimeout(() => {
+                                                setIsDayOfWeekOpen(false);
+                                              }, 100)
+                                            }}
+                                            className="cursor-pointer"
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === dayOfWeek.value ? "opacity-100" : "opacity-0"
+                                              )}
+                                            />
+                                            {dayOfWeek.label}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    }
+                    <FormField
+                      control={otherForm.control}
+                      name="start"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-left">Início</FormLabel>
+                          <FormControl>
+                            <TimePicker
+                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                              placeholder={!otherWatch.is_recurring ? "Selecione uma data e um horário" : "Selecione um horário"}
+                              mode={!otherWatch.is_recurring ? "datetime" : "time"}
+                              value={otherWatch.start}
+                              onChange={(date) => {
+                                field.onChange(date);
+                                if (date) {
+                                  const newDate = new Date(date);
+                                  newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
+                                  setIsCalendarOpen(false);
+                                }
+                              }}
+                              onClick={() => setIsCalendarOpen(true)}
+                              onInteractOutside={(e) => {
+                                if (isCalendarOpen) {
+                                  setIsCalendarOpen(false);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={otherForm.control}
+                      name="end"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-left">Fim</FormLabel>
+                          <FormControl>
+                            <TimePicker
+                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                              placeholder={!otherWatch.is_recurring ? "Selecione uma data e um horário" : "Selecione um horário"}
+                              mode={!otherWatch.is_recurring ? "datetime" : "time"}
+                              value={otherWatch.end}
+                              onChange={(date) => {
+                                field.onChange(date);
+                                setIsCalendarOpen(false);
+                              }}
+                              onClick={() => setIsCalendarOpen(true)}
+                              onInteractOutside={(e) => {
+                                if (isCalendarOpen) {
+                                  setIsCalendarOpen(false);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={otherForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-left">Descrição</FormLabel>
+                          <FormControl>
+                            <TextArea
+                              className="!min-h-14 bg-neutral-100"
+                              // value={otherWatch.}
+                              placeholder=""
+                              onChange={(e) => field.onChange(e.target.value)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />               
+                  </form>               
+                  <DialogFooter className="px-[2.3rem] md:px-[1.5rem] mb-6">
+                    <Button
+                      form="update-other"
+                      type="submit"
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                      onClick={() => console.log(otherWatch)}
+                    >
+                      Salvar
+                    </Button>
+                  </DialogFooter>
+                </Form>
             ) : (
               <div className="flex justify-center items-center w-full h-[70vh]">
                 <Loading display={isLoading} className="!scale-[0.5]" />
@@ -1145,147 +1332,148 @@ const Appointment: React.FC<AppointmentProps> = ({
       <CardContent
         className={cn("pb-1.5 !px-0 hidden")}
       >
-        <div className="flex flex-col justify-center items-center w-full pl-1.5">
-          <div className="flex gap-1.5 truncate text-xs mr-2 mt-1.5 mb-1.5">
-            <div className="flex gap-2">
-              <div className="flex justify-center items-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="cursor-default">
-                      {appointment.details?.online
-                        ? <IconVideo className={cn(
-                          "w-4 h-4 text-white/90",
-                          appointment.status === "confirmed" && "text-green-600",
-                          appointment.status === "canceled" && "text-red-600"
-                        )} />
-                        : <IconMapPin className={cn(
-                          "w-4 h-4 text-white/90",
-                          appointment.status === "confirmed" && "text-green-600",
-                          appointment.status === "canceled" && "text-red-600"
-                        )} />
-                      }
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex gap-1">{
-                          <>
-                            <Typography variant="b" className="text-xs">Modalidade:</Typography>
-                            <Typography variant="p" className="text-xs">
-                              {
-                                appointment.details?.online
-                                  ? "Online"
-                                  : "Presencial"
-                              }
-                            </Typography>
-                          </>
+        {appointment?.details?.service ?
+          <div className="flex flex-col justify-center items-center w-full pl-1.5">
+            <div className="flex gap-1.5 truncate text-xs mr-2 mt-1.5 mb-1.5">
+              <div className="flex gap-2">
+                <div className="flex justify-center items-center">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="cursor-default">
+                        {appointment.details?.online
+                          ? <IconVideo className={cn(
+                            "w-4 h-4 text-white/90",
+                            appointment.status === "confirmed" && "text-green-600",
+                            appointment.status === "canceled" && "text-red-600"
+                          )} />
+                          : <IconMapPin className={cn(
+                            "w-4 h-4 text-white/90",
+                            appointment.status === "confirmed" && "text-green-600",
+                            appointment.status === "canceled" && "text-red-600"
+                          )} />
                         }
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex gap-1">{
+                            <>
+                              <Typography variant="b" className="text-xs">Modalidade:</Typography>
+                              <Typography variant="p" className="text-xs">
+                                {
+                                  appointment.details?.online
+                                    ? "Online"
+                                    : "Presencial"
+                                }
+                              </Typography>
+                            </>
+                          }
+                          </div>
+                          <div className="flex gap-1">{
+                            <>
+                              <Typography variant="b" className="text-xs">Status:</Typography>
+                              <Typography variant="p" className="text-xs">
+                                {
+                                  watch.status === "confirmed"
+                                    ? "Confirmado"
+                                    : watch.status === "canceled"
+                                      ? "Cancelado"
+                                      : "Pendente"
+                                }
+                              </Typography>
+                            </>
+                          }
+                          </div>
                         </div>
-                        <div className="flex gap-1">{
-                          <>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex justify-center items-center">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="cursor-default">
+                        <IconCalendarDollar
+                          className={cn(
+                            "w-4 h-4",
+                            ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
+                              ? "text-green-600"
+                              : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                ? "text-white/90"
+                                : "text-red-600"
+                          )}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex gap-1">{
+                            <>
+                              <Typography variant="b" className="text-xs">Descrição:</Typography>
+                              <Typography variant="p" className="text-xs">Taxa de reserva</Typography>
+                            </>
+                          }
+                          </div>
+                          <div className="flex gap-1">
                             <Typography variant="b" className="text-xs">Status:</Typography>
                             <Typography variant="p" className="text-xs">
                               {
-                                watch.status === "confirmed"
-                                  ? "Confirmado"
-                                  : watch.status === "canceled"
-                                    ? "Cancelado"
-                                    : "Pendente"
+                                ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
+                                  ? "Pago"
+                                  : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                    ? "Pendente"
+                                    : "Vencido"
                               }
                             </Typography>
-                          </>
-                        }
+                          </div>
                         </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <div className="flex justify-center items-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="cursor-default">
-                      <IconCalendarDollar
-                        className={cn(
-                          "w-4 h-4",
-                          ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
-                            ? "text-green-600"
-                            : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                              ? "text-white/90"
-                              : "text-red-600"
-                        )}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex gap-1">{
-                          <>
-                            <Typography variant="b" className="text-xs">Descrição:</Typography>
-                            <Typography variant="p" className="text-xs">Taxa de reserva</Typography>
-                          </>
-                        }
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex justify-center items-center">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="cursor-default">
+                        <IconCurrencyDollar
+                          className={cn(
+                            "w-4 h-4",
+                            ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
+                              ? "text-green-600"
+                              : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                ? "text-white/90"
+                                : "text-red-600"
+                          )}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex gap-1">{
+                            <>
+                              <Typography variant="b" className="text-xs">Descrição:</Typography>
+                              <Typography variant="p" className="text-xs">Valor restante</Typography>
+                            </>
+                          }
+                          </div>
+                          <div className="flex gap-1">
+                            <Typography variant="b" className="text-xs">Status:</Typography>
+                            <Typography variant="p" className="text-xs">
+                              {
+                                ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
+                                  ? "Pago"
+                                  : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
+                                    ? "Pendente"
+                                    : "Vencido"
+                              }
+                            </Typography>
+                          </div>
                         </div>
-                        <div className="flex gap-1">
-                          <Typography variant="b" className="text-xs">Status:</Typography>
-                          <Typography variant="p" className="text-xs">
-                            {
-                              ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
-                                ? "Pago"
-                                : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                  ? "Pendente"
-                                  : "Vencido"
-                            }
-                          </Typography>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <div className="flex justify-center items-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="cursor-default">
-                      <IconCurrencyDollar
-                        className={cn(
-                          "w-4 h-4",
-                          ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
-                            ? "text-green-600"
-                            : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                              ? "text-white/90"
-                              : "text-red-600"
-                        )}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex gap-1">{
-                          <>
-                            <Typography variant="b" className="text-xs">Descrição:</Typography>
-                            <Typography variant="p" className="text-xs">Valor restante</Typography>
-                          </>
-                        }
-                        </div>
-                        <div className="flex gap-1">
-                          <Typography variant="b" className="text-xs">Status:</Typography>
-                          <Typography variant="p" className="text-xs">
-                            {
-                              ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
-                                ? "Pago"
-                                : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                  ? "Pendente"
-                                  : "Vencido"
-                            }
-                          </Typography>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
+                </div>
               </div>
             </div>
-          </div>
-          {/* <div className="flex flex-col items-center justify-center gap-1 text-xs mr-2">
+            {/* <div className="flex flex-col items-center justify-center gap-1 text-xs mr-2">
             <span className="whitespace-nowrap max-w-28 overflow-hidden dark:text-white/90 truncate font-medium">{appointment.title}</span>
             <div className="flex gap-2">
               {viewMode === "month" && <span className="dark:text-white/90">{appointment.start.toLocaleDateString("pt-BR")}</span>}
@@ -1295,7 +1483,8 @@ const Appointment: React.FC<AppointmentProps> = ({
               </span>
             </div>
           </div> */}
-        </div>
+          </div>
+          : null}
       </CardContent>
     </Card>
   );
