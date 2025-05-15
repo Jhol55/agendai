@@ -87,6 +87,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const [tableBodyDimensions, setTableBodyDimensions] = useState<{ width?: number; height?: number } | null>(null);
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
 
+
   useEffect(() => {
     if (!isDragging && !isResizing) {
       if (tableBodyRef.current) {
@@ -148,11 +149,13 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   }, [hourLabels]);
 
   const [initialScrollOffset, setInitialScrollOffset] = useState(0);
+  const [draggingAppointmentId, setDraggingAppointmentId] = useState<string | null>(null);
   useEffect(() => {
     return monitorForElements({
-      async onDragStart({ source }) {
+      async onDragStart({ source, location }) {
         setIsDragging(true);
         setInitialScrollOffset(document.getElementById("calendar-overflow-container")?.scrollTop || 0);
+        setDraggingAppointmentId((source.data.appointment as AppointmentType).id)
       },
       async onDrag({ source, location }) {
         const destination = location.current.dropTargets[0]?.data;
@@ -160,7 +163,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         const appointment = sourceData.appointment as AppointmentType;
         const appointmentDiv = source.element.closest(".handle-resize") as HTMLElement;
         if (!appointmentDiv) return;
-
+     
         const calendarOverflowContainer = document.getElementById("calendar-overflow-container");
         const currentScrollOffset = calendarOverflowContainer?.scrollTop || 0;
         const startY = location.initial.input.clientY;
@@ -590,7 +593,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                       className={cn(
                                         "absolute z-10 handle-resize cursor-pointer",
                                         isResizing && "cursor-s-resize",
-                                        isDragging && "pointer-events-none"
+                                        isDragging && "pointer-events-none",                                      
                                       )}
                                       style={{
                                         top: getTopPositionFromTime(format(appt.start, "HH:mm")) + 2,
@@ -620,6 +623,10 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                           appointment={appt as AppointmentType & UpdatedBlockTimeSlotsProps}
                                           columnIndex={index}
                                           resourceId={resource.id}
+                                          className={cn(
+                                            "transition-opacity duration-200 ease-in-out",
+                                            appt.id === draggingAppointmentId && isDragging && "opacity-50"
+                                          )}
                                         />
                                       </div>
                                     </div>
