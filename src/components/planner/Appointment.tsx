@@ -67,10 +67,12 @@ import { Typography } from "../ui/typography";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
-import { Separator } from "../ui/separator";
 import { blockedTimesSchema, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
-import { AddBlockedTimeSlot } from "@/services/block-time-slots";
+import { AddBlockedTimeSlot, deleteBlockedTimeSlot, updateBlockedTimeSlot } from "@/services/block-time-slots";
 import { TextArea } from "../ui/text-area";
+import { useSettings } from "@/hooks/use-settings";
+import { Separator } from "../ui/separator";
+import { HorizontalSeparator } from "../ui/separator/separator";
 
 type ServiceType = {
   id: string,
@@ -82,7 +84,7 @@ type ServiceType = {
 }
 
 interface AppointmentProps {
-  appointment: AppointmentType & UpdatedBlockTimeSlotsProps;
+  appointment: AppointmentType & UpdatedBlockTimeSlotsProps & { type: "appointment" | "other" };
   resourceId: string;
   columnIndex: number;
   className?: string;
@@ -94,9 +96,10 @@ const Appointment: React.FC<AppointmentProps> = ({
   columnIndex,
   className
 }) => {
-  const { updateAppointment, removeAppointment, handleUpdate, isDragging, isResizing } = usePlannerData();
+  const { updateAppointment, removeAppointment, addAppointment, handleUpdate, isDragging, isResizing } = usePlannerData();
   const [isPending, startOnSubmitTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
+  const { settings } = useSettings();
   const [isOpened, setIsOpened] = useState(false);
   const [isRemoveAppointmentOpen, setIsRemoveAppointmentOpen] = useState(false);
   const [openClient, setOpenClient] = React.useState(false);
@@ -113,7 +116,7 @@ const Appointment: React.FC<AppointmentProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isFeeRefundOpen, setIsFeeRefundOpen] = useState(false);
   const [isServiceRefundOpen, setIsServiceRefundOpen] = useState(false);
-  const [type, setType] = useState<string>("");
+  const [type, setType] = useState<"appointment" | "other" | undefined>(undefined);
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isDayOfWeekOpen, setIsDayOfWeekOpen] = useState(false);
 
@@ -133,18 +136,35 @@ const Appointment: React.FC<AppointmentProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointment]);
 
+  const defaultPayments = useMemo(() => [
+    {
+      type: "fee",
+      value: undefined,
+      status: "pending",
+      sendPaymentLink: false,
+      dueDate: undefined,
+    },
+    {
+      type: "service",
+      value: undefined,
+      status: "pending",
+      sendPaymentLink: false,
+      dueDate: undefined,
+    },
+  ], []);
+
   const defaultValues = useMemo(() => ({
     title: appointment.title,
     clientId: appointment.clientId,
-    start: new Date(appointment.start) ?? new Date(),
-    end: new Date(appointment.end) ?? new Date(),
-    status: appointment.status,
+    start: appointment?.original_start ?? appointment.start,
+    end: appointment?.original_end ?? appointment.end,
+    status: appointment?.status || "pending",
     details: {
       service: appointment.details?.service,
       serviceId: appointment.details?.serviceId,
       durationMinutes: appointment.details?.durationMinutes,
-      online: appointment.details?.online,
-      payments: (appointment?.details?.payments || [])
+      online: appointment.details?.online || false,
+      payments: (appointment?.details?.payments || defaultPayments)
         .sort((a, b) => a.type.localeCompare(b.type))
         .filter(payment => payment.status !== "refunded")
         .map(payment => ({
@@ -160,15 +180,18 @@ const Appointment: React.FC<AppointmentProps> = ({
           })()
         }))
     }
-  }), [appointment]);
+  }), [appointment, defaultPayments]);
 
   const otherDefaultValues = useMemo(() => ({
-    type: appointment.is_recurring ? "dayOfWeek" : "period",
-    start: appointment.start,
-    end: appointment.end,
-    is_recurring: appointment.is_recurring,
-    day_of_week: appointment.day_of_week,
-    description: appointment.description,
+    id: appointment.id,
+    freq: appointment?.freq ?? "period",
+    start: appointment?.original_start ?? appointment.start,
+    end: appointment?.original_end ?? appointment.end,
+    blocked: appointment.blocked ?? false,
+    interval: appointment?.interval ?? 0,
+    is_recurring: appointment?.is_recurring || false,
+    day_of_week: appointment?.day_of_week || appointment.start.getDay(),
+    description: appointment?.description ?? "",
   }), [appointment]);
 
   const form = useForm<z.infer<typeof updateAppointmentSchema>>({
@@ -184,127 +207,123 @@ const Appointment: React.FC<AppointmentProps> = ({
   const watch = form.watch();
   const otherWatch = otherForm.watch();
 
-
   useEffect(() => {
     if (!isDragging && !isResizing) {
       const timeoutId = setTimeout(() => {
         form.reset({
-          title: appointment.title,
-          clientId: appointment.clientId,
-          start: new Date(appointment.start) ?? new Date(),
-          end: new Date(appointment.end) ?? new Date(),
-          status: appointment.status,
-          details: {
-            service: appointment.details?.service,
-            serviceId: appointment.details?.serviceId,
-            durationMinutes: appointment.details?.durationMinutes,
-            online: appointment.details?.online,
-            payments: (appointment?.details?.payments || [])
-              .sort((a, b) => a.type.localeCompare(b.type))
-              .filter(payment => payment.status !== "refunded")
-              .map(payment => ({
-                ...payment,
-                sendPaymentLink: false,
-                dueDate: (() => {
-                  const [year, month, day] = String(payment.dueDate).split("-").map(Number);
-                  let date = new Date(year, month - 1, day);
-                  if (isNaN(date.getTime())) {
-                    date = payment.dueDate
-                  }
-                  return date
-                })()
-              }))
-          }
+          ...defaultValues
+        });
+        otherForm.reset({
+          ...otherDefaultValues
         });
         setIsLoading(!isOpened);
       }, 500)
       return () => clearTimeout(timeoutId);
     }
-  }, [appointment, form, isDragging, isOpened, isResizing]);
+  }, [appointment, form, isDragging, isOpened, isResizing, defaultPayments, defaultValues, otherForm, otherDefaultValues]);
 
   const onSubmit = useCallback((values: z.infer<typeof updateAppointmentSchema>) => {
-    const originalPayments = appointment.details.payments
-      .sort((a, b) => a.type.localeCompare(b.type))
-      .filter(payment => payment.status !== "refunded")
-      .map(payment => ({
-        ...payment,
-        sendPaymentLink: false,
-        dueDate: (() => {
-          const [year, month, day] = String(payment.dueDate).split("-").map(Number);
-          let date = new Date(year, month - 1, day);
-          if (isNaN(date.getTime())) {
-            date = payment.dueDate
-          }
-          return date
-        })()
-      }))
-
-    const payments = values.details.payments
-      .sort((a, b) => a.type.localeCompare(b.type))
-
     let canSubmit = true;
 
-    originalPayments.map((payment, index) => {
-      if (payment.dueDate.toISOString() !== payments[index].dueDate.toISOString()) {
+    if (appointment?.details?.payments) {
+      const originalPayments = appointment.details.payments
+        .sort((a, b) => a.type.localeCompare(b.type))
+        .filter(payment => payment.status !== "refunded")
+        .map(payment => ({
+          ...payment,
+          sendPaymentLink: false,
+          dueDate: (() => {
+            const [year, month, day] = String(payment.dueDate).split("-").map(Number);
+            let date = new Date(year, month - 1, day);
+            if (isNaN(date.getTime())) {
+              date = payment.dueDate
+            }
+            return date
+          })()
+        }))
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+      const payments = values.details.payments
+        .sort((a, b) => a.type.localeCompare(b.type))
 
-        const dueDate = payments[index].dueDate;
-        dueDate.setHours(0, 0, 0, 0);
+      originalPayments.map((payment, index) => {
+        if (payment.dueDate.toISOString() !== payments[index].dueDate.toISOString()) {
 
-        if (dueDate.getTime() < today.getTime()) {
-          form.setError(`details.payments.${index}.dueDate`, {
-            message: "A data de vencimento deve ser igual ou posterior à data de hoje."
-          })
-          canSubmit = false;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const dueDate = payments[index].dueDate;
+          dueDate.setHours(0, 0, 0, 0);
+
+          if (dueDate.getTime() < today.getTime()) {
+            form.setError(`details.payments.${index}.dueDate`, {
+              message: "A data de vencimento deve ser igual ou posterior à data de hoje."
+            })
+            canSubmit = false;
+          }
         }
-      }
-    })
+      })
+    }
 
     if (canSubmit) {
       startOnSubmitTransition(() => {
         toast.promise(
-          () =>
-            new Promise((resolve) => {
-              resolve(
-                updateAppointment({
-                  ...appointment,
-                  ...values,
-                }));
-            }).then((data) => {
-              setTimeout(() => {
-                handleUpdate();
-                setIsOpened(false);
-                setAutoEndDate(undefined);
-              }, 500);
-            }),
+          async () => {
+            if (appointment.type === "appointment" && type === "appointment") {
+              await updateAppointment({
+                ...appointment,
+                ...values,
+              });
+            } else {
+              await deleteBlockedTimeSlot({ id: appointment.id })        
+              await addAppointment({
+                ...appointment,
+                ...values,
+              })             
+            }
+            setTimeout(() => {
+              handleUpdate();
+              setIsOpened(false);
+              setAutoEndDate(undefined);
+            }, 500);
+          },
           {
             loading: "Atualizando compromisso...",
             success: "Compromisso atualizado com sucesso!",
             error: "Ocorreu um erro ao atualizar o compromisso. Tente novamente!",
-          },
+          }
         );
-      })
+      });
     }
-  }, [appointment, form, handleUpdate, updateAppointment])
+  }, [addAppointment, appointment, form, handleUpdate, type, updateAppointment])
 
   const onSubmitOther = useCallback((values: z.infer<typeof blockedTimesSchema>) => {
     startOnSubmitTransition(() => {
       toast.promise(
-        () =>
-          new Promise((resolve) => {
-            resolve(AddBlockedTimeSlot({ data: values }));
-          }),
-        {
-          loading: "Adicionando exceção...",
-          success: "Exceção adicionada com sucesso.",
-          error: "Falha ao adicionar exceção!"
+        async () => {
+          if (appointment.type === "other" && type === "other") {
+            await updateBlockedTimeSlot({
+              data: values
+            });
+          } else {
+            await removeAppointment(appointment.id);
+            await AddBlockedTimeSlot({
+              data: values,
+            });
+          }
+          setTimeout(() => {
+            handleUpdate();
+            setIsOpened(false);
+            setAutoEndDate(undefined);
+          }, 500);
         },
+        {
+          loading: "Atualizando compromisso...",
+          success: "Compromisso atualizado com sucesso!",
+          error: "Ocorreu um erro ao atualizar o compromisso. Tente novamente!",
+        }
       );
-
     });
-  }, [])
+  }, [appointment, handleUpdate, removeAppointment, type])
 
   const onRemove = useCallback((id: string) => {
     setTimeout(() => {
@@ -324,7 +343,6 @@ const Appointment: React.FC<AppointmentProps> = ({
       }, 1000);
       return () => clearTimeout(timeoutId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientSearchValue]);
 
   useEffect(() => {
@@ -338,7 +356,6 @@ const Appointment: React.FC<AppointmentProps> = ({
       }, 1000);
       return () => clearTimeout(timeoutId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceSearchValue]);
 
   useEffect(() => {
@@ -353,6 +370,7 @@ const Appointment: React.FC<AppointmentProps> = ({
     } else {
       handleUpdate();
     }
+    setType(appointment.type)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, isOpened])
 
@@ -362,13 +380,17 @@ const Appointment: React.FC<AppointmentProps> = ({
       .findIndex(payment => payment.type === type && payment.status !== "refunded");
   }, [form])
 
-  const feeIndex = useMemo(() => appointment?.details?.service ? findPaymentIndex("fee") : 0, [appointment?.details?.service, findPaymentIndex]);
-  const serviceIndex = useMemo(() => appointment?.details?.service ? findPaymentIndex("service") : 0, [appointment?.details?.service, findPaymentIndex]);
+  const feeIndex = useMemo(() => findPaymentIndex("fee"), [findPaymentIndex]);
+  const serviceIndex = useMemo(() => findPaymentIndex("service"), [findPaymentIndex]);
 
   const units = useMemo(() => [
     { label: "Período", value: "period" },
-    { label: "Dia da semana", value: "dayOfWeek" }
+    { label: "Semanal", value: "weekly" }
   ], []);
+
+  useEffect(() => {
+    setType(appointment.type);
+  }, [appointment])
 
   const daysOfWeek = useMemo(() => [
     { label: "Domingo", value: 0 },
@@ -380,28 +402,18 @@ const Appointment: React.FC<AppointmentProps> = ({
     { label: "Sábado", value: 6 }
   ], []);
 
-  // useEffect(() => {
-  //   if (!appointment?.details?.service) {
-  //     console.log(appointment)
-  //     otherForm.setValue("type", appointment?.is_recurring ? "dayOfWeek" : "period");
-  //     if (appointment?.is_recurring) {
-  //       otherForm.setValue("day_of_week", appointment?.day_of_week);
-  //     }
-  //   }
-  // }, [appointment, otherForm])
-
   return (
     <Card ref={ref} className={cn(
       "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start, dark:border-neutral-700/60",
       "group transition-colors duration-150 handle-ghosting",
-      appointment?.details?.service ? "bg-purple-700 dark:bg-purple-700" : "bg-red-500 dark:bg-red-500",
+      appointment?.type === "appointment" ? "bg-purple-700 dark:bg-purple-700" : "bg-red-500 dark:bg-red-500",
       className,
     )}
       onDoubleClick={(e) => { setIsOpened(true); e.stopPropagation() }}>
       <CardHeader className="absolute w-full flex flex-row items-center justify-between p-1">
         <Badge variant={"outline"} className="pointer-events-none border-none rounded-sm dark:border-neutral-700 transition-colors duration-150 truncate px-1 text-xs w-full whitespace-nowrap inline-block">
           <div className="flex justify-start w-full">
-            {appointment?.details?.service
+            {appointment?.type === "appointment"
               ? appointment.details?.online
                 ? <IconVideo className={cn(
                   "w-4 h-4 min-w-4 min-h-4 text-white/90",
@@ -422,7 +434,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         <Dialog open={isOpened} onOpenChange={setIsOpened}>
           <DialogContent
             aria-describedby={undefined}
-            className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
+            className="max-w-[90vw] md:max-w-[36rem] max-h-[95vh] h-screen rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
             onInteractOutside={(e) => {
               e.preventDefault();
               if (!openClient && !openService && !isCalendarOpen) {
@@ -430,13 +442,48 @@ const Appointment: React.FC<AppointmentProps> = ({
               }
             }}
           >
-            <DialogHeader className="mb-2 px-[1.5rem] pt-[1.5rem]">
+            <DialogHeader className="flex flex-col items-start gap-2 mb-2 px-[1.5rem] pt-[1.5rem]">
               <DialogTitle>Editar Agendamento</DialogTitle>
             </DialogHeader>
             {!isLoading ? (
-              appointment?.details?.service ?
+              <>
                 <Form {...form}>
-                  <form id="update-appointment" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
+                  <form id="update-appointment" onSubmit={form.handleSubmit(onSubmit)} className={cn(type !== "appointment" && "hidden", "space-y-8 md:max-h-[75vh] max-h-[65vh] h-screen overflow-auto px-[1.5rem] pb-[1.5rem]")}>
+                    <div className="flex gap-2 w-full">
+                      <Button
+                        variant={type === "appointment" ? "default" : "outline"}
+                        className={cn(
+                          "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:!text-white dark:!text-white !text-neutral-700",
+                          type === "appointment" && "bg-green-500 dark:bg-green-500 !text-white hover:bg-green-500 dark:hover:bg-green-500"
+                        )}
+                        type="button"
+                        onClick={() => {
+                          setType("appointment");
+                          form.reset(defaultValues);
+                          otherForm.reset(otherDefaultValues);
+                          setAutoEndDate(undefined);
+                          setCurrentService(undefined);
+                        }}
+                      >
+                        Serviço
+                      </Button>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:!text-white dark:!text-white !text-neutral-700"
+                        )}
+                        type="button"
+                        onClick={() => {
+                          setType("other");
+                          form.reset(defaultValues);
+                          otherForm.reset(otherDefaultValues);
+                          setAutoEndDate(undefined);
+                          setCurrentService(undefined);
+                        }}
+                      >
+                        Outros
+                      </Button>
+                    </div>
                     <FormField
                       control={form.control}
                       name="status"
@@ -451,7 +498,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 }}
                                 variant={field.value === "pending" ? "default" : "outline"}
                                 className={cn(
-                                  "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:text-white dark:!text-white !text-neutral-700",
+                                  "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:!text-white dark:!text-white !text-neutral-700",
                                   field.value === "pending" && "bg-neutral-500 dark:bg-neutral-500 !text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
                                 )}
                                 type="button"
@@ -464,7 +511,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 }}
                                 variant={field.value === "confirmed" ? "default" : "outline"}
                                 className={cn(
-                                  "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:!text-white !text-neutral-700",
+                                  "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:!text-white dark:!text-white !text-neutral-700",
                                   field.value === "confirmed" && "bg-green-500 dark:bg-green-500 !text-white hover:bg-green-500 dark:hover:bg-green-500"
                                 )}
                                 type="button"
@@ -477,7 +524,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 }}
                                 variant={field.value === "canceled" ? "default" : "outline"}
                                 className={cn(
-                                  "flex-1 sm:w-full hover:bg-red-500 dark:hover:bg-red-500 hover:text-white dark:!text-white !text-neutral-700",
+                                  "flex-1 sm:w-full hover:bg-red-500 dark:hover:bg-red-500 hover:!text-white dark:!text-white !text-neutral-700",
                                   field.value === "canceled" && "bg-red-500 dark:bg-red-500 !text-white hover:bg-red-500 dark:hover:bg-red-500"
                                 )}
                                 type="button"
@@ -506,7 +553,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                 >
                                   <div className="flex gap-4 items-center">
                                     <IconUser />
-                                    {field.value ?? appointment.title}
+                                    {watch.title ?? appointment.title}
                                   </div>
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
@@ -532,6 +579,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                             field.onChange(value);
                                             setOpenClient(false);
                                             setClientSearchValue("");
+                                            form.setValue("clientId", Number(client.id))
                                           }}
                                           className="cursor-pointer"
                                         >
@@ -572,7 +620,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   >
                                     <div className="flex gap-4 items-center">
                                       <IconBriefcase />
-                                      {field.value ?? appointment?.details?.service}
+                                      {field.value ?? watch?.details?.service}
                                     </div>
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
@@ -599,6 +647,44 @@ const Appointment: React.FC<AppointmentProps> = ({
                                               setOpenService(false);
                                               setServiceSearchValue("");
                                               setCurrentService(service);
+                                              form.setValue("details.serviceId", Number(service.id));
+                                              form.setValue("details.durationMinutes", service.duration_minutes);
+                                              if (watch.start) {
+                                                const newDate = new Date(watch.start);
+                                                newDate.setMinutes(newDate.getMinutes() + (service.duration_minutes ?? 0));
+                                                setAutoEndDate(newDate);
+                                                setIsCalendarOpen(false);
+                                              }
+                                              form.setValue(`details.payments.${feeIndex}.value`,
+                                                settings
+                                                  ? Number(settings.scheduling[settings.scheduling.findIndex(item => item.type === "tax")].value)
+                                                  : 0);
+                                              form.setValue(`details.payments.${serviceIndex}.value`, service.price - (watch.details.payments[feeIndex].value || 0));
+
+                                              if (watch.start) {
+                                                const newDate = new Date(watch.start);
+                                                newDate.setMinutes(newDate.getMinutes() + (service.duration_minutes || 0));
+                                                setAutoEndDate(newDate);
+
+                                                form.setValue(`details.payments.${feeIndex}.dueDate`, (() => {
+                                                  let dueDate = new Date(
+                                                    watch.start.getTime() - Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "tax_deadline_value")].value) * 86400000
+                                                  )
+                                                  if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                                                    dueDate = new Date()
+                                                  }
+                                                  return dueDate
+                                                })())
+                                                form.setValue(`details.payments.${serviceIndex}.dueDate`, (() => {
+                                                  let dueDate = new Date(
+                                                    watch.start.getTime() + Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "payment_deadline_value")].value) * 86400000
+                                                  )
+                                                  if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                                                    dueDate = new Date()
+                                                  }
+                                                  return dueDate
+                                                })())
+                                              }
                                             }}
                                             className="cursor-pointer"
                                           >
@@ -662,65 +748,87 @@ const Appointment: React.FC<AppointmentProps> = ({
                         )}
                       />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="start"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-left">Início</FormLabel>
-                          <FormControl>
-                            <TimePicker
-                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                              onChange={(date) => {
-                                field.onChange(date);
-                                if (date) {
-                                  const newDate = new Date(date);
-                                  newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
-                                  setAutoEndDate(newDate);
+                    <div className="flex sm:flex-row flex-col sm:gap-2 gap-0">
+                      <FormField
+                        control={form.control}
+                        name="start"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col w-full">
+                            <FormLabel className="text-left">Início</FormLabel>
+                            <FormControl>
+                              <TimePicker
+                                className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                                onChange={(date) => {
+                                  field.onChange(date);
+                                  if (date && watch.details.service) {
+                                    const newDate = new Date(date);
+                                    newDate.setMinutes(newDate.getMinutes() + (watch.details?.durationMinutes ?? 0));
+                                    setAutoEndDate(newDate);
+                                    setIsCalendarOpen(false);
+                                    form.setValue(`details.payments.${feeIndex}.dueDate`, (() => {
+                                      let dueDate = new Date(
+                                        date.getTime() - Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "tax_deadline_value")].value) * 86400000
+                                      )
+                                      if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                                        dueDate = new Date()
+                                      }
+                                      return dueDate
+                                    })())
+                                    form.setValue(`details.payments.${serviceIndex}.dueDate`, (() => {
+                                      let dueDate = new Date(
+                                        date.getTime() + Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "payment_deadline_value")].value) * 86400000
+                                      )
+                                      if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                                        dueDate = new Date()
+                                      }
+                                      return dueDate
+                                    })())
+                                  }
+                                }}
+                                onClick={() => setIsCalendarOpen(true)}
+                                onInteractOutside={(e) => {
+                                  if (isCalendarOpen) {
+                                    setIsCalendarOpen(false);
+                                  }
+                                }}
+                                value={watch.start}
+                                disabled={!watch.start}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="end"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col w-full">
+                            <FormLabel className="text-left">Fim</FormLabel>
+                            <FormControl>
+                              <TimePicker
+                                className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                                placeholder="Selecione uma data"
+                                onChange={(date) => {
+                                  field.onChange(date);
                                   setIsCalendarOpen(false);
-                                }
-                              }}
-                              onClick={() => setIsCalendarOpen(true)}
-                              onInteractOutside={(e) => {
-                                if (isCalendarOpen) {
-                                  setIsCalendarOpen(false);
-                                }
-                              }}
-                              value={appointment.start}
-                              disabled={!appointment.start}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="end"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-left">Fim</FormLabel>
-                          <FormControl>
-                            <TimePicker
-                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                              onChange={(date) => {
-                                field.onChange(date);
-                                setIsCalendarOpen(false);
-                              }}
-                              onClick={() => setIsCalendarOpen(true)}
-                              onInteractOutside={(e) => {
-                                if (isCalendarOpen) {
-                                  setIsCalendarOpen(false);
-                                }
-                              }}
-                              value={autoEndDate ?? appointment.end}
-                              disabled={!appointment.end}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                }}
+                                onClick={() => setIsCalendarOpen(true)}
+                                onInteractOutside={(e) => {
+                                  if (isCalendarOpen) {
+                                    setIsCalendarOpen(false);
+                                  }
+                                }}
+                                value={autoEndDate ?? watch.end}
+                                disabled={!watch.end}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <HorizontalSeparator label="Financeiro" variant="span" />
                     <div className="flex flex-col items-center w-full">
                       <div className="flex items-center gap-2 w-full">
                         <FormField
@@ -738,7 +846,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                                     const numericValue = e.target.value.replace(/\D/g, "");
                                     field.onChange(numericValue ? Number(numericValue) / 100 : "");
                                   }}
-                                  className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none")}
+                                  className={cn(
+                                    "bg-neutral-100 dark:!text-neutral-200",
+                                    watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none"
+                                  )}
+                                  disabled={!watch.start || !watch.details.service}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -770,7 +882,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                       setIsCalendarOpen(false);
                                     }
                                   }}
-                                  disabled={!watch.start}
+                                  disabled={!watch.start || !watch.details.service}
                                 />
                               </FormControl>
                             </FormItem>
@@ -793,7 +905,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                         form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
                                       }
                                     }}
-                                    disabled={["received", "confirmed"].includes(watch.details.payments[feeIndex].status)}
+                                    disabled={["received", "confirmed"].includes(watch.details.payments[feeIndex].status) || !watch.start || !watch.details.service}
                                   />
                                 </FormControl>
                                 <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
@@ -809,7 +921,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                               <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
                                 <div className="flex gap-2 items-center !mr-auto">
                                   <FormControl>
-                                    {watch.details.payments[feeIndex]?.billingType !== "cash" && watch.details.payments[feeIndex]?.billingType !== null && watch.details.payments[feeIndex]?.status !== "pending" && field.value !== "pending"
+                                    {watch.details.payments[feeIndex]?.billingType !== "cash" &&
+                                      watch.details.payments[feeIndex]?.billingType !== null &&
+                                      watch.details.payments[feeIndex]?.status !== "pending" &&
+                                      field.value !== "pending" &&
+                                      appointment.type === "appointment"
                                       ? (
                                         <AlertDialog open={isFeeRefundOpen} onOpenChange={setIsFeeRefundOpen}>
                                           <AlertDialogTrigger className="flex items-center">
@@ -870,7 +986,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                               form.clearErrors([`details.payments.${feeIndex}.status`, `details.payments.${feeIndex}.sendPaymentLink`])
                                             }
                                           }}
-                                          disabled={watch.details.payments[feeIndex].sendPaymentLink}
+                                          disabled={watch.details.payments[feeIndex].sendPaymentLink || !watch.start || !watch.details.service}
                                         />
                                       )}
                                   </FormControl>
@@ -902,7 +1018,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                                     const numericValue = e.target.value.replace(/\D/g, "");
                                     field.onChange(numericValue ? Number(numericValue) / 100 : "");
                                   }}
-                                  className={cn(watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none")}
+                                  className={cn(
+                                    "bg-neutral-100 dark:!text-neutral-200",
+                                    watch.details.payments[serviceIndex].status !== "pending" && "pointer-events-none"
+                                  )}
+                                  disabled={!watch.start || !watch.details.service}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -934,7 +1054,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                       setIsCalendarOpen(false);
                                     }
                                   }}
-                                  disabled={!watch.start}
+                                  disabled={!watch.start || !watch.details.service}
                                 />
                               </FormControl>
                             </FormItem>
@@ -954,7 +1074,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                     onCheckedChange={(checked: boolean) => {
                                       field.onChange(checked);
                                     }}
-                                    disabled={["received", "confirmed"].includes(watch.details.payments[serviceIndex].status)}
+                                    disabled={["received", "confirmed"].includes(watch.details.payments[serviceIndex].status) || !watch.start || !watch.details.service}
                                   />
                                 </FormControl>
                                 <FormLabel className="text-left !mt-[1px] w-full">Enviar link de pagamento</FormLabel>
@@ -970,7 +1090,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                               <FormItem className="flex gap-2 items-center ml-auto mt-2.5">
                                 <div className="flex gap-2 items-center !mr-auto">
                                   <FormControl>
-                                    {watch.details.payments[serviceIndex]?.billingType !== "cash" && watch.details.payments[serviceIndex]?.billingType != null && watch.details.payments[serviceIndex]?.status !== "pending" && field.value !== "pending"
+                                    {watch.details.payments[serviceIndex]?.billingType !== "cash" &&
+                                      watch.details.payments[serviceIndex]?.billingType != null &&
+                                      watch.details.payments[serviceIndex]?.status !== "pending" &&
+                                      field.value !== "pending" &&
+                                      appointment.type === "appointment"
                                       ? (
                                         <AlertDialog open={isServiceRefundOpen} onOpenChange={setIsServiceRefundOpen}>
                                           <AlertDialogTrigger className="flex items-center">
@@ -1030,7 +1154,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                               form.clearErrors([`details.payments.${serviceIndex}.status`, `details.payments.${serviceIndex}.sendPaymentLink`])
                                             }
                                           }}
-                                          disabled={watch.details.payments[serviceIndex].sendPaymentLink}
+                                          disabled={watch.details.payments[serviceIndex].sendPaymentLink || !watch.start || !watch.details.service}
                                         />
                                       )}
                                   </FormControl>
@@ -1046,7 +1170,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                       </FormMessage>
                     </div>
                   </form>
-                  <DialogFooter className="flex !flex-row w-full justify-end gap-2 px-[2.3rem] mb-6">
+                  <DialogFooter className={cn(type !== "appointment" && "!hidden", "flex flex-row w-full justify-end gap-2 px-[2.3rem] mb-6")}>
                     <AlertDialog open={isRemoveAppointmentOpen} onOpenChange={setIsRemoveAppointmentOpen}>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -1110,78 +1234,53 @@ const Appointment: React.FC<AppointmentProps> = ({
                     </Button>
                   </DialogFooter>
                 </Form>
-                :
+
                 <Form {...otherForm}>
-                  <form id="update-other" onSubmit={otherForm.handleSubmit(onSubmitOther)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
-                    <FormField
-                      control={otherForm.control}
-                      name={`type`}
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col w-full">
-                          <FormLabel>Unidade</FormLabel>
-                          <FormControl>
-                            <Popover open={isTypeOpen} onOpenChange={setIsTypeOpen} modal>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  aria-expanded={false}
-                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
-                                >
-                                  <div className="flex gap-4">
-                                    {units?.find(unit => unit?.value === field?.value)?.label}
-                                  </div>
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="p-0 popover-content-width-fix">
-                                <Command className="pl-1">
-                                  <CommandList>
-                                    <CommandGroup>
-                                      {units.map((unit, index) => (
-                                        <CommandItem
-                                          key={index}
-                                          value={unit.value}
-                                          onSelect={(currentValue) => {
-                                            field.onChange(currentValue);
-                                            otherForm.setValue("is_recurring", currentValue === "dayOfWeek");
-                                            otherForm.setValue("day_of_week", undefined)
-                                            otherForm.clearErrors();
-                                            setTimeout(() => {
-                                              setIsTypeOpen(false);
-                                              setType(currentValue);
-                                            }, 100)
-                                          }}
-                                          className="cursor-pointer"
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              field.value === unit.value ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                          {unit.label}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {otherWatch?.is_recurring &&
+                  <form id="update-other" onSubmit={otherForm.handleSubmit(onSubmitOther)} className={cn(type !== "other" && "hidden", "space-y-8 md:max-h-[75vh] max-h-[65vh] h-screen overflow-auto px-[1.5rem] pb-[1.5rem]")}>
+                    <div className="flex gap-2 w-full">
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "flex-1 sm:w-full hover:bg-green-500 dark:hover:bg-green-500 hover:!text-white dark:!text-white !text-neutral-700",
+                        )}
+                        type="button"
+                        onClick={() => {
+                          setType("appointment");
+                          form.reset(defaultValues);
+                          otherForm.reset(otherDefaultValues);
+                          setAutoEndDate(undefined);
+                          setCurrentService(undefined);
+                        }}
+                      >
+                        Serviço
+                      </Button>
+                      <Button
+                        variant={type === "other" ? "default" : "outline"}
+                        className={cn(
+                          "flex-1 hover:bg-neutral-500 dark:hover:bg-neutral-500 hover:!text-white dark:!text-white !text-neutral-700",
+                          type === "other" && "bg-neutral-500 dark:bg-neutral-500 !text-white hover:bg-neutral-500 dark:hover:bg-neutral-500"
+                        )}
+                        type="button"
+                        onClick={() => {
+                          setType("other");
+                          form.reset(defaultValues);
+                          otherForm.reset(otherDefaultValues);
+                          setAutoEndDate(undefined);
+                          setCurrentService(undefined);
+                        }}
+                      >
+                        Outros
+                      </Button>
+                    </div>
+                    <div className="flex flex-col">
                       <FormField
                         control={otherForm.control}
-                        name={`day_of_week`}
+                        name="freq"
                         render={({ field }) => (
                           <FormItem className="flex flex-col w-full">
-                            <FormLabel>Dia</FormLabel>
+                            <FormLabel>Tipo</FormLabel>
                             <FormControl>
-                              <Popover open={isDayOfWeekOpen} onOpenChange={setIsDayOfWeekOpen} modal>
+                              <Popover open={isTypeOpen} onOpenChange={setIsTypeOpen} modal>
                                 <PopoverTrigger asChild>
                                   <Button
                                     variant="outline"
@@ -1190,7 +1289,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                     className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
                                   >
                                     <div className="flex gap-4">
-                                      {daysOfWeek?.find(dayOfWeek => dayOfWeek.value === field.value)?.label}
+                                      {units?.find(unit => unit?.value === field.value)?.label}
                                     </div>
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
@@ -1199,14 +1298,18 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   <Command className="pl-1">
                                     <CommandList>
                                       <CommandGroup>
-                                        {daysOfWeek.map((dayOfWeek, index) => (
+                                        {units.map((unit, index) => (
                                           <CommandItem
                                             key={index}
-                                            value={dayOfWeek.label}
+                                            value={unit.value}
                                             onSelect={(currentValue) => {
-                                              field.onChange(dayOfWeek.value);
+                                              field.onChange(currentValue);
+                                              otherForm.setValue("is_recurring", currentValue !== "period");
+                                              otherForm.setValue("day_of_week", undefined);
+                                              otherForm.setValue("freq", currentValue);
+                                              otherForm.clearErrors();
                                               setTimeout(() => {
-                                                setIsDayOfWeekOpen(false);
+                                                setIsTypeOpen(false);
                                               }, 100)
                                             }}
                                             className="cursor-pointer"
@@ -1214,10 +1317,10 @@ const Appointment: React.FC<AppointmentProps> = ({
                                             <Check
                                               className={cn(
                                                 "mr-2 h-4 w-4",
-                                                field.value === dayOfWeek.value ? "opacity-100" : "opacity-0"
+                                                field.value === unit.value ? "opacity-100" : "opacity-0"
                                               )}
                                             />
-                                            {dayOfWeek.label}
+                                            {unit.label}
                                           </CommandItem>
                                         ))}
                                       </CommandGroup>
@@ -1230,67 +1333,177 @@ const Appointment: React.FC<AppointmentProps> = ({
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={otherForm.control}
+                        name="blocked"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col mt-2.5">
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={(checked: boolean) => {
+                                    field.onChange(checked);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-left">Bloquear horário</FormLabel>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    {otherWatch?.freq !== "period" &&
+                      <div className="flex sm:flex-row flex-col sm:gap-2 gap-8">
+                        <FormField
+                          control={otherForm.control}
+                          name={`day_of_week`}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col w-full">
+                              <FormLabel>Dia</FormLabel>
+                              <FormControl>
+                                <Popover open={isDayOfWeekOpen} onOpenChange={setIsDayOfWeekOpen} modal>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      aria-expanded={false}
+                                      className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
+                                    >
+                                      <div className="flex gap-4">
+                                        {daysOfWeek?.find(dayOfWeek => dayOfWeek.value === field.value)?.label}
+                                      </div>
+                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="p-0 popover-content-width-fix">
+                                    <Command className="pl-1">
+                                      <CommandList>
+                                        <CommandGroup>
+                                          {daysOfWeek.map((dayOfWeek, index) => (
+                                            <CommandItem
+                                              key={index}
+                                              value={dayOfWeek.label}
+                                              onSelect={(currentValue) => {
+                                                field.onChange(dayOfWeek.value);
+                                                setTimeout(() => {
+                                                  setIsDayOfWeekOpen(false);
+                                                }, 100)
+                                              }}
+                                              className="cursor-pointer"
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === dayOfWeek.value ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {dayOfWeek.label}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={otherForm.control}
+                          name="interval"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col w-full">
+                              <FormLabel className="text-left">
+                                Intervalo ({
+                                  otherWatch.freq === "daily"
+                                    ? "Dias"
+                                    : otherWatch.freq === "weekly"
+                                      ? "Semanas"
+                                      : otherWatch.freq === "monthly"
+                                        ? "Meses"
+                                        : ""
+                                })
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  value={otherWatch.interval}
+                                  onChange={() => {
+                                    field.onChange(field.value)
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     }
-                    <FormField
-                      control={otherForm.control}
-                      name="start"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-left">Início</FormLabel>
-                          <FormControl>
-                            <TimePicker
-                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                              placeholder={!otherWatch.is_recurring ? "Selecione uma data e um horário" : "Selecione um horário"}
-                              mode={!otherWatch.is_recurring ? "datetime" : "time"}
-                              value={otherWatch.start}
-                              onChange={(date) => {
-                                field.onChange(date);
-                                if (date) {
-                                  const newDate = new Date(date);
-                                  newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
+                    <div className="flex sm:flex-row flex-col sm:gap-2 gap-8">
+                      <FormField
+                        control={otherForm.control}
+                        name="start"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col w-full">
+                            <FormLabel className="text-left">Início</FormLabel>
+                            <FormControl>
+                              <TimePicker
+                                className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                                placeholder={otherWatch.freq === "period" ? "Selecione uma data e um horário" : "Selecione um horário"}
+                                mode={otherWatch.freq === "period" ? "datetime" : "time"}
+                                value={otherWatch.start}
+                                onChange={(date) => {
+                                  field.onChange(date);
+                                  if (date) {
+                                    const newDate = new Date(date);
+                                    newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
+                                    setIsCalendarOpen(false);
+                                  }
+                                }}
+                                onClick={() => setIsCalendarOpen(true)}
+                                onInteractOutside={(e) => {
+                                  if (isCalendarOpen) {
+                                    setIsCalendarOpen(false);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={otherForm.control}
+                        name="end"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col w-full">
+                            <FormLabel className="text-left">Fim</FormLabel>
+                            <FormControl>
+                              <TimePicker
+                                className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
+                                placeholder={otherWatch.freq === "period" ? "Selecione uma data e um horário" : "Selecione um horário"}
+                                mode={otherWatch.freq === "period" ? "datetime" : "time"}
+                                value={otherWatch.end}
+                                onChange={(date) => {
+                                  field.onChange(date);
                                   setIsCalendarOpen(false);
-                                }
-                              }}
-                              onClick={() => setIsCalendarOpen(true)}
-                              onInteractOutside={(e) => {
-                                if (isCalendarOpen) {
-                                  setIsCalendarOpen(false);
-                                }
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={otherForm.control}
-                      name="end"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-left">Fim</FormLabel>
-                          <FormControl>
-                            <TimePicker
-                              className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                              placeholder={!otherWatch.is_recurring ? "Selecione uma data e um horário" : "Selecione um horário"}
-                              mode={!otherWatch.is_recurring ? "datetime" : "time"}
-                              value={otherWatch.end}
-                              onChange={(date) => {
-                                field.onChange(date);
-                                setIsCalendarOpen(false);
-                              }}
-                              onClick={() => setIsCalendarOpen(true)}
-                              onInteractOutside={(e) => {
-                                if (isCalendarOpen) {
-                                  setIsCalendarOpen(false);
-                                }
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                }}
+                                onClick={() => setIsCalendarOpen(true)}
+                                onInteractOutside={(e) => {
+                                  if (isCalendarOpen) {
+                                    setIsCalendarOpen(false);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <FormField
                       control={otherForm.control}
                       name="description"
@@ -1300,7 +1513,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                           <FormControl>
                             <TextArea
                               className="!min-h-14 bg-neutral-100"
-                              // value={otherWatch.}
+                              value={otherWatch.description}
                               placeholder=""
                               onChange={(e) => field.onChange(e.target.value)}
                             />
@@ -1308,19 +1521,19 @@ const Appointment: React.FC<AppointmentProps> = ({
                           <FormMessage />
                         </FormItem>
                       )}
-                    />               
-                  </form>               
-                  <DialogFooter className="px-[2.3rem] md:px-[1.5rem] mb-6">
+                    />
+                  </form>
+                  <DialogFooter className={cn(type !== "other" && "!hidden", "flex flex-row w-full justify-end gap-2 px-[2.3rem] mb-6")}>
                     <Button
                       form="update-other"
                       type="submit"
                       className="bg-green-500 hover:bg-green-600 text-white"
-                      onClick={() => console.log(otherWatch)}
                     >
                       Salvar
                     </Button>
                   </DialogFooter>
                 </Form>
+              </>
             ) : (
               <div className="flex justify-center items-center w-full h-[70vh]">
                 <Loading display={isLoading} className="!scale-[0.5]" />
@@ -1332,7 +1545,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       <CardContent
         className={cn("pb-1.5 !px-0 hidden")}
       >
-        {appointment?.details?.service ?
+        {appointment?.type === "appointment" ?
           <div className="flex flex-col justify-center items-center w-full pl-1.5">
             <div className="flex gap-1.5 truncate text-xs mr-2 mt-1.5 mb-1.5">
               <div className="flex gap-2">

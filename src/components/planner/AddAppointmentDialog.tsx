@@ -226,7 +226,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
+        className="max-w-[90vw] md:max-w-[36rem] max-h-[95vh] h-screen rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
         aria-describedby={undefined}
         onInteractOutside={(e) => {
           e.preventDefault();
@@ -239,7 +239,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
           <DialogTitle>Novo Agendamento</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form id="add-appointment" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
+          <form id="add-appointment" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 md:max-h-[75vh] max-h-[65vh] h-screen overflow-auto px-[1.5rem] pb-[1.5rem]">
             <FormField
               control={form.control}
               name="status"
@@ -419,14 +419,14 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                                           : 0);
                                       form.setValue(`details.payments.${serviceIndex}.value`, service.price - (watch.details.payments[feeIndex].value || 0));
 
-                                      if (startDate) {
-                                        const newDate = new Date(startDate);
+                                      if (watch.start) {
+                                        const newDate = new Date(watch.start);
                                         newDate.setMinutes(newDate.getMinutes() + (service.duration_minutes || 0));
-                                        setAutoEndDate(newDate);
+                                        setAutoEndDate(newDate);                                  
 
                                         form.setValue(`details.payments.${feeIndex}.dueDate`, (() => {
                                           let dueDate = new Date(
-                                            startDate.getTime() - Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "tax_deadline_value")].value) * 86400000
+                                            watch.start.getTime() - Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "tax_deadline_value")].value) * 86400000
                                           )
                                           if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                             dueDate = new Date()
@@ -435,7 +435,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                                         })())
                                         form.setValue(`details.payments.${serviceIndex}.dueDate`, (() => {
                                           let dueDate = new Date(
-                                            startDate.getTime() + Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "payment_deadline_value")].value) * 86400000
+                                            watch.start.getTime() + Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "payment_deadline_value")].value) * 86400000
                                           )
                                           if (dueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                             dueDate = new Date()
@@ -516,12 +516,12 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                   <FormControl>
                     <TimePicker
                       className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                      value={startDate}
+                      value={watch.start}
                       placeholder="Selecione uma data e um horário"
                       onChange={(date) => {
                         field.onChange(date);
                         setIsCalendarOpen(false);
-                        if (date) {
+                        if (date && watch.details.service) {
                           const newDate = new Date(date);
                           newDate.setMinutes(newDate.getMinutes() + (durationMinutes || 0));
                           setAutoEndDate(newDate);
@@ -552,7 +552,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                           setIsCalendarOpen(false);
                         }
                       }}
-                      disabled={!durationMinutes && !startDate}
+                      disabled={!durationMinutes && !watch.start}
                     />
                   </FormControl>
                   <FormMessage />
@@ -799,7 +799,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
               {form?.formState?.errors?.details?.payments?.[serviceIndex]?.dueDate?.message || ""}
             </FormMessage>
           </form>
-          <DialogFooter className="px-[2.3rem] mb-6">
+          <DialogFooter className="flex flex-row w-full justify-end gap-2 px-[2.3rem] mb-6">
             <Button
               form="add-appointment"
               type="submit"

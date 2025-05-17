@@ -4,17 +4,19 @@ import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
 import { getOperatingHours } from "@/services/operatingHours";
-import { eachMinuteOfInterval } from "date-fns";
-import { getMinMaxCalendarRange } from "@/utils/utils";
+import { eachMinuteOfInterval, format, formatISO, isBefore, startOfDay } from "date-fns";
+import { getMinMaxCalendarRange, parseSafeDate } from "@/utils/utils";
 import { OperatingHoursProps } from "@/models/OperatingHours";
 import { getBlockedTimeSlots } from "@/services/block-time-slots";
-import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
+import { BlockTimeSlotsProps, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
+import { parseISO, isSameDay, addDays, differenceInCalendarDays } from 'date-fns';
 
 interface DataContextType {
   appointments: Appointment[];
   setAppointments: Dispatch<SetStateAction<Appointment[]>>;
   operatingHours: OperatingHoursProps[];
   blockedTimeSlots: UpdatedBlockTimeSlotsProps[];
+  setBlockedTimeSlots: Dispatch<SetStateAction<UpdatedBlockTimeSlotsProps[]>>;
   isDragging: boolean;
   isResizing: boolean;
   setIsDragging: Dispatch<SetStateAction<boolean>>;
@@ -55,8 +57,7 @@ export const PlannerDataContextProvider: FC<{
     if (!isDragging && !isResizing) {
       appointmentServiceRef.current = new AppointmentService(appointments);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointments]);
+  }, [appointments, isDragging, isResizing]);
 
   useEffect(() => {
     if (dateRange) {
@@ -70,6 +71,7 @@ export const PlannerDataContextProvider: FC<{
             ...appointment,
             start: new Date(appointment.start),
             end: new Date(appointment.end),
+            type: "appointment"
           }));
           setAppointments(updatedAppointments);
         });
@@ -77,11 +79,12 @@ export const PlannerDataContextProvider: FC<{
   }, [dateRange, trigger]);
 
   const getDateForWeekdayInRange = useCallback((
-    dayOfWeek: number, // 0 (Sunday) to 6 (Saturday)
-    rangeStart: Date,
-    rangeEnd: Date,
-    dateTime: Date
+    dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
+    rangeStart?: Date,
+    rangeEnd?: Date,
+    dateTime?: Date
   ): Date | null => {
+    if (!rangeStart || !rangeEnd || !dateTime) return null;
     const current = new Date(rangeStart);
 
     while (current <= rangeEnd) {
@@ -93,8 +96,76 @@ export const PlannerDataContextProvider: FC<{
     return null;
   }, []);
 
+  function splitMultiTimeSlots({ slots }: { slots: BlockTimeSlotsProps[] }) {
+    const MS_IN_DAY = 24 * 60 * 60 * 1000;
+    const result: BlockTimeSlotsProps[] = [];
+
+
+    for (const slot of slots) {
+      const startDate = new Date(slot.start);
+      const endDate = new Date(slot.end);
+
+      if (
+        startDate.getUTCFullYear() === endDate.getUTCFullYear() &&
+        startDate.getUTCMonth() === endDate.getUTCMonth() &&
+        startDate.getUTCDate() === endDate.getUTCDate()
+      ) {
+        result.push({ ...slot });
+        continue;
+      }
+
+      const currentStart = startDate;
+      let currentEnd = new Date(Date.UTC(
+        startDate.getUTCFullYear(),
+        startDate.getUTCMonth(),
+        startDate.getUTCDate() + 1,
+        new Date(0, 0, 0, 0).getUTCHours(),
+        0,
+        0
+      ));
+
+      result.push({
+        ...slot,
+        id: slot.id,
+        start: currentStart.toISOString(),
+        end: currentEnd.toISOString(),
+        original_start: slot.start,
+        original_end: slot.end
+      });
+
+      while (currentEnd.getTime() + MS_IN_DAY <= endDate.getTime()) {
+        const nextStart = new Date(currentEnd.getTime());
+        const nextEnd = new Date(currentEnd.getTime() + MS_IN_DAY);
+
+        result.push({
+          ...slot,
+          id: slot.id,
+          start: nextStart.toISOString(),
+          end: nextEnd.toISOString(),
+          original_start: slot.start,
+          original_end: slot.end
+        });
+
+        currentEnd = nextEnd;
+      }
+
+      if (currentEnd.getTime() < endDate.getTime()) {
+        result.push({
+          ...slot,
+          id: slot.id,
+          start: currentEnd.toISOString(),
+          end: endDate.toISOString(),
+          original_start: slot.start,
+          original_end: slot.end
+        });
+      }
+    }
+
+    return result;
+  }
+
+
   useEffect(() => {
-    
     if (!isDragging && !isResizing) {
       getOperatingHours({}).then((data) => {
         const operatingHoursRange = getMinMaxCalendarRange(data);
@@ -122,20 +193,25 @@ export const PlannerDataContextProvider: FC<{
       });
 
       getBlockedTimeSlots({}).then((data) => {
+        const formattedTimeSlots = splitMultiTimeSlots({ slots: data });
+
         setBlockedTimeSlots(
-          data.map((slot: { start: string; end: string; is_recurring: boolean, day_of_week: number | null }) => ({
+          formattedTimeSlots.map((slot) => ({
             ...slot,
-            start: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
-              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start))
+            type: "other",
+            start: slot.freq === "weekly"
+              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start)) ?? new Date(slot.start)
               : new Date(slot.start),
-            end: slot.is_recurring && slot.day_of_week && dateRange?.from && dateRange?.to
-              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end))
+            end: slot.freq === "weekly"
+              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end)) ?? new Date(slot.end)
               : new Date(slot.end),
+            original_start: parseSafeDate(slot.original_start),
+            original_end: parseSafeDate(slot.original_end),
           })));
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointments, dateRange]);
+ 
+  }, [appointments, dateRange, getDateForWeekdayInRange, isDragging, isResizing, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({
@@ -165,6 +241,7 @@ export const PlannerDataContextProvider: FC<{
     setAppointments,
     operatingHours,
     blockedTimeSlots,
+    setBlockedTimeSlots,
     hourLabels,
     isDragging,
     setIsDragging,

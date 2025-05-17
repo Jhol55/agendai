@@ -150,7 +150,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
           </Button>
         </DialogTrigger>
         <DialogContent
-          className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
+          className="max-w-[90vw] md:max-w-[36rem] max-h-[95vh] h-screen rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
           aria-describedby={undefined}
           onInteractOutside={(e) => {
             e.preventDefault();
@@ -163,7 +163,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
             <DialogTitle>Horários de funcionamento</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form id="operating-hours" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
+            <form id="operating-hours" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 md:max-h-[75vh] max-h-[65vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
               {!isLoading ? days.map((day) => (
                 <section
                   key={day.name}

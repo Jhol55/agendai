@@ -152,3 +152,9 @@ export function getMinMaxCalendarRange(
 
   return { min, max };
 }
+
+
+export function parseSafeDate(value: unknown): Date | undefined {
+  const date = typeof value === "string" || value instanceof Date ? new Date(value) : undefined;
+  return date instanceof Date && !isNaN(date.getTime()) ? date : undefined;
+}
