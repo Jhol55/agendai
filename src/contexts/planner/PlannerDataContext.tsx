@@ -60,7 +60,7 @@ export const PlannerDataContextProvider: FC<{
   }, [appointments, isDragging, isResizing]);
 
   useEffect(() => {
-    if (dateRange) {
+    if (dateRange && !isResizing && !isDragging) {
       appointmentServiceRef.current
         .getInitialAppointments({
           from: dateRange.from?.toISOString(),
@@ -76,7 +76,7 @@ export const PlannerDataContextProvider: FC<{
           setAppointments(updatedAppointments);
         });
     }
-  }, [dateRange, trigger]);
+  }, [dateRange, isDragging, isResizing, trigger]);
 
   const getDateForWeekdayInRange = useCallback((
     dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
@@ -96,7 +96,7 @@ export const PlannerDataContextProvider: FC<{
     return null;
   }, []);
 
-  function splitMultiTimeSlots({ slots }: { slots: BlockTimeSlotsProps[] }) {
+  function splitMultiTimeSlots({ slots, minTime, maxTime }: { slots: BlockTimeSlotsProps[], minTime?: string, maxTime?: string }) {
     const MS_IN_DAY = 24 * 60 * 60 * 1000;
     const result: BlockTimeSlotsProps[] = [];
 
@@ -119,16 +119,21 @@ export const PlannerDataContextProvider: FC<{
         startDate.getUTCFullYear(),
         startDate.getUTCMonth(),
         startDate.getUTCDate() + 1,
-        new Date(0, 0, 0, 0).getUTCHours(),
-        0,
-        0
+        new Date(0, 0, 0, 0).getUTCHours(), 0, 0
       ));
+
+      const [minHours, minMinutes] = minTime?.split(":").map(Number) ?? [];
+      const [maxHours, maxMinutes] = maxTime?.split(":").map(Number) ?? [];
+      let minDateTime = new Date(new Date(currentStart).setHours(minHours, minMinutes));
+      let maxDateTime = new Date(new Date(currentStart).setHours(maxHours, maxMinutes + 30));
+      let start = currentStart.getTime() < maxDateTime.getTime() ? maxDateTime : currentStart
+      let end = currentEnd.getTime() > maxDateTime.getTime() ? maxDateTime : currentEnd
 
       result.push({
         ...slot,
         id: slot.id,
         start: currentStart.toISOString(),
-        end: currentEnd.toISOString(),
+        end: end.toISOString(),
         original_start: slot.start,
         original_end: slot.end
       });
@@ -137,11 +142,16 @@ export const PlannerDataContextProvider: FC<{
         const nextStart = new Date(currentEnd.getTime());
         const nextEnd = new Date(currentEnd.getTime() + MS_IN_DAY);
 
+        minDateTime = new Date(new Date(nextStart).setHours(minHours, minMinutes));
+        maxDateTime = new Date(new Date(nextStart).setHours(maxHours, maxMinutes + 30));
+        start = nextStart.getTime() < minDateTime.getTime() ? minDateTime : nextStart
+        end = nextEnd.getTime() > maxDateTime.getTime() ? maxDateTime : nextEnd
+
         result.push({
           ...slot,
           id: slot.id,
-          start: nextStart.toISOString(),
-          end: nextEnd.toISOString(),
+          start: start.toISOString(),
+          end: end.toISOString(),
           original_start: slot.start,
           original_end: slot.end
         });
@@ -150,11 +160,16 @@ export const PlannerDataContextProvider: FC<{
       }
 
       if (currentEnd.getTime() < endDate.getTime()) {
+        minDateTime = new Date(new Date(currentEnd).setHours(minHours, minMinutes));
+        maxDateTime = new Date(new Date(endDate).setHours(maxHours, maxMinutes + 30));
+        start = currentEnd.getTime() < minDateTime.getTime() ? minDateTime : currentEnd
+        end = endDate.getTime() > maxDateTime.getTime() ? maxDateTime : endDate
+
         result.push({
           ...slot,
           id: slot.id,
-          start: currentEnd.toISOString(),
-          end: endDate.toISOString(),
+          start: start.toISOString(),
+          end: end.toISOString(),
           original_start: slot.start,
           original_end: slot.end
         });
@@ -164,7 +179,7 @@ export const PlannerDataContextProvider: FC<{
     return result;
   }
 
-
+  //CORRIGIR QUANDO COLOCA HORA DE FUNCIONAMENTO 00:00 E ADICIONAR MUDANÇA DE COLUNA QUANDO É DE UM DIA PARA OUTRO IGUAL DO OTHER
   useEffect(() => {
     if (!isDragging && !isResizing) {
       getOperatingHours({}).then((data) => {
@@ -186,14 +201,22 @@ export const PlannerDataContextProvider: FC<{
             end: new Date(max),
           },
           { step: 30 }
-        );
+        ).slice(0, -1);
 
         setOperatingHours(data);
         setHourLabels(interval);
       });
 
       getBlockedTimeSlots({}).then((data) => {
-        const formattedTimeSlots = splitMultiTimeSlots({ slots: data });
+        const formattedTimeSlots = splitMultiTimeSlots({
+          slots: data,
+          minTime: hourLabels.length // Visual only
+            ? format(hourLabels[0], "HH:mm")
+            : undefined,
+          maxTime: hourLabels.length // Visual only
+            ? format(hourLabels[hourLabels.length - 1], "HH:mm")
+            : undefined
+        });
 
         setBlockedTimeSlots(
           formattedTimeSlots.map((slot) => ({
@@ -210,8 +233,9 @@ export const PlannerDataContextProvider: FC<{
           })));
       });
     }
- 
-  }, [appointments, dateRange, getDateForWeekdayInRange, isDragging, isResizing, trigger]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointments, getDateForWeekdayInRange, isDragging, isResizing, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({

@@ -135,8 +135,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
       }, 500);
       return () => clearTimeout(timeout);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointments])
+  }, [appointments, isDragging, isResizing])
 
   const getTopPositionFromTime = useCallback((timeStr: string): number => {
     const [hours, minutes] = timeStr.split(":").map(Number);
