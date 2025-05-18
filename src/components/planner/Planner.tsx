@@ -17,8 +17,7 @@ import { toast } from "sonner";
 import { PlannerTopBar } from "./PlannerTopbar";
 import { differenceInMinutes, format, parse } from "date-fns";
 import AddAppointmentDialog from "./AddAppointmentDialog";
-import { BlockTimeSlotsProps, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
-import { useSettings } from "@/hooks/use-settings";
+import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 import useWindowSize from "@/hooks/use-window-size";
 import { updateBlockedTimeSlot } from "@/services/block-time-slots";
 
@@ -104,26 +103,44 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   }, []);
 
   useEffect(() => {
-    const cards = document.querySelectorAll(".handle-ghosting");
- 
+    const observed = new WeakSet<Element>();
+  
     const handleDragStart = (event: Event) => {
       const dragEvent = event as DragEvent;
       if (dragEvent.dataTransfer) {
-        dragEvent.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
+        dragEvent.dataTransfer.setDragImage(document.createElement("div"), 0, 0);
       }
     };
   
-    cards.forEach(card => {
-      card.addEventListener("dragstart", handleDragStart);
+    const addListeners = () => {
+      const cards = document.querySelectorAll(".handle-ghosting");
+      cards.forEach((card) => {
+        if (!observed.has(card)) {
+          card.addEventListener("dragstart", handleDragStart);
+          observed.add(card);
+        }
+      });
+    };
+  
+    addListeners();
+  
+    const observer = new MutationObserver(() => {
+      addListeners();
     });
   
-    // Cleanup
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  
     return () => {
-      cards.forEach(card => {
+      observer.disconnect();
+      const cards = document.querySelectorAll(".handle-ghosting");
+      cards.forEach((card) => {
         card.removeEventListener("dragstart", handleDragStart);
       });
     };
-  }, [isLoading, handleUpdate]);
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
