@@ -86,56 +86,55 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
 
   useEffect(() => {
-    if (!isDragging && !isResizing) {
-      if (tableBodyRef.current) {
-        setTableBodyDimensions({
-          width: tableBodyRef.current.offsetWidth,
-          height: tableBodyRef.current.offsetHeight
-        });
+    if (!tableBodyRef.current) return;
+  
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const { width, height } = entry.contentRect;
+        setTableBodyDimensions({ width, height });
       }
-    }
-  }, [isLoading, appointments, hourLabels, isDragging, isResizing])
+    });
+  
+    observer.observe(tableBodyRef.current);
+  
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
-    if (!isDragging && !isResizing) {
-      const timeout = setTimeout(() => {
-        const cards = document.querySelectorAll(".handle-ghosting");
-
-        function handleDragStart(event: Event) {
-          const dragEvent = event as DragEvent;
-          if (dragEvent?.dataTransfer) {
-            dragEvent.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
-          }
-        }
-
-        cards.forEach(card => {
-          card.addEventListener("dragstart", handleDragStart);
-        });
-
-        return () => {
-          cards.forEach(card => {
-            card.removeEventListener("dragstart", handleDragStart);
-          });
-        };
-      }, 0);
-
-      return () => clearTimeout(timeout);
-    }
-
-  }, [appointments, isDragging, isResizing]);
+    const cards = document.querySelectorAll(".handle-ghosting");
+ 
+    const handleDragStart = (event: Event) => {
+      const dragEvent = event as DragEvent;
+      if (dragEvent.dataTransfer) {
+        dragEvent.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
+      }
+    };
+  
+    cards.forEach(card => {
+      card.addEventListener("dragstart", handleDragStart);
+    });
+  
+    // Cleanup
+    return () => {
+      cards.forEach(card => {
+        card.removeEventListener("dragstart", handleDragStart);
+      });
+    };
+  }, [isLoading, handleUpdate]);
 
   useEffect(() => {
     setIsLoading(true);
   }, [dateRange])
 
-  useEffect(() => {
-    if (!isDragging && !isResizing) {
+  useEffect(() => {   
       const timeout = setTimeout(() => {
         setIsLoading(false);
       }, 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [appointments, isDragging, isResizing])
+      return () => clearTimeout(timeout);  
+  }, [isLoading])
 
   const getTopPositionFromTime = useCallback((timeStr: string): number => {
     const [hours, minutes] = timeStr.split(":").map(Number);
@@ -324,7 +323,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         });
       },
     });
-  }, [getTopPositionFromTime, handleUpdate, hourLabels, initialScrollOffset, resources, setAppointments, setBlockedTimeSlots, setIsDragging, updateAppointment, updateAppointmentTimes, viewMode]);
+  }, [getTopPositionFromTime, hourLabels, initialScrollOffset, setAppointments, setBlockedTimeSlots, setIsDragging, updateAppointment, updateAppointmentTimes, viewMode]);
 
   const groupOverlappingAppointments = useCallback((appointments: (AppointmentType | UpdatedBlockTimeSlotsProps)[]) => {
     const clusters: AppointmentType[][] = [];

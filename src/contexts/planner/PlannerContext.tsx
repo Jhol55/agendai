@@ -45,13 +45,13 @@ export const PlannerProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, [viewMode, dateRange]);
 
-  const value = {
+  const value = useMemo(() => ({
     timeLabels,
     dateRange,
     setDateRange,
     viewMode: viewMode as "day" | "week" | "month" | "year",
     currentDateRange: dateRange,
-  };
+  }), [dateRange, timeLabels, viewMode]);
 
   return (
     <PlannerContext.Provider value={value}>

@@ -71,7 +71,6 @@ import { blockedTimesSchema, UpdatedBlockTimeSlotsProps } from "@/models/BlockTi
 import { AddBlockedTimeSlot, deleteBlockedTimeSlot, updateBlockedTimeSlot } from "@/services/block-time-slots";
 import { TextArea } from "../ui/text-area";
 import { useSettings } from "@/hooks/use-settings";
-import { Separator } from "../ui/separator";
 import { HorizontalSeparator } from "../ui/separator/separator";
 
 type ServiceType = {
@@ -121,7 +120,6 @@ const Appointment: React.FC<AppointmentProps> = ({
   const [isDayOfWeekOpen, setIsDayOfWeekOpen] = useState(false);
 
   useEffect(() => {
-    if (!isDragging && !isResizing) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const element = ref.current!;
       return draggable({
@@ -132,9 +130,7 @@ const Appointment: React.FC<AppointmentProps> = ({
           resourceId: resourceId,
         }),
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointment]);
+  }, [appointment, columnIndex, resourceId]);
 
   const defaultPayments = useMemo(() => [
     {
@@ -208,7 +204,6 @@ const Appointment: React.FC<AppointmentProps> = ({
   const otherWatch = otherForm.watch();
 
   useEffect(() => {
-    if (!isDragging && !isResizing) {
       const timeoutId = setTimeout(() => {
         form.reset({
           ...defaultValues
@@ -219,8 +214,8 @@ const Appointment: React.FC<AppointmentProps> = ({
         setIsLoading(!isOpened);
       }, 500)
       return () => clearTimeout(timeoutId);
-    }
-  }, [appointment, form, isDragging, isOpened, isResizing, defaultPayments, defaultValues, otherForm, otherDefaultValues]);
+    
+  }, [defaultValues, form, isOpened, otherDefaultValues, otherForm]);
 
   const onSubmit = useCallback((values: z.infer<typeof updateAppointmentSchema>) => {
     let canSubmit = true;
@@ -371,8 +366,8 @@ const Appointment: React.FC<AppointmentProps> = ({
       handleUpdate();
     }
     setType(appointment.type)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form, isOpened])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointment.type, form, isOpened])
 
 
   const findPaymentIndex = useCallback((type: string) => {
@@ -390,7 +385,7 @@ const Appointment: React.FC<AppointmentProps> = ({
 
   useEffect(() => {
     setType(appointment.type);
-  }, [appointment])
+  }, [appointment.type])
 
   const daysOfWeek = useMemo(() => [
     { label: "Domingo", value: 0 },
@@ -1544,160 +1539,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       </CardHeader>
       <CardContent
         className={cn("pb-1.5 !px-0 hidden")}
-      >
-        {appointment?.type === "appointment" ?
-          <div className="flex flex-col justify-center items-center w-full pl-1.5">
-            <div className="flex gap-1.5 truncate text-xs mr-2 mt-1.5 mb-1.5">
-              <div className="flex gap-2">
-                <div className="flex justify-center items-center">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-default">
-                        {appointment.details?.online
-                          ? <IconVideo className={cn(
-                            "w-4 h-4 text-white/90",
-                            appointment.status === "confirmed" && "text-green-600",
-                            appointment.status === "canceled" && "text-red-600"
-                          )} />
-                          : <IconMapPin className={cn(
-                            "w-4 h-4 text-white/90",
-                            appointment.status === "confirmed" && "text-green-600",
-                            appointment.status === "canceled" && "text-red-600"
-                          )} />
-                        }
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex gap-1">{
-                            <>
-                              <Typography variant="b" className="text-xs">Modalidade:</Typography>
-                              <Typography variant="p" className="text-xs">
-                                {
-                                  appointment.details?.online
-                                    ? "Online"
-                                    : "Presencial"
-                                }
-                              </Typography>
-                            </>
-                          }
-                          </div>
-                          <div className="flex gap-1">{
-                            <>
-                              <Typography variant="b" className="text-xs">Status:</Typography>
-                              <Typography variant="p" className="text-xs">
-                                {
-                                  watch.status === "confirmed"
-                                    ? "Confirmado"
-                                    : watch.status === "canceled"
-                                      ? "Cancelado"
-                                      : "Pendente"
-                                }
-                              </Typography>
-                            </>
-                          }
-                          </div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="flex justify-center items-center">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-default">
-                        <IconCalendarDollar
-                          className={cn(
-                            "w-4 h-4",
-                            ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
-                              ? "text-green-600"
-                              : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                ? "text-white/90"
-                                : "text-red-600"
-                          )}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex gap-1">{
-                            <>
-                              <Typography variant="b" className="text-xs">Descrição:</Typography>
-                              <Typography variant="p" className="text-xs">Taxa de reserva</Typography>
-                            </>
-                          }
-                          </div>
-                          <div className="flex gap-1">
-                            <Typography variant="b" className="text-xs">Status:</Typography>
-                            <Typography variant="p" className="text-xs">
-                              {
-                                ["received", "confirmed"].includes(watch.details.payments[feeIndex]?.status)
-                                  ? "Pago"
-                                  : new Date(watch.details.payments[feeIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                    ? "Pendente"
-                                    : "Vencido"
-                              }
-                            </Typography>
-                          </div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="flex justify-center items-center">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-default">
-                        <IconCurrencyDollar
-                          className={cn(
-                            "w-4 h-4",
-                            ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
-                              ? "text-green-600"
-                              : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                ? "text-white/90"
-                                : "text-red-600"
-                          )}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex gap-1">{
-                            <>
-                              <Typography variant="b" className="text-xs">Descrição:</Typography>
-                              <Typography variant="p" className="text-xs">Valor restante</Typography>
-                            </>
-                          }
-                          </div>
-                          <div className="flex gap-1">
-                            <Typography variant="b" className="text-xs">Status:</Typography>
-                            <Typography variant="p" className="text-xs">
-                              {
-                                ["received", "confirmed"].includes(watch.details.payments[serviceIndex]?.status)
-                                  ? "Pago"
-                                  : new Date(watch.details.payments[serviceIndex]?.dueDate).getTime() + 24 * 60 * 60 * 1000 >= new Date().getTime()
-                                    ? "Pendente"
-                                    : "Vencido"
-                              }
-                            </Typography>
-                          </div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                </div>
-              </div>
-            </div>
-            {/* <div className="flex flex-col items-center justify-center gap-1 text-xs mr-2">
-            <span className="whitespace-nowrap max-w-28 overflow-hidden dark:text-white/90 truncate font-medium">{appointment.title}</span>
-            <div className="flex gap-2">
-              {viewMode === "month" && <span className="dark:text-white/90">{appointment.start.toLocaleDateString("pt-BR")}</span>}
-              <span className="whitespace-nowrap font-medium dark:text-white/90">
-                {format(new Date(appointment.start), "kk:mm")} -{" "}
-                {format(new Date(appointment.end), "kk:mm")}
-              </span>
-            </div>
-          </div> */}
-          </div>
-          : null}
+      >       
       </CardContent>
     </Card>
   );

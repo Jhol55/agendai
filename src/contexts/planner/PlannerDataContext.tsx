@@ -53,14 +53,8 @@ export const PlannerDataContextProvider: FC<{
 
   const appointmentServiceRef = useRef(new AppointmentService([]));
 
-  useMemo(() => {
-    if (!isDragging && !isResizing) {
-      appointmentServiceRef.current = new AppointmentService(appointments);
-    }
-  }, [appointments, isDragging, isResizing]);
-
   useEffect(() => {
-    if (dateRange && !isResizing && !isDragging) {
+    if (dateRange) {
       appointmentServiceRef.current
         .getInitialAppointments({
           from: dateRange.from?.toISOString(),
@@ -74,9 +68,10 @@ export const PlannerDataContextProvider: FC<{
             type: "appointment"
           }));
           setAppointments(updatedAppointments);
+          appointmentServiceRef.current = new AppointmentService(updatedAppointments);
         });
     }
-  }, [dateRange, isDragging, isResizing, trigger]);
+  }, [dateRange, trigger]);
 
   const getDateForWeekdayInRange = useCallback((
     dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
@@ -96,7 +91,7 @@ export const PlannerDataContextProvider: FC<{
     return null;
   }, []);
 
-  function splitMultiTimeSlots({ slots, minTime, maxTime }: { slots: BlockTimeSlotsProps[], minTime?: string, maxTime?: string }) {
+  const splitMultiTimeSlots = useCallback(({ slots, minTime, maxTime }: { slots: BlockTimeSlotsProps[], minTime?: string, maxTime?: string }) => {
     const MS_IN_DAY = 24 * 60 * 60 * 1000;
     const result: BlockTimeSlotsProps[] = [];
 
@@ -177,47 +172,45 @@ export const PlannerDataContextProvider: FC<{
     }
 
     return result;
-  }
+  }, [])
 
   //CORRIGIR QUANDO COLOCA HORA DE FUNCIONAMENTO 00:00 E ADICIONAR MUDANÇA DE COLUNA QUANDO É DE UM DIA PARA OUTRO IGUAL DO OTHER
   useEffect(() => {
-    if (!isDragging && !isResizing) {
-      getOperatingHours({}).then((data) => {
-        const operatingHoursRange = getMinMaxCalendarRange(data);
-        const appointmentsRange = getMinMaxCalendarRange(appointments);
+    getOperatingHours({}).then((data) => {
+      const operatingHoursRange = getMinMaxCalendarRange(data);
+      const appointmentsRange = getMinMaxCalendarRange(appointmentServiceRef.current.getAppointments());
 
-        if (!operatingHoursRange.min || !operatingHoursRange.max) return;
+      if (!operatingHoursRange.min || !operatingHoursRange.max) return;
 
-        const min = operatingHoursRange?.min.getTime() < (appointmentsRange.min?.getTime() ?? Infinity)
-          ? operatingHoursRange.min : appointmentsRange.min;
-        const max = operatingHoursRange?.max.getTime() > (appointmentsRange.max?.getTime() ?? -Infinity)
-          ? operatingHoursRange.max : appointmentsRange.max;
+      const min = operatingHoursRange?.min.getTime() < (appointmentsRange.min?.getTime() ?? Infinity)
+        ? operatingHoursRange.min : appointmentsRange.min;
+      const max = operatingHoursRange?.max.getTime() > (appointmentsRange.max?.getTime() ?? -Infinity)
+        ? operatingHoursRange.max : appointmentsRange.max;
 
-        if (!min || !max) return;
+      if (!min || !max) return;
 
-        const interval = eachMinuteOfInterval(
-          {
-            start: new Date(min),
-            end: new Date(max),
-          },
-          { step: 30 }
-        ).slice(0, -1);
+      const interval = eachMinuteOfInterval(
+        {
+          start: new Date(min),
+          end: new Date(max),
+        },
+        { step: 30 }
+      ).slice(0, -1);
 
-        setOperatingHours(data);
-        setHourLabels(interval);
-      });
+      setOperatingHours(data);
+      setHourLabels(interval);
 
       getBlockedTimeSlots({}).then((data) => {
         const formattedTimeSlots = splitMultiTimeSlots({
           slots: data,
-          minTime: hourLabels.length // Visual only
-            ? format(hourLabels[0], "HH:mm")
+          minTime: interval?.length // Visual only
+            ? format(interval[0], "HH:mm")
             : undefined,
-          maxTime: hourLabels.length // Visual only
-            ? format(hourLabels[hourLabels.length - 1], "HH:mm")
+          maxTime: interval?.length // Visual only
+            ? format(interval[interval.length - 1], "HH:mm")
             : undefined
         });
-
+  
         setBlockedTimeSlots(
           formattedTimeSlots.map((slot) => ({
             ...slot,
@@ -232,10 +225,8 @@ export const PlannerDataContextProvider: FC<{
             original_end: parseSafeDate(slot.original_end),
           })));
       });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointments, getDateForWeekdayInRange, isDragging, isResizing, trigger]);
+    });
+  }, [dateRange?.from, dateRange?.to, getDateForWeekdayInRange, splitMultiTimeSlots, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({

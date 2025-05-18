@@ -45,8 +45,10 @@ export class AppointmentService {
 
   async getInitialAppointments({ test = false, from, to }: { test?: boolean, from: string | undefined, to: string | undefined }) {
     try {
-      const response = await api(test).get(`get-appointments?from=${from}&to=${to}`);  
-      return response.data;
+      const response = await api(test).get(`get-appointments?from=${from}&to=${to}`); 
+      const data = response.data;
+      this.appointments = data;
+      return data;
     } catch (error) {
       console.error('Erro ao carregar os agendamentos: ', error);
     }
@@ -59,5 +61,9 @@ export class AppointmentService {
     } catch (error) {
       console.error('Erro ao carregar o agendamento: ', error);
     }
+  }
+
+  getAppointments() {
+    return this.appointments;
   }
 }
