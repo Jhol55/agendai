@@ -25,7 +25,7 @@ import { Checkbox } from "../ui/checkbox";
 import { useState, useEffect, forwardRef, useCallback } from "react";
 import { getOperatingHours, updateOperatingHours } from "@/services/operatingHours";
 import { z } from "zod";
-import { BlockTimeSlotsDialog } from "./BlockTimeSlotsDialog";
+// import { BlockTimeSlotsDialog } from "./BlockTimeSlotsDialog";
 import { Loading } from "../ui/loading/loading";
 import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 
@@ -255,7 +255,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
             {!isLoading &&
               <DialogFooter className="pr-[2.4rem] pl-6 mb-6 w-full">
                 <div className="flex justify-between w-full">
-                  <BlockTimeSlotsDialog />
+                  {/* <BlockTimeSlotsDialog /> */}
                   <Button form="operating-hours" type="submit" className="bg-green-500 hover:bg-green-600 text-white">Salvar</Button>
                 </div>
               </DialogFooter>}
