@@ -467,10 +467,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         if (differenceInMinutes(newEnd, newStart) < 30) return;
       }
 
-      console.log(newStart, newEnd)
-      console.log(originalStart, originalEnd)
-      console.log(blockedTimeSlots)
-
       startOnDropTransition(() => {
         toast.promise(
           async () => {
