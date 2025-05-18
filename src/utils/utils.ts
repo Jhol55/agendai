@@ -77,7 +77,7 @@ const isAppointmentInSlot = (
       );
     case "month":
       return (
-        differenceInCalendarWeeks(apptDate, startOfMonth(apptDate)) === index && 
+        differenceInCalendarWeeks(apptDate, startOfMonth(apptDate)) === index &&
         isSameMonth(apptDate, dateRange.from)
       );
     case "year":
@@ -115,25 +115,36 @@ export const getLabelsForView = (
 export function getMinMaxCalendarRange(
   schedules: { start_time?: string | Date, end_time?: string | Date, start?: string | Date, end?: string | Date }[]
 ) {
-  
+
   if (schedules.length === 0) {
     return { min: null, max: null };
   }
-  
+
   function updateDatesToToday(dates: string[]) {
     const today = new Date();
     const day = String(today.getDate()).padStart(2, '0');
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const year = today.getFullYear();
-  
-    return dates.map(dateStr => { 
+
+    return dates.map(dateStr => {
       const [_, time] = dateStr.split(',').map(s => s.trim());
       return `${year}/${month}/${day}, ${time}`;
     });
   }
 
-  const normalizedStart = updateDatesToToday(schedules.map(s => new Date(s.start_time ?? s.start ?? "")?.toLocaleString()));
-  const normalizedEnd = updateDatesToToday(schedules.map(s => new Date(s.end_time ?? s.end ?? "")?.toLocaleString()));
+  const normalizedStart = updateDatesToToday(schedules.map(date => new Date(date.start_time ?? date.start ?? "")?.toLocaleString()));
+  const normalizedEnd = updateDatesToToday(schedules.map(date => new Date(date.end_time ?? date.end ?? "")?.toLocaleString())).map(dateTime => {
+    const [date, time] = dateTime.split(',').map(time => time.trim());
+    if (time === "00:00:00") {
+      const tomorrow = new Date(new Date(date).setDate(new Date(date).getDate() + 1));
+      const day = String(tomorrow.getDate()).padStart(2, '0');
+      const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const year = tomorrow.getFullYear();
+
+      return`${year}/${month}/${day}, ${time}`;
+    }
+    return dateTime
+  })
 
   const startTimes = normalizedStart
     .map(s => new Date(s).getTime())

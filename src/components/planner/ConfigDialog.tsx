@@ -42,10 +42,7 @@ export const ConfigDialog = () => {
       </DropdownMenuTrigger>
         <DropdownMenuContent side="top"
           style={{ zoom }}
-          className={cn("w-56 bg-background mr-7", canHide && "hidden")}
-          // style={{
-          //   marginLeft: zoom === 0.9 ? `calc(10% + ${(window.innerWidth * zoom) / 2}px)` : ""
-          // }}    
+          className={cn("w-56 bg-background mr-7", canHide || !open && "hidden")}   
         >
           <DropdownMenuLabel>
             <Typography variant="span">

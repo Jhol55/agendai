@@ -128,7 +128,7 @@ export const OperatingHoursDialog = forwardRef<HTMLDivElement, { onClose?: () =>
       updateOperatingHours({ data: values }).then(() => {
         setTimeout(() => {
           handleUpdate();
-        }, 100)
+        }, 1000)
       });
       setTimeout(() => {
         form.clearErrors();

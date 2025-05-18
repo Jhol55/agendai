@@ -4,12 +4,12 @@ import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
 import { getOperatingHours } from "@/services/operatingHours";
-import { eachMinuteOfInterval, format, formatISO, isBefore, startOfDay } from "date-fns";
+import { eachMinuteOfInterval, format, formatISO, isBefore, isSameDay, startOfDay } from "date-fns";
 import { getMinMaxCalendarRange, parseSafeDate } from "@/utils/utils";
 import { OperatingHoursProps } from "@/models/OperatingHours";
 import { getBlockedTimeSlots } from "@/services/block-time-slots";
 import { BlockTimeSlotsProps, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
-import { parseISO, isSameDay, addDays, differenceInCalendarDays } from 'date-fns';
+
 
 interface DataContextType {
   appointments: Appointment[];
@@ -53,58 +53,15 @@ export const PlannerDataContextProvider: FC<{
 
   const appointmentServiceRef = useRef(new AppointmentService([]));
 
-  useEffect(() => {
-    if (dateRange) {
-      appointmentServiceRef.current
-        .getInitialAppointments({
-          from: dateRange.from?.toISOString(),
-          to: dateRange.to?.toISOString(),
-        })
-        .then((data) => {
-          const updatedAppointments = data?.map((appointment: Appointment) => ({
-            ...appointment,
-            start: new Date(appointment.start),
-            end: new Date(appointment.end),
-            type: "appointment"
-          }));
-          setAppointments(updatedAppointments);
-          appointmentServiceRef.current = new AppointmentService(updatedAppointments);
-        });
-    }
-  }, [dateRange, trigger]);
-
-  const getDateForWeekdayInRange = useCallback((
-    dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
-    rangeStart?: Date,
-    rangeEnd?: Date,
-    dateTime?: Date
-  ): Date | null => {
-    if (!rangeStart || !rangeEnd || !dateTime) return null;
-    const current = new Date(rangeStart);
-
-    while (current <= rangeEnd) {
-      if (current.getDay() === dayOfWeek) {
-        return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
-      }
-      current.setDate(current.getDate() + 1);
-    }
-    return null;
-  }, []);
-
   const splitMultiTimeSlots = useCallback(({ slots, minTime, maxTime }: { slots: BlockTimeSlotsProps[], minTime?: string, maxTime?: string }) => {
     const MS_IN_DAY = 24 * 60 * 60 * 1000;
     const result: BlockTimeSlotsProps[] = [];
-
-
+    
     for (const slot of slots) {
       const startDate = new Date(slot.start);
       const endDate = new Date(slot.end);
 
-      if (
-        startDate.getUTCFullYear() === endDate.getUTCFullYear() &&
-        startDate.getUTCMonth() === endDate.getUTCMonth() &&
-        startDate.getUTCDate() === endDate.getUTCDate()
-      ) {
+      if (isSameDay(startDate, endDate)) {
         result.push({ ...slot });
         continue;
       }
@@ -174,7 +131,26 @@ export const PlannerDataContextProvider: FC<{
     return result;
   }, [])
 
-  //CORRIGIR QUANDO COLOCA HORA DE FUNCIONAMENTO 00:00 E ADICIONAR MUDANÇA DE COLUNA QUANDO É DE UM DIA PARA OUTRO IGUAL DO OTHER
+  const getDateForWeekdayInRange = useCallback((
+    dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
+    rangeStart?: Date,
+    rangeEnd?: Date,
+    dateTime?: Date
+  ): Date | null => {
+    if (!rangeStart || !rangeEnd || !dateTime) return null;
+    const current = new Date(rangeStart);
+
+    while (current <= rangeEnd) {
+      if (current.getDay() === dayOfWeek) {
+        return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return null;
+  }, []);
+
+
+  //QUANDO DOU RESIZE NA PARTE DE BAIXO DO OTHER QUE TEM MAIS DE 1 DIA, DA BUG VISUAL
   useEffect(() => {
     getOperatingHours({}).then((data) => {
       const operatingHoursRange = getMinMaxCalendarRange(data);
@@ -201,7 +177,7 @@ export const PlannerDataContextProvider: FC<{
       setHourLabels(interval);
 
       getBlockedTimeSlots({}).then((data) => {
-        const formattedTimeSlots = splitMultiTimeSlots({
+        const expandedBlockedTimeSlots = splitMultiTimeSlots({
           slots: data,
           minTime: interval?.length // Visual only
             ? format(interval[0], "HH:mm")
@@ -210,23 +186,45 @@ export const PlannerDataContextProvider: FC<{
             ? format(interval[interval.length - 1], "HH:mm")
             : undefined
         });
-  
+
+        if (!dateRange) return;
+
         setBlockedTimeSlots(
-          formattedTimeSlots.map((slot) => ({
+          expandedBlockedTimeSlots.map((slot) => ({
             ...slot,
             type: "other",
-            start: slot.freq === "weekly"
+            start: slot.freq === "weekly" // fazer mesma coisa com o original
               ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start)) ?? new Date(slot.start)
               : new Date(slot.start),
-            end: slot.freq === "weekly"
+            end: slot.freq === "weekly" // fazer mesma coisa com o original
               ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end)) ?? new Date(slot.end)
               : new Date(slot.end),
             original_start: parseSafeDate(slot.original_start),
             original_end: parseSafeDate(slot.original_end),
           })));
+
+        
+        appointmentServiceRef.current
+          .getInitialAppointments({
+            from: dateRange?.from?.toISOString(),
+            to: dateRange?.to?.toISOString(),
+          })
+          .then((data) => {
+            // const expandedAppointments = splitMultiTimeSlots({ slots: data })
+
+            const updatedAppointments = data?.map((appointment: Appointment) => ({
+              ...appointment,
+              start: new Date(appointment.start),
+              end: new Date(appointment.end),
+              type: "appointment"
+            }));
+            setAppointments(updatedAppointments);
+            appointmentServiceRef.current = new AppointmentService(updatedAppointments);
+          });
+
       });
     });
-  }, [dateRange?.from, dateRange?.to, getDateForWeekdayInRange, splitMultiTimeSlots, trigger]);
+  }, [dateRange?.from, dateRange?.to, dateRange, getDateForWeekdayInRange, splitMultiTimeSlots, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({

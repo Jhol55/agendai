@@ -20,7 +20,7 @@ import AddAppointmentDialog from "./AddAppointmentDialog";
 import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 import useWindowSize from "@/hooks/use-window-size";
 import { updateBlockedTimeSlot } from "@/services/block-time-slots";
-
+import { parseSafeDate } from "@/utils/utils";
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
   initialResources: Resource[];
@@ -82,7 +82,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const [addAppointmentStartDate, setAddAppointmentStartDate] = useState<Date | undefined>(undefined);
   const [tableBodyDimensions, setTableBodyDimensions] = useState<{ width?: number; height?: number } | null>(null);
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
-
 
   useEffect(() => {
     if (!tableBodyRef.current) return;
@@ -278,15 +277,13 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         const slotsCrossed = Math.round(deltaY / slotHeight);
         const minutesMoved = slotsCrossed * 30;
 
-        const newStart = new Date(appointment.start.getTime() + minutesMoved * 60_000);
-        const newEnd = new Date(appointment.end.getTime() + minutesMoved * 60_000);
+        const newStart = new Date((appointment?.original_start ?? appointment.start).getTime() + minutesMoved * 60_000);
+        const newEnd = new Date((appointment?.original_end ?? appointment.end).getTime() + minutesMoved * 60_000);
 
         if (!destination ||
           !sourceData ||
           !appointment ||
-          differenceInMinutes(newEnd, newStart) < 30 ||
-          newStart.getDate() != new Date(newEnd.getTime() - 60_000).getDate() ||
-          newStart.getHours() * 60 + newStart.getMinutes() < hourLabels[0].getHours() * 60 + hourLabels[0].getMinutes()
+          differenceInMinutes(newEnd, newStart) < 30 
         ) {
           setTimeout(() => setIsDragging(false), 2);
           return;
@@ -320,6 +317,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                     })),
                   },
                 });
+                handleUpdate();
               } else {
                 await updateBlockedTimeSlot({
                   data: {
@@ -329,6 +327,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                     day_of_week: appointment.freq !== "period" ? newDates.start.getDay() : null,
                   },
                 });
+                handleUpdate();
               }
             },
             {
@@ -340,7 +339,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         });
       },
     });
-  }, [getTopPositionFromTime, hourLabels, initialScrollOffset, setAppointments, setBlockedTimeSlots, setIsDragging, updateAppointment, updateAppointmentTimes, viewMode]);
+  }, [getTopPositionFromTime, handleUpdate, hourLabels, initialScrollOffset, setAppointments, setBlockedTimeSlots, setIsDragging, updateAppointment, updateAppointmentTimes, viewMode]);
 
   const groupOverlappingAppointments = useCallback((appointments: (AppointmentType | UpdatedBlockTimeSlotsProps)[]) => {
     const clusters: AppointmentType[][] = [];
@@ -394,8 +393,10 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
     if (!appointmentDiv) return;
 
     const startY = e.clientY;
-    const originalStart = new Date(appointment.start);
-    const originalEnd = new Date(appointment.end);
+    const originalStart = new Date(appointment?.original_start ?? appointment.start);
+    const originalEnd = new Date(appointment?.original_end ?? appointment.end);
+    const start = new Date(appointment.start);
+    const end = new Date(appointment.end);
 
     const originalTop = appointmentDiv.offsetTop;
     const originalHeight = appointmentDiv.offsetHeight;
@@ -407,12 +408,15 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
       const minutesMoved = slotsCrossed * 30;
       const pixelsMoved = minutesMoved * 1.134;
 
-      let newStart = new Date(originalStart);
-      let newEnd = new Date(originalEnd);
+      // let newOriginalStart = new Date(originalStart);
+      // let newOriginalEnd = new Date(originalEnd);
+      let newStart = new Date(start);
+      let newEnd = new Date(end);
 
       if (direction === "bottom") {
-        newEnd = new Date(originalEnd.getTime() + minutesMoved * 60_000);
-        if (differenceInMinutes(newEnd, newStart) < 30) return;
+        // newOriginalEnd = new Date(originalEnd.getTime() + minutesMoved * 60_000);
+        newEnd = new Date(end.getTime() + minutesMoved * 60_000);
+        // if (differenceInMinutes(newOriginalEnd, newOriginalStart) < 30) return;
 
         const newHeight = originalHeight + pixelsMoved;
 
@@ -421,8 +425,9 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         }, 0.1)
 
       } else {
-        newStart = new Date(originalStart.getTime() + minutesMoved * 60_000);
-        if (differenceInMinutes(newEnd, newStart) < 30) return;
+        // newOriginalStart = new Date(originalStart.getTime() + minutesMoved * 60_000);
+        newStart = new Date(start.getTime() + minutesMoved * 60_000);
+        // if (differenceInMinutes(newOriginalEnd, newOriginalStart) < 30) return;
 
         const newTop = originalTop + pixelsMoved;
         const newHeight = originalHeight - pixelsMoved;
@@ -430,7 +435,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         setTimeout(() => {
           appointmentDiv.style.top = `${newTop}px`;
           appointmentDiv.style.height = `${newHeight}px`;
-        }, 0.1)
+        }, 0)
       }
 
       // Preview
@@ -462,6 +467,10 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         if (differenceInMinutes(newEnd, newStart) < 30) return;
       }
 
+      console.log(newStart, newEnd)
+      console.log(originalStart, originalEnd)
+      console.log(blockedTimeSlots)
+
       startOnDropTransition(() => {
         toast.promise(
           async () => {
@@ -478,6 +487,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                   })),
                 },
               });
+              handleUpdate();
             } else {
               await updateBlockedTimeSlot({
                 data: {
@@ -487,6 +497,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                   day_of_week: appointment.freq !== "period" ? newStart.getDay() : null,
                 },
               });
+              handleUpdate();
             }
           },
           {
@@ -503,7 +514,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-  }, [setAppointments, setBlockedTimeSlots, setIsResizing, updateAppointment, updateAppointmentTimes])
+  }, [handleUpdate, setAppointments, setBlockedTimeSlots, setIsResizing, updateAppointment, updateAppointmentTimes])
 
 
   const assignAppointmentsToColumns = useCallback((appointments: AppointmentType[]) => {
@@ -603,7 +614,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                 (appt) =>
                                   filterAppointments(appt, index, dateRange, viewMode)
                               );
-
                             const clusters = groupOverlappingAppointments(visibleAppointments);
 
                             return clusters.flatMap((cluster) => {
@@ -636,7 +646,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                         isDragging && "pointer-events-none",
                                       )}
                                       style={{
-                                        top: getTopPositionFromTime(format(appt.start, "HH:mm")) + 2,
+                                        top: getTopPositionFromTime(format((appt.start), "HH:mm")) + 2,
                                         width: `${widthPercent}%`,
                                         left: `${leftPercent}%`,
                                         maxWidth: `${widthPercent}%`,
