@@ -184,7 +184,7 @@ const Appointment: React.FC<AppointmentProps> = ({
     start: appointment?.original_start ?? appointment.start,
     end: appointment?.original_end ?? appointment.end,
     blocked: appointment.blocked ?? false,
-    interval: appointment?.interval ?? 0,
+    interval: appointment?.interval ?? 1,
     is_recurring: appointment?.is_recurring || false,
     day_of_week: appointment?.day_of_week || appointment.start.getDay(),
     description: appointment?.description ?? "",
@@ -1426,8 +1426,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                               <FormControl>
                                 <Input
                                   value={otherWatch.interval}
-                                  onChange={() => {
-                                    field.onChange(field.value)
+                                  onChange={(e) => {
+                                    const numericValue = e.target.value.replace(/\D/g, "");
+                                    field.onChange(numericValue ? Number(numericValue) : "");
                                   }}
                                 />
                               </FormControl>

@@ -4,7 +4,7 @@ import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
 import { getOperatingHours } from "@/services/operatingHours";
-import { eachMinuteOfInterval, format, formatISO, isBefore, isSameDay, startOfDay } from "date-fns";
+import { addWeeks, eachMinuteOfInterval, format, formatISO, isAfter, isBefore, isSameDay, setDay, setHours, setMinutes, startOfDay } from "date-fns";
 import { getMinMaxCalendarRange, parseSafeDate } from "@/utils/utils";
 import { OperatingHoursProps } from "@/models/OperatingHours";
 import { getBlockedTimeSlots } from "@/services/block-time-slots";
@@ -53,10 +53,16 @@ export const PlannerDataContextProvider: FC<{
 
   const appointmentServiceRef = useRef(new AppointmentService([]));
 
-  const splitMultiTimeSlots = useCallback(({ slots, minTime, maxTime }: { slots: BlockTimeSlotsProps[], minTime?: string, maxTime?: string }) => {
+  const splitMultiTimeSlots = useCallback(<T extends BlockTimeSlotsProps & Appointment>({
+    slots,
+    minTime,
+    maxTime,
+  }: { slots: T[]; minTime?: string; maxTime?: string }) => {
     const MS_IN_DAY = 24 * 60 * 60 * 1000;
-    const result: BlockTimeSlotsProps[] = [];
-    
+    const result: T[] = [];
+
+    if (slots?.[0] && Object.keys(slots[0]).length === 0) return []
+
     for (const slot of slots) {
       const startDate = new Date(slot.start);
       const endDate = new Date(slot.end);
@@ -131,100 +137,136 @@ export const PlannerDataContextProvider: FC<{
     return result;
   }, [])
 
+  // const getDateForWeekdayInRange = useCallback((
+  //   dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
+  //   rangeStart?: Date,
+  //   rangeEnd?: Date,
+  //   dateTime?: Date
+  // ): Date | null => {
+  //   if (!rangeStart || !rangeEnd || !dateTime) return null;
+  //   const current = new Date(rangeStart);
+
+  //   while (current <= rangeEnd) {
+  //     if (current.getDay() === dayOfWeek) {
+  //       return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
+  //     }
+  //     current.setDate(current.getDate() + 1);
+  //   }
+  //   return null;
+  // }, []);
+
   const getDateForWeekdayInRange = useCallback((
-    dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
+    dayOfWeek?: number, 
     rangeStart?: Date,
     rangeEnd?: Date,
-    dateTime?: Date
+    dateTime?: Date,      
+    interval?: number    
   ): Date | null => {
-    if (!rangeStart || !rangeEnd || !dateTime) return null;
-    const current = new Date(rangeStart);
-
-    while (current <= rangeEnd) {
-      if (current.getDay() === dayOfWeek) {
-        return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
-      }
-      current.setDate(current.getDate() + 1);
+    if (!rangeStart || !rangeEnd || !dateTime || dayOfWeek === undefined || interval === undefined) return null;
+  
+    let current = setDay(rangeStart, dayOfWeek, { weekStartsOn: 0 });
+  
+    if (isBefore(current, rangeStart)) {
+      current = addWeeks(current, 1);
     }
-    return null;
+  
+    current = setHours(current, dateTime.getHours());
+    current = setMinutes(current, dateTime.getMinutes());
+  
+    const weeksSinceReference = Math.floor((+current - +dateTime) / (7 * 24 * 60 * 60 * 1000));
+    const offsetWeeks = (weeksSinceReference % interval + interval) % interval;
+  
+    current = addWeeks(current, offsetWeeks === 0 ? 0 : interval - offsetWeeks);
+  
+    if (isAfter(current, rangeEnd)) {
+      return null;
+    }
+  
+    return current;
   }, []);
 
 
-  //QUANDO DOU RESIZE NA PARTE DE BAIXO DO OTHER QUE TEM MAIS DE 1 DIA, DA BUG VISUAL
   useEffect(() => {
-    getOperatingHours({}).then((data) => {
-      const operatingHoursRange = getMinMaxCalendarRange(data);
-      const appointmentsRange = getMinMaxCalendarRange(appointmentServiceRef.current.getAppointments());
-
-      if (!operatingHoursRange.min || !operatingHoursRange.max) return;
-
-      const min = operatingHoursRange?.min.getTime() < (appointmentsRange.min?.getTime() ?? Infinity)
-        ? operatingHoursRange.min : appointmentsRange.min;
-      const max = operatingHoursRange?.max.getTime() > (appointmentsRange.max?.getTime() ?? -Infinity)
-        ? operatingHoursRange.max : appointmentsRange.max;
-
-      if (!min || !max) return;
-
-      const interval = eachMinuteOfInterval(
-        {
-          start: new Date(min),
-          end: new Date(max),
-        },
-        { step: 30 }
-      ).slice(0, -1);
-
-      setOperatingHours(data);
-      setHourLabels(interval);
-
-      getBlockedTimeSlots({}).then((data) => {
-        const expandedBlockedTimeSlots = splitMultiTimeSlots({
-          slots: data,
-          minTime: interval?.length // Visual only
-            ? format(interval[0], "HH:mm")
-            : undefined,
-          maxTime: interval?.length // Visual only
-            ? format(interval[interval.length - 1], "HH:mm")
-            : undefined
-        });
-
-        if (!dateRange) return;
-
-        setBlockedTimeSlots(
-          expandedBlockedTimeSlots.map((slot) => ({
-            ...slot,
-            type: "other",
-            start: slot.freq === "weekly" // fazer mesma coisa com o original
-              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start)) ?? new Date(slot.start)
-              : new Date(slot.start),
-            end: slot.freq === "weekly" // fazer mesma coisa com o original
-              ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end)) ?? new Date(slot.end)
-              : new Date(slot.end),
-            original_start: parseSafeDate(slot.original_start),
-            original_end: parseSafeDate(slot.original_end),
-          })));
-
-        
-        appointmentServiceRef.current
-          .getInitialAppointments({
-            from: dateRange?.from?.toISOString(),
-            to: dateRange?.to?.toISOString(),
-          })
-          .then((data) => {
-            // const expandedAppointments = splitMultiTimeSlots({ slots: data })
-
-            const updatedAppointments = data?.map((appointment: Appointment) => ({
-              ...appointment,
-              start: new Date(appointment.start),
-              end: new Date(appointment.end),
-              type: "appointment"
-            }));
-            setAppointments(updatedAppointments);
-            appointmentServiceRef.current = new AppointmentService(updatedAppointments);
+    appointmentServiceRef.current
+      .getInitialAppointments({
+        from: dateRange?.from?.toISOString(),
+        to: dateRange?.to?.toISOString(),
+      })
+      .then((data) => {
+        const expandedAppointments = splitMultiTimeSlots({ slots: data })
+          .filter(appointment => {
+            if (!dateRange?.from || !dateRange?.to) return false;
+            const start = new Date(appointment.start).getTime();
+            return start >= dateRange.from.getTime() && start <= dateRange.to.getTime();
           });
+          
+        const updatedAppointments = expandedAppointments?.map((appointment: Appointment) => ({
+          ...appointment,
+          start: new Date(appointment.start),
+          end: new Date(appointment.end),
+          type: "appointment",
+          original_start: parseSafeDate(appointment.original_start),
+          original_end: parseSafeDate(appointment.original_end),
+        }))
 
+        setAppointments(updatedAppointments);
+        appointmentServiceRef.current = new AppointmentService(updatedAppointments);
+
+        getOperatingHours({}).then((data) => {
+          const operatingHoursRange = getMinMaxCalendarRange(data);
+          const appointmentsRange = getMinMaxCalendarRange(updatedAppointments);
+
+          if (!operatingHoursRange.min || !operatingHoursRange.max) return;
+
+          const min = operatingHoursRange?.min.getTime() < (appointmentsRange.min?.getTime() ?? Infinity)
+            ? operatingHoursRange.min : appointmentsRange.min;
+          const max = operatingHoursRange?.max.getTime() > (appointmentsRange.max?.getTime() ?? -Infinity)
+            ? operatingHoursRange.max : appointmentsRange.max;
+
+          if (!min || !max) return;
+
+          const interval = eachMinuteOfInterval(
+            {
+              start: new Date(min),
+              end: new Date(max),
+            },
+            { step: 30 }
+          ).slice(0, -1);
+
+          setOperatingHours(data);
+          setHourLabels(interval);
+
+          getBlockedTimeSlots({}).then((data) => {
+            const expandedBlockedTimeSlots = splitMultiTimeSlots({
+              slots: data,
+              minTime: interval?.length // Visual only
+                ? format(interval[0], "HH:mm")
+                : undefined,
+              maxTime: interval?.length // Visual only
+                ? format(interval[interval.length - 1], "HH:mm")
+                : undefined
+            });
+
+            if (!dateRange) return;
+
+            setBlockedTimeSlots(
+              expandedBlockedTimeSlots.map((slot) => ({
+                ...slot,
+                type: "other",
+                start: slot.freq === "weekly"
+                  ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start), slot.interval) ?? new Date(slot.start)
+                  : new Date(slot.start),
+                end: slot.freq === "weekly"
+                  ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end), slot.interval) ?? new Date(slot.end)
+                  : new Date(slot.end),
+                original_start: parseSafeDate(slot.original_start),
+                original_end: parseSafeDate(slot.original_end),
+              })));
+          });
+        });
       });
-    });
-  }, [dateRange?.from, dateRange?.to, dateRange, getDateForWeekdayInRange, splitMultiTimeSlots, trigger]);
+
+  }, [dateRange, getDateForWeekdayInRange, splitMultiTimeSlots, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({

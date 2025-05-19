@@ -42,7 +42,7 @@ export const ConfigDialog = () => {
       </DropdownMenuTrigger>
         <DropdownMenuContent side="top"
           style={{ zoom }}
-          className={cn("w-56 bg-background mr-7", canHide || !isOpened && "hidden")}   
+          className={cn("w-56 bg-background mr-7", canHide && "hidden")}   
         >
           <DropdownMenuLabel>
             <Typography variant="span">
@@ -55,6 +55,7 @@ export const ConfigDialog = () => {
               <OperatingHoursDialog
                 onClick={() => setCanHide(true)}
                 onClose={() => {
+                  setCanHide(true);
                   setTimeout(() => {
                     setIsOpened(false);
                   }, 500);
@@ -68,6 +69,7 @@ export const ConfigDialog = () => {
               <AdditionalSettingsDialog
                 onClick={() => setCanHide(true)}
                 onClose={() => {
+                  setCanHide(true);
                   setTimeout(() => {
                     setIsOpened(false);
                   }, 500);

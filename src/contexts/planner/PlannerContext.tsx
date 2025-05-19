@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
-import { startOfDay, endOfDay, startOfWeek } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, endOfWeek } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { getLabelsForView } from "@/utils/utils";
 
@@ -15,7 +15,7 @@ interface PlannerContextType {
 const defaultContextValue: PlannerContextType = {
   viewMode: "week", // default starting view
   timeLabels: [],
-  dateRange: { from: startOfWeek(new Date()), to: endOfDay(new Date()) },
+  dateRange: { from: startOfWeek(new Date()), to: endOfWeek(new Date()) },
   currentDateRange: { from: startOfDay(new Date()), to: endOfDay(new Date()) },
   setDateRange: (dateRange: DateRange) => {
     console.log(dateRange);
