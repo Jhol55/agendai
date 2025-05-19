@@ -419,7 +419,7 @@ const Appointment: React.FC<AppointmentProps> = ({
     <Card ref={ref} className={cn(
       "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start, dark:border-neutral-700/60",
       "group transition-colors duration-150 handle-ghosting",
-      appointment?.type === "appointment" ? "bg-purple-700 dark:bg-purple-700" : "bg-red-500 dark:bg-red-500",
+      appointment?.type === "appointment" ? "bg-purple-700 dark:bg-purple-700" : appointment?.type === "other" ? "bg-red-500 dark:bg-red-500" : "!hidden",
       className,
     )}
       onDoubleClick={(e) => {
