@@ -4,7 +4,7 @@ import { Appointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
 import { getOperatingHours } from "@/services/operatingHours";
-import { addWeeks, eachMinuteOfInterval, format, formatISO, isAfter, isBefore, isSameDay, setDay, setHours, setMinutes, startOfDay } from "date-fns";
+import { addDays, addMonths, addWeeks, eachMinuteOfInterval, format, formatISO, isAfter, isBefore, isSameDay, setDay, setHours, setMinutes, startOfDay } from "date-fns";
 import { getMinMaxCalendarRange, parseSafeDate } from "@/utils/utils";
 import { OperatingHoursProps } from "@/models/OperatingHours";
 import { getBlockedTimeSlots } from "@/services/block-time-slots";
@@ -155,38 +155,94 @@ export const PlannerDataContextProvider: FC<{
   //   return null;
   // }, []);
 
-  const getDateForWeekdayInRange = useCallback((
-    dayOfWeek?: number, 
-    rangeStart?: Date,
-    rangeEnd?: Date,
-    dateTime?: Date,      
-    interval?: number    
-  ): Date | null => {
-    if (!rangeStart || !rangeEnd || !dateTime || dayOfWeek === undefined || interval === undefined) return null;
-  
-    let current = setDay(rangeStart, dayOfWeek, { weekStartsOn: 0 });
-  
-    if (isBefore(current, rangeStart)) {
-      current = addWeeks(current, 1);
+  const getDateInRange = ({
+    rangeStart,
+    rangeEnd,
+    dateTime,
+    options,
+  }: {
+    rangeStart?: Date;
+    rangeEnd?: Date;
+    dateTime?: Date;
+    options: {
+      frequency?: 'daily' | 'weekly' | 'monthly' | "period";
+      interval?: number;
+      dayOfMonth?: number;
+    };
+  }): Date[] | null => {
+    const { frequency, interval, dayOfMonth } = options;
+
+    if (!rangeStart || !rangeEnd || !dateTime || interval === undefined) return null;
+
+    const result: Date[] = [];
+
+    switch (frequency) {
+      case 'daily': {
+        const current = new Date(dateTime);
+
+        current.setHours(dateTime.getHours(), dateTime.getMinutes());
+
+        while (current < rangeStart) {
+          current.setDate(current.getDate() + interval);
+        }
+
+        while (current <= rangeEnd) {
+          result.push(new Date(current));
+          current.setDate(current.getDate() + interval);
+        }
+
+        return result;
+      }
+
+      case 'weekly': {
+        let current = setDay(rangeStart, dateTime.getDay(), { weekStartsOn: 0 });
+
+        if (isBefore(current, rangeStart)) {
+          current = addWeeks(current, 1);
+        }
+
+        current = setHours(current, dateTime.getHours());
+        current = setMinutes(current, dateTime.getMinutes());
+
+        const weeksSinceReference = Math.floor((+current - +dateTime) / (7 * 24 * 60 * 60 * 1000));
+        const offsetWeeks = (weeksSinceReference % interval + interval) % interval;
+
+        current = addWeeks(current, offsetWeeks === 0 ? 0 : interval - offsetWeeks);
+        result.push(current);
+        return result;
+      }
+
+      case 'monthly': {
+        if (dayOfMonth === undefined) return null;
+        let current = new Date(rangeStart);
+        current.setDate(dayOfMonth);
+
+        if (isBefore(current, rangeStart)) {
+          current = addMonths(current, 1);
+        }
+
+        let months = 0;
+        while (months < 1000 && isBefore(current, rangeEnd)) {
+          const monthDiff =
+            (current.getFullYear() - dateTime.getFullYear()) * 12 +
+            (current.getMonth() - dateTime.getMonth());
+          if (monthDiff % interval === 0) break;
+          current = addMonths(current, 1);
+          months++;
+        }
+        result.push(current);
+        return result;
+      }
+
+      default:
+        return [dateTime];
     }
-  
-    current = setHours(current, dateTime.getHours());
-    current = setMinutes(current, dateTime.getMinutes());
-  
-    const weeksSinceReference = Math.floor((+current - +dateTime) / (7 * 24 * 60 * 60 * 1000));
-    const offsetWeeks = (weeksSinceReference % interval + interval) % interval;
-  
-    current = addWeeks(current, offsetWeeks === 0 ? 0 : interval - offsetWeeks);
-  
-    if (isAfter(current, rangeEnd)) {
-      return null;
-    }
-  
-    return current;
-  }, []);
+  };
+
 
 
   useEffect(() => {
+    if (!dateRange) return;
     appointmentServiceRef.current
       .getInitialAppointments({
         from: dateRange?.from?.toISOString(),
@@ -199,7 +255,7 @@ export const PlannerDataContextProvider: FC<{
             const start = new Date(appointment.start).getTime();
             return start >= dateRange.from.getTime() && start <= dateRange.to.getTime();
           });
-          
+
         const updatedAppointments = expandedAppointments?.map((appointment: Appointment) => ({
           ...appointment,
           start: new Date(appointment.start),
@@ -250,23 +306,43 @@ export const PlannerDataContextProvider: FC<{
             if (!dateRange) return;
 
             setBlockedTimeSlots(
-              expandedBlockedTimeSlots.map((slot) => ({
-                ...slot,
-                type: "other",
-                start: slot.freq === "weekly"
-                  ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.start), slot.interval) ?? new Date(slot.start)
-                  : new Date(slot.start),
-                end: slot.freq === "weekly"
-                  ? getDateForWeekdayInRange(slot.day_of_week, dateRange?.from, dateRange?.to, new Date(slot.end), slot.interval) ?? new Date(slot.end)
-                  : new Date(slot.end),
-                original_start: parseSafeDate(slot.original_start),
-                original_end: parseSafeDate(slot.original_end),
-              })));
+              expandedBlockedTimeSlots.flatMap((slot) => {
+                const startDates = getDateInRange({
+                  rangeStart: dateRange?.from,
+                  rangeEnd: dateRange?.to,
+                  dateTime: new Date(slot.start),
+                  options: {
+                    frequency: slot.freq,
+                    interval: slot.interval,
+                  },
+                });
+
+                const endDates = getDateInRange({
+                  rangeStart: dateRange?.from,
+                  rangeEnd: dateRange?.to,
+                  dateTime: new Date(slot.end),
+                  options: {
+                    frequency: slot.freq,
+                    interval: slot.interval,
+                  },
+                });
+
+                return startDates?.map((startDate, index) => ({
+                  ...slot,
+                  type: "other",
+                  start: startDate,
+                  end: endDates?.[index] ?? startDate,
+                  original_start: parseSafeDate(slot.start),
+                  original_end: parseSafeDate(slot.end),
+                })) ?? [];
+              })
+            );
+
           });
         });
-      });
+      })
 
-  }, [dateRange, getDateForWeekdayInRange, splitMultiTimeSlots, trigger]);
+  }, [dateRange, splitMultiTimeSlots, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({

@@ -101,6 +101,7 @@ const Appointment: React.FC<AppointmentProps> = ({
   const { settings } = useSettings();
   const [isOpened, setIsOpened] = useState(false);
   const [isRemoveAppointmentOpen, setIsRemoveAppointmentOpen] = useState(false);
+  const [isRemoveOtherOpen, setIsRemoveOtherOpen] = useState(false);
   const [openClient, setOpenClient] = React.useState(false);
   const [openService, setOpenService] = React.useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -120,16 +121,16 @@ const Appointment: React.FC<AppointmentProps> = ({
   const [isDayOfWeekOpen, setIsDayOfWeekOpen] = useState(false);
 
   useEffect(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const element = ref.current!;
-      return draggable({
-        element,
-        getInitialData: () => ({
-          appointment: appointment,
-          columnIndex: columnIndex,
-          resourceId: resourceId,
-        }),
-      });
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const element = ref.current!;
+    return draggable({
+      element,
+      getInitialData: () => ({
+        appointment: appointment,
+        columnIndex: columnIndex,
+        resourceId: resourceId,
+      }),
+    });
   }, [appointment, columnIndex, resourceId]);
 
   const defaultPayments = useMemo(() => [
@@ -186,7 +187,7 @@ const Appointment: React.FC<AppointmentProps> = ({
     blocked: appointment.blocked ?? false,
     interval: appointment?.interval ?? 1,
     is_recurring: appointment?.is_recurring || false,
-    day_of_week: appointment?.day_of_week || appointment.start.getDay(),
+    day_of_week: appointment.start.getDay(),
     description: appointment?.description ?? "",
   }), [appointment]);
 
@@ -204,17 +205,17 @@ const Appointment: React.FC<AppointmentProps> = ({
   const otherWatch = otherForm.watch();
 
   useEffect(() => {
-      const timeoutId = setTimeout(() => {
-        form.reset({
-          ...defaultValues
-        });
-        otherForm.reset({
-          ...otherDefaultValues
-        });
-        setIsLoading(!isOpened);
-      }, 500)
-      return () => clearTimeout(timeoutId);
-    
+    const timeoutId = setTimeout(() => {
+      form.reset({
+        ...defaultValues
+      });
+      otherForm.reset({
+        ...otherDefaultValues
+      });
+      setIsLoading(!isOpened);
+    }, 500)
+    return () => clearTimeout(timeoutId);
+
   }, [defaultValues, form, isOpened, otherDefaultValues, otherForm]);
 
   const onSubmit = useCallback((values: z.infer<typeof updateAppointmentSchema>) => {
@@ -269,11 +270,11 @@ const Appointment: React.FC<AppointmentProps> = ({
                 ...values,
               });
             } else {
-              await deleteBlockedTimeSlot({ id: appointment.id })        
+              await deleteBlockedTimeSlot({ id: appointment.id })
               await addAppointment({
                 ...appointment,
                 ...values,
-              })             
+              })
             }
             setTimeout(() => {
               handleUpdate();
@@ -321,11 +322,28 @@ const Appointment: React.FC<AppointmentProps> = ({
   }, [appointment, handleUpdate, removeAppointment, type])
 
   const onRemove = useCallback((id: string) => {
-    setTimeout(() => {
-      setIsOpened(false);
-      removeAppointment(id);
-    }, 500);
-  }, [removeAppointment])
+    startOnSubmitTransition(() => {
+      toast.promise(
+        (async () => {
+          setIsOpened(false);
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          if (appointment.type === "other" && type === "other") { 
+            await deleteBlockedTimeSlot({ id })
+          } else {
+            await removeAppointment(id);
+          }
+          handleUpdate();
+          setIsOpened(false);
+          setAutoEndDate(undefined);
+        })(),
+        {
+          loading: "Removendo compromisso...",
+          success: "Compromisso removido com sucesso!",
+          error: "Ocorreu um erro ao remover o compromisso. Tente novamente!",
+        }
+      );
+    });
+  }, [handleUpdate, removeAppointment]);
 
   useEffect(() => {
     if (clientSearchValue) {
@@ -362,11 +380,8 @@ const Appointment: React.FC<AppointmentProps> = ({
         form.reset();
         setIsLoading(true);
       }, 500)
-    } else {
-      handleUpdate();
     }
     setType(appointment.type)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointment.type, form, isOpened])
 
 
@@ -380,6 +395,7 @@ const Appointment: React.FC<AppointmentProps> = ({
 
   const units = useMemo(() => [
     { label: "Período", value: "period" },
+    { label: "Diário", value: "daily" },
     { label: "Semanal", value: "weekly" }
   ], []);
 
@@ -404,7 +420,11 @@ const Appointment: React.FC<AppointmentProps> = ({
       appointment?.type === "appointment" ? "bg-purple-700 dark:bg-purple-700" : "bg-red-500 dark:bg-red-500",
       className,
     )}
-      onDoubleClick={(e) => { setIsOpened(true); e.stopPropagation() }}>
+      onDoubleClick={(e) => {
+        setIsOpened(true);
+        e.stopPropagation();
+        handleUpdate();
+      }}>
       <CardHeader className="absolute w-full flex flex-row items-center justify-between p-1">
         <Badge variant={"outline"} className="pointer-events-none border-none rounded-sm dark:border-neutral-700 transition-colors duration-150 truncate px-1 text-xs w-full whitespace-nowrap inline-block">
           <div className="flex justify-start w-full">
@@ -1349,7 +1369,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                         )}
                       />
                     </div>
-                    {otherWatch?.freq !== "period" &&
+                    {otherWatch?.freq === "weekly" ?
                       <div className="flex sm:flex-row flex-col sm:gap-2 gap-8">
                         <FormField
                           control={otherForm.control}
@@ -1437,6 +1457,40 @@ const Appointment: React.FC<AppointmentProps> = ({
                           )}
                         />
                       </div>
+                      : otherWatch.freq === "daily" ?
+                        <div className="flex sm:flex-row flex-col sm:gap-2 gap-8">
+                          <FormField
+                            control={otherForm.control}
+                            name="interval"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col w-full">
+                                <FormLabel className="text-left">
+                                  Intervalo ({
+                                    otherWatch.freq === "daily"
+                                      ? "Dias"
+                                      : otherWatch.freq === "weekly"
+                                        ? "Semanas"
+                                        : otherWatch.freq === "monthly"
+                                          ? "Meses"
+                                          : ""
+                                  })
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    value={otherWatch.interval}
+                                    onChange={(e) => {
+                                      const numericValue = e.target.value.replace(/\D/g, "");
+                                      field.onChange(numericValue ? Number(numericValue) : "");
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        : null
+
                     }
                     <div className="flex sm:flex-row flex-col sm:gap-2 gap-8">
                       <FormField
@@ -1448,16 +1502,12 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormControl>
                               <TimePicker
                                 className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                                placeholder={otherWatch.freq === "period" ? "Selecione uma data e um horário" : "Selecione um horário"}
-                                mode={otherWatch.freq === "period" ? "datetime" : "time"}
+                                placeholder={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "Selecione uma data e um horário" : "Selecione um horário"}
+                                mode={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "datetime" : "time"}
                                 value={otherWatch.start}
                                 onChange={(date) => {
                                   field.onChange(date);
-                                  if (date) {
-                                    const newDate = new Date(date);
-                                    newDate.setMinutes(newDate.getMinutes() + (appointment.details?.durationMinutes ?? 0));
-                                    setIsCalendarOpen(false);
-                                  }
+                                  setIsCalendarOpen(false);
                                 }}
                                 onClick={() => setIsCalendarOpen(true)}
                                 onInteractOutside={(e) => {
@@ -1480,8 +1530,8 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormControl>
                               <TimePicker
                                 className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                                placeholder={otherWatch.freq === "period" ? "Selecione uma data e um horário" : "Selecione um horário"}
-                                mode={otherWatch.freq === "period" ? "datetime" : "time"}
+                                placeholder={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "Selecione uma data e um horário" : "Selecione um horário"}
+                                mode={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "datetime" : "time"}
                                 value={otherWatch.end}
                                 onChange={(date) => {
                                   field.onChange(date);
@@ -1520,6 +1570,60 @@ const Appointment: React.FC<AppointmentProps> = ({
                     />
                   </form>
                   <DialogFooter className={cn(type !== "other" && "!hidden", "flex flex-row w-full justify-end gap-2 px-[2.3rem] mb-6")}>
+                    <AlertDialog open={isRemoveOtherOpen} onOpenChange={setIsRemoveOtherOpen}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          type="button"
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setIsRemoveOtherOpen(true);
+                          }}
+                        >
+                          Remover
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="w-[90vw] md:w-full rounded-md">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle asChild>
+                            <Typography
+                              variant="h2"
+                            >
+                              Tem certeza que deseja continuar?
+                            </Typography>
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            <Typography
+                              variant="span"
+                              secondary
+                            >
+                              Esta ação não pode ser desfeita. Isso removerá permanentemente o agendamento selecionado.
+                            </Typography>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsRemoveOtherOpen(false);
+                            }}
+                          >
+                            Voltar
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsRemoveOtherOpen(false);
+                              onRemove(appointment.id);
+                            }}
+                          >
+                            Continuar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Button
                       form="update-other"
                       type="submit"
@@ -1540,7 +1644,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       </CardHeader>
       <CardContent
         className={cn("pb-1.5 !px-0 hidden")}
-      >       
+      >
       </CardContent>
     </Card>
   );

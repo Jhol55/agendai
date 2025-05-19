@@ -84,6 +84,10 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
 
   useEffect(() => {
+    console.log(blockedTimeSlots)
+  }, [blockedTimeSlots])
+
+  useEffect(() => {
     if (!tableBodyRef.current) return;
   
     const observer = new ResizeObserver((entries) => {
