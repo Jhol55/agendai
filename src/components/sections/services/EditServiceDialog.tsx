@@ -54,7 +54,7 @@ export const EditServiceDialog = ({
       allowInPerson: service.allow_in_person,
       durationMinutes: service.duration_minutes,
       active: service.active,
-      price: service.price
+      price: Number(service.price)
     }
   });
 

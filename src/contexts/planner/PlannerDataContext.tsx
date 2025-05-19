@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, FC, useEffect, useMemo, useRef, useCallback, Dispatch, SetStateAction } from "react";
 import { AppointmentService, ResourceService } from "@/services/planner/";
-import { Appointment, Resource } from "@/models";
+import { Appointment, NewAppointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
 import { getOperatingHours } from "@/services/operatingHours";

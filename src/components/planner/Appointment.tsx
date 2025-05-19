@@ -297,10 +297,12 @@ const Appointment: React.FC<AppointmentProps> = ({
       toast.promise(
         async () => {
           if (appointment.type === "other" && type === "other") {
+            await new Promise((resolve) => setTimeout(resolve, 500));
             await updateBlockedTimeSlot({
               data: values
             });
           } else {
+            await new Promise((resolve) => setTimeout(resolve, 500));
             await removeAppointment(appointment.id);
             await AddBlockedTimeSlot({
               data: values,
@@ -343,7 +345,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         }
       );
     });
-  }, [handleUpdate, removeAppointment]);
+  }, [appointment.type, handleUpdate, removeAppointment, type]);
 
   useEffect(() => {
     if (clientSearchValue) {
@@ -1502,7 +1504,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormControl>
                               <TimePicker
                                 className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                                placeholder={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "Selecione uma data e um horário" : "Selecione um horário"}
+                                placeholder={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "Selecione uma data" : "Selecione um horário"}
                                 mode={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "datetime" : "time"}
                                 value={otherWatch.start}
                                 onChange={(date) => {
@@ -1530,7 +1532,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                             <FormControl>
                               <TimePicker
                                 className="dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200"
-                                placeholder={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "Selecione uma data e um horário" : "Selecione um horário"}
+                                placeholder={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "Selecione uma data" : "Selecione um horário"}
                                 mode={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "datetime" : "time"}
                                 value={otherWatch.end}
                                 onChange={(date) => {

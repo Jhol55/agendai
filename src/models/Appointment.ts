@@ -1,15 +1,41 @@
 import { z } from "zod";
 
+export interface NewAppointment {
+  id: string;
+  title?: string;
+  clientId?: number;
+  start?: Date;
+  end?: Date;
+  original_start?: Date;
+  original_end?: Date;
+  resourceId: string;
+  status: string;
+  details: {
+    service: string;
+    serviceId?: number | undefined;
+    durationMinutes?: number;
+    online: boolean;
+    payments: {
+      id?: number | undefined;
+      type: "service" | "fee";
+      value?: number;
+      status: "pending" | "received" | "refunded" | "confirmed";
+      sendPaymentLink: boolean;
+      billingType?: "credit_card" | "debit_card" | "cash" | "pix" | null;
+      dueDate?: Date;
+    }[];
+  }
+}
+
 export interface Appointment {
   id: string;
   title: string;
-  clientId: number;
+  clientId?: number;
   start: Date;
   end: Date;
   original_start?: Date;
   original_end?: Date;
   resourceId: string;
-  order: number;
   status: string;
   details: {
     service: string;
@@ -119,7 +145,7 @@ export const updateAppointmentSchema = z.object({
 
 export const createAppointmentSchema = z.object({
   title: z.string().min(1, { message: "O nome do cliente é obrigatório" }),
-  clientId: z.number(),
+  clientId: z.number().optional(),
   start: z.date({
     required_error: "A data de início é obrigatória",
   }),
