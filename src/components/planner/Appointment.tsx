@@ -385,7 +385,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       }, 500)
     }
     setType(appointment.type)
-  }, [appointment.type, form, isOpened])
+  }, [appointment.type, form, isOpened, otherForm])
 
 
   const findPaymentIndex = useCallback((type: string) => {

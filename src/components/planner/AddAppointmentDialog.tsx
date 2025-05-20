@@ -175,7 +175,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
       );
     });
 
-  }, [addAppointment, form, handleUpdate])
+  }, [addAppointment, form, handleUpdate, otherForm])
 
 
   const onSubmitOther = useCallback((values: z.infer<typeof blockedTimesSchema>) => {
@@ -199,7 +199,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
         }
       );
     });
-  }, [handleUpdate, form])
+  }, [handleUpdate, form, otherForm])
 
   const watch = form.watch();
 
