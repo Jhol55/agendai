@@ -60,7 +60,7 @@ import {
 import { TimePicker } from "@/components/ui/time-picker";
 import { getClients } from "@/services/clients";
 import { getServices } from "@/services/services";
-import { IconBriefcase, IconUser, IconCalendarDollar, IconCurrencyDollar, IconCircleCheck, IconVideo, IconVideoOff, IconMapPin, IconMapPinOff, IconBan } from "@tabler/icons-react";
+import { IconBriefcase, IconUser, IconCalendarDollar, IconCurrencyDollar, IconCircleCheck, IconVideo, IconVideoOff, IconMapPin, IconMapPinOff, IconBan, IconCalendar } from "@tabler/icons-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { Loading } from "../ui/loading/loading";
 import { Typography } from "../ui/typography";
@@ -329,7 +329,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         (async () => {
           setIsOpened(false);
           await new Promise((resolve) => setTimeout(resolve, 500));
-          if (appointment.type === "other" && type === "other") { 
+          if (appointment.type === "other" && type === "other") {
             await deleteBlockedTimeSlot({ id })
           } else {
             await removeAppointment(id);
@@ -380,6 +380,7 @@ const Appointment: React.FC<AppointmentProps> = ({
       setAutoEndDate(undefined);
       setTimeout(() => {
         form.reset();
+        otherForm.reset();
         setIsLoading(true);
       }, 500)
     }
@@ -419,7 +420,13 @@ const Appointment: React.FC<AppointmentProps> = ({
     <Card ref={ref} className={cn(
       "relative w-full max-w-full rounded-sm !p-0 !m-0 h-full z-40 !items-start, dark:border-neutral-700/60",
       "group transition-colors duration-150 handle-ghosting",
-      appointment?.type === "appointment" ? "bg-purple-700 dark:bg-purple-700" : appointment?.type === "other" ? "bg-red-500 dark:bg-red-500" : "!hidden",
+      appointment?.type === "appointment"
+        ? "bg-purple-700 dark:bg-purple-700"
+        : appointment?.type === "other"
+          ? appointment.blocked
+            ? "bg-red-500 dark:bg-red-500"
+            : "bg-neutral-500 dark:bg-neutral-500"
+          : "!hidden",
       className,
     )}
       onDoubleClick={(e) => {
@@ -442,7 +449,10 @@ const Appointment: React.FC<AppointmentProps> = ({
                   appointment.status === "confirmed" && "text-green-600",
                   appointment.status === "canceled" && "text-red-600"
                 )} />
-              : <IconBan className="w-4 h-4 min-w-4 min-h-4 text-white/90" />}
+              : appointment.blocked 
+              ? <IconBan className="w-4 h-4 min-w-4 min-h-4 text-white/90" />
+              : <IconCalendar className="w-4 h-4 min-w-4 min-h-4 text-white/90" />
+            }
             <Typography variant="p" className="!text-white truncate pl-1">
               {appointment?.title ?? appointment?.description}
             </Typography>
@@ -451,7 +461,7 @@ const Appointment: React.FC<AppointmentProps> = ({
         <Dialog open={isOpened} onOpenChange={setIsOpened}>
           <DialogContent
             aria-describedby={undefined}
-            className="max-w-[90vw] md:max-w-[36rem] max-h-[95vh] h-screen rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
+            className="max-w-[98vw] md:max-w-[36rem] max-h-[95vh] h-screen rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
             onInteractOutside={(e) => {
               e.preventDefault();
               if (!openClient && !openService && !isCalendarOpen) {
@@ -1202,7 +1212,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                           Remover
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="w-[90vw] md:w-full rounded-md">
+                      <AlertDialogContent className="w-[98vw] md:w-full rounded-md">
                         <AlertDialogHeader>
                           <AlertDialogTitle asChild>
                             <Typography
@@ -1586,7 +1596,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                           Remover
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="w-[90vw] md:w-full rounded-md">
+                      <AlertDialogContent className="w-[98vw] md:w-full rounded-md">
                         <AlertDialogHeader>
                           <AlertDialogTitle asChild>
                             <Typography

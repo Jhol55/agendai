@@ -178,7 +178,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
       </DialogTrigger>
       {settings &&
         <DialogContent
-          className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
+          className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-background"
           aria-describedby={undefined}
         >
           <DialogHeader className="mb-2 px-[1.5rem] pt-[1.5rem]">
@@ -187,7 +187,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
           <Form {...form}>
             <form id="update-settings" onSubmit={form.handleSubmit(onSubmit)} className="relative space-y-8 max-h-[70vh] h-[70vh] overflow-auto px-[1.5rem] pb-[1.5rem]">
               <TabContainer className="w-full">
-                <Tabs className="bg-background rounded-none" activeClassName="bg-neutral-800">
+                <Tabs className="dark:bg-background bg-neutral-50 rounded-none" activeClassName="dark:bg-neutral-800 bg-neutral-300">
                   <Tab value="scheduling"><Typography variant="span">Agenda</Typography></Tab>
                   <Tab value="financial"><Typography variant="span">Financeiro</Typography></Tab>
                 </Tabs>
@@ -228,7 +228,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
                                   variant="outline"
                                   role="combobox"
                                   aria-expanded={isRescheduleDeadlineUnitOpen}
-                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900")}
+                                  className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
                                 >
                                   <div className="flex gap-4">
                                     {units?.find(unit => unit?.value === field?.value)?.label}
@@ -346,7 +346,6 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
                 form="update-settings"
                 type="submit"
                 className="bg-green-500 hover:bg-green-600 text-white"
-                onClick={() => console.log(form.watch())}
               >
                 Salvar
               </Button>

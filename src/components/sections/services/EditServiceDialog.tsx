@@ -190,7 +190,6 @@ export const EditServiceDialog = ({
                       <div className="flex items-center gap-2">
                         <Checkbox
                           checked={(() => {
-                            console.log(field.value)
                             return field.value
                           })()}
                           onCheckedChange={(checked: boolean) => {

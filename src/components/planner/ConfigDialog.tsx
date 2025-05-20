@@ -35,8 +35,8 @@ export const ConfigDialog = () => {
                         Configurações
                     </Typography> */}
           {isOpened && !canHide
-            ? <IconChevronUp className="translate-y-[1px]" />
-            : <IconChevronDown className="translate-y-[1px]" />
+            ? <IconChevronUp className="translate-y-[1px] xs:block hidden" />
+            : <IconChevronDown className="translate-y-[1px] xs:block hidden" />
           }
         </Button>
       </DropdownMenuTrigger>

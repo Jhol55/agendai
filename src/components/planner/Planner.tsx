@@ -21,6 +21,8 @@ import { UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
 import useWindowSize from "@/hooks/use-window-size";
 import { updateBlockedTimeSlot } from "@/services/block-time-slots";
 import { parseSafeDate } from "@/utils/utils";
+import { useSettings } from "@/hooks/use-settings";
+import { useDebouncedResizeObserver } from "@/hooks/use-debounced-resize-observer";
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
   initialResources: Resource[];
@@ -71,6 +73,7 @@ type CalendarContentProps = React.HTMLAttributes<HTMLDivElement>
 const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const { viewMode, dateRange, timeLabels } = useCalendar();
   const { isMobile } = useWindowSize();
+  const { settings } = useSettings();
   const {
     resources, appointments, updateAppointment, hourLabels, setBlockedTimeSlots, handleUpdate,
     blockedTimeSlots, setAppointments, isDragging, setIsDragging, isResizing, setIsResizing
@@ -81,40 +84,18 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const [isAddAppointmentOpen, setIsAddAppointmentOpen] = useState(false);
   const [addAppointmentStartDate, setAddAppointmentStartDate] = useState<Date | undefined>(undefined);
   const [tableBodyDimensions, setTableBodyDimensions] = useState<{ width?: number; height?: number } | null>(null);
-  const tableBodyRef = useRef<HTMLTableSectionElement>(null);
-
-  useEffect(() => {
-    console.log(blockedTimeSlots)
-  }, [blockedTimeSlots])
-
-  useEffect(() => {
-    if (!tableBodyRef.current) return;
-  
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        const { width, height } = entry.contentRect;
-        setTableBodyDimensions({ width, height });
-      }
-    });
-  
-    observer.observe(tableBodyRef.current);
-  
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+  const { ref, width } = useDebouncedResizeObserver<HTMLTableSectionElement>(0);
 
   useEffect(() => {
     const observed = new WeakSet<Element>();
-  
+
     const handleDragStart = (event: Event) => {
       const dragEvent = event as DragEvent;
       if (dragEvent.dataTransfer) {
         dragEvent.dataTransfer.setDragImage(document.createElement("div"), 0, 0);
       }
     };
-  
+
     const addListeners = () => {
       const cards = document.querySelectorAll(".handle-ghosting");
       cards.forEach((card) => {
@@ -124,18 +105,18 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         }
       });
     };
-  
+
     addListeners();
-  
+
     const observer = new MutationObserver(() => {
       addListeners();
     });
-  
+
     observer.observe(document.body, {
       childList: true,
       subtree: true,
     });
-  
+
     return () => {
       observer.disconnect();
       const cards = document.querySelectorAll(".handle-ghosting");
@@ -149,11 +130,11 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
     setIsLoading(true);
   }, [dateRange])
 
-  useEffect(() => {   
-      const timeout = setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-      return () => clearTimeout(timeout);  
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timeout);
   }, [isLoading])
 
   const getTopPositionFromTime = useCallback((timeStr: string): number => {
@@ -169,28 +150,28 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   ): T[] => {
     for (let i = 0; i < appointments.length; i++) {
       const a = appointments[i];
-  
+
       if (a.id !== appointmentId) continue;
-  
+
       const startTime = a.start?.getTime?.();
       const endTime = a.end?.getTime?.();
       const newStartTime = newDates.start?.getTime?.();
       const newEndTime = newDates.end?.getTime?.();
-  
+
       if (startTime === newStartTime && endTime === newEndTime) {
         return appointments;
       }
-  
+
       const updated = [...appointments];
       updated[i] = {
         ...a,
         start: newDates.start,
         end: newDates.end,
       };
-  
+
       return updated;
     }
-  
+
     return appointments;
   }, []);
 
@@ -259,7 +240,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         setTimeout(() => {
           appointmentDiv.style.top = `${top}px`
         }, 0)
-     
+
         if (appointment.type === "appointment") {
           setAppointments(prev => updateAppointmentTimes(prev, appointment.id, newDates));
           return;
@@ -287,7 +268,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         if (!destination ||
           !sourceData ||
           !appointment ||
-          differenceInMinutes(newEnd, newStart) < 30 
+          differenceInMinutes(newEnd, newStart) < 30
         ) {
           setTimeout(() => setIsDragging(false), 2);
           return;
@@ -304,20 +285,42 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         );
 
         setTimeout(() => setIsDragging(false), 2);
-        
+
         startOnDropTransition(() => {
           toast.promise(
             async () => {
               if (appointment.type === "appointment") {
+                const feeIndex = appointment.details.payments.findIndex(payment => payment.type === "fee" && payment.status !== "refunded");
+                const serviceIndex = appointment.details.payments.findIndex(payment => payment.type === "service" && payment.status !== "refunded");
+
+                let newTaxDueDate = new Date(
+                  newDates.start.getTime() - Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "tax_deadline_value")].value) * 86400000
+                )
+                if (newTaxDueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                  newTaxDueDate = new Date()
+                }
+
+                let newServiceDueDate = new Date(
+                  newDates.start.getTime() + Number(settings?.scheduling[settings.scheduling.findIndex(item => item.type === "payment_deadline_value")].value) * 86400000
+                )
+                if (newServiceDueDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                  newServiceDueDate = new Date()
+                }
+
                 await updateAppointment({
                   ...appointment,
                   start: newDates.start,
                   end: newDates.end,
                   details: {
                     ...appointment.details,
-                    payments: appointment.details.payments.map(payment => ({
+                    payments: appointment.details.payments.map((payment, index) => ({
                       ...payment,
                       sendPaymentLink: false,
+                      dueDate: index === feeIndex
+                        ? newTaxDueDate
+                        : index === serviceIndex
+                          ? newServiceDueDate
+                          : payment.dueDate
                     })),
                   },
                 });
@@ -328,7 +331,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                     ...appointment,
                     start: newDates.start,
                     end: newDates.end,
-                    day_of_week: appointment.freq !== "period" ? newDates.start.getDay() : null,
                   },
                 });
                 handleUpdate();
@@ -343,7 +345,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         });
       },
     });
-  }, [getTopPositionFromTime, handleUpdate, hourLabels, initialScrollOffset, setAppointments, setBlockedTimeSlots, setIsDragging, updateAppointment, updateAppointmentTimes, viewMode]);
+  }, [getTopPositionFromTime, handleUpdate, hourLabels, initialScrollOffset, setAppointments, setBlockedTimeSlots, setIsDragging, settings, updateAppointment, updateAppointmentTimes, viewMode]);
 
   const groupOverlappingAppointments = useCallback((appointments: (AppointmentType | UpdatedBlockTimeSlotsProps)[]) => {
     const clusters: AppointmentType[][] = [];
@@ -412,15 +414,11 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
       const minutesMoved = slotsCrossed * 30;
       const pixelsMoved = minutesMoved * 1.134;
 
-      // let newOriginalStart = new Date(originalStart);
-      // let newOriginalEnd = new Date(originalEnd);
       let newStart = new Date(start);
       let newEnd = new Date(end);
 
       if (direction === "bottom") {
-        // newOriginalEnd = new Date(originalEnd.getTime() + minutesMoved * 60_000);
         newEnd = new Date(end.getTime() + minutesMoved * 60_000);
-        // if (differenceInMinutes(newOriginalEnd, newOriginalStart) < 30) return;
 
         const newHeight = originalHeight + pixelsMoved;
 
@@ -429,9 +427,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
         }, 0.1)
 
       } else {
-        // newOriginalStart = new Date(originalStart.getTime() + minutesMoved * 60_000);
         newStart = new Date(start.getTime() + minutesMoved * 60_000);
-        // if (differenceInMinutes(newOriginalEnd, newOriginalStart) < 30) return;
 
         const newTop = originalTop + pixelsMoved;
         const newHeight = originalHeight - pixelsMoved;
@@ -555,6 +551,13 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
     };
   }, [])
 
+  const shouldDisplayBackground = useCallback(({ viewMode, index }: { viewMode: "day" | "week" | "month" | "year", index: number }) => {
+    const today = new Date();
+    return index === (viewMode === "day" ? today.getHours() : today.getDay()) + 1
+      && (dateRange?.from && today >= dateRange?.from)
+      && (dateRange?.to && today <= dateRange?.to)
+  }, [dateRange?.from, dateRange?.to])
+
 
   return (appointments &&
     <div
@@ -565,11 +568,11 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
       <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent" id="calendar-overflow-container">
         <Table>
           <Timeline />
-          <TableBody ref={tableBodyRef} className="relative">
+          <TableBody ref={ref} className="relative">
             {resources.map((resource) => (
               hourLabels.map((dateTime, rowIndex) => (
                 <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px]", isLoading && "hidden")}>
-                  <td className="text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]">
+                  <td className="bg-neutral-50 dark:bg-background text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]" style={{ backgroundClip: 'padding-box' }}>
                     {format(dateTime, 'HH:mm')}
                   </td>
 
@@ -583,8 +586,9 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                         "relative border border-b-0",
                         !isResizing && "dark:[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50 [&:hover:not(:has(.handle-resize:hover))]:bg-neutral-100",
                         isResizing && "cursor-n-resize",
+                        // shouldDisplayBackground({ viewMode, index: index + 1 }) && "bg-green-100/20 dark:bg-neutral-900"
                       )}
-                      style={{ minWidth: `${(tableBodyDimensions?.width ? (tableBodyDimensions?.width - 70) / 7 : 0)}px` }}
+                      style={{ minWidth: `${(width ? (width - 70) / 7 : 0)}px` }}
                       onDoubleClick={(e) => {
                         if (viewMode !== "month") {
                           setIsAddAppointmentOpen(true);
@@ -604,7 +608,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                     >
                       {rowIndex === 0 && (
                         <div
-                          className="absolute w-full md:border-b-0 border-t-0"
+                          className={cn("absolute w-full md:border-b-0 border-t-0")}
                           style={{ height: `${tableBodyDimensions?.height}px` }}
                         >
                           {(() => {
@@ -637,7 +641,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
                                   const widthPercent = (100 / columnsCount) * colSpan;
                                   const leftPercent = (100 / columnsCount) * columnIndex;
-                             
+
                                   return (
                                     <div
                                       className={cn(
@@ -660,8 +664,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                             "absolute top-0 left-0 right-0 h-1 w-full bg-transparent z-50",
                                             !isResizing && "cursor-n-resize"
                                           )}
-                                          onMouseDown={(e) => isResizing 
-                                            ? undefined 
+                                          onMouseDown={(e) => isResizing
+                                            ? undefined
                                             : startResizing(e, appt as AppointmentType & UpdatedBlockTimeSlotsProps & { type: "appointment" | "other" }, "top")}
                                         />
                                         <div
@@ -669,8 +673,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                                             "absolute bottom-0 left-0 right-0 h-1 w-full bg-transparent z-50",
                                             !isResizing && "cursor-s-resize"
                                           )}
-                                          onMouseDown={(e) => isResizing 
-                                            ? undefined 
+                                          onMouseDown={(e) => isResizing
+                                            ? undefined
                                             : startResizing(e, appt as AppointmentType & UpdatedBlockTimeSlotsProps & { type: "appointment" | "other" }, "bottom")}
                                         />
                                         <Appointment

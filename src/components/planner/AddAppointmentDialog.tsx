@@ -118,8 +118,9 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
     blocked: false,
     interval: 1,
     is_recurring: false,
+    day_of_week: startDate?.getDay(),
     description: "",
-  }), []);
+  }), [startDate]);
 
 
   const form = useForm<AppointmentType>({
@@ -163,6 +164,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
             setIsOpened(false);
             setAutoEndDate(undefined);
             form.reset();
+            otherForm.reset();
           }, 500);
         },
         {
@@ -187,6 +189,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
             setIsOpened(false);
             setAutoEndDate(undefined);
             form.reset();
+            otherForm.reset();
           }, 500);
         },
         {
@@ -202,8 +205,8 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
 
   useEffect(() => {
     if (startDate) {
-      form.setValue("start", startDate)
-      otherForm.setValue("start", startDate)
+      form.setValue("start", startDate);
+      otherForm.setValue("start", startDate);
     }
   }, [form, otherForm, startDate, type])
 
@@ -298,7 +301,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-[90vw] md:max-w-[36rem] max-h-[95vh] h-screen rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
+        className="max-w-[98vw] md:max-w-[36rem] max-h-[95vh] h-screen rounded-md overflow-hidden !p-0 bg-neutral-50 dark:bg-neutral-900"
         aria-describedby={undefined}
         onInteractOutside={(e) => {
           e.preventDefault();
@@ -311,7 +314,6 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
           <DialogTitle>Novo Agendamento</DialogTitle>
         </DialogHeader>
         <>
-
           <Form {...form}>
             <form id="add-appointment" onSubmit={form.handleSubmit(onSubmit)} className={cn(type !== "appointment" && "hidden", "space-y-8 md:max-h-[75vh] max-h-[65vh] h-screen overflow-auto px-[1.5rem] pb-[1.5rem]")}>
               <div className="flex gap-2 w-full">
@@ -1024,7 +1026,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                       <div className="flex items-center gap-2">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={otherWatch.blocked}
                             onCheckedChange={(checked: boolean) => {
                               field.onChange(checked);
                             }}
@@ -1242,7 +1244,6 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                 form="update-other"
                 type="submit"
                 className="bg-green-500 hover:bg-green-600 text-white"
-                onClick={() => console.log(otherForm.formState.errors)}
               >
                 Salvar
               </Button>

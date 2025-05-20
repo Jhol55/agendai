@@ -62,13 +62,13 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         from: startOfMonth(newMonth),
         to: endOfMonth(newMonth),
       };
-    } 
+    }
     return {
       from: subDays(range.from as Date, getDays(viewMode)),
       to: subDays(range.to as Date, getDays(viewMode)),
     };
   }, [getDays, range.from, range.to, viewMode]);
-  
+
   const moveToToday = useCallback(() => {
     return {
       from: viewMode === "day"
@@ -95,17 +95,18 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
       {...props}
     >
       <div className="flex gap-2 justify-between w-full pb-2">
-        <div className="flex gap-6 items-end">
+        <div className="flex gap-4 items-end">
           <div className="flex gap-2">
             <Button
               variant={viewMode === "day" ? "default" : "outline"}
+              disabled
               className={cn(viewMode === "day" && "border bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-700/60 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfDay(new Date()),
                 to: endOfDay(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-green-400" ,"md:block hidden")}>Dia</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-green-400", "md:block hidden")}>Dia</Typography>
               <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>D</Typography>
             </Button>
             <Button
@@ -118,36 +119,39 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfWeek(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-green-400" ,"md:block hidden")}>Semana</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-green-400", "md:block hidden")}>Semana</Typography>
               <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>S</Typography>
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
+              disabled
               className={cn(viewMode === "month" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border-neutral-700/60 dark:text-white text-black hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfMonth(new Date()),
                 to: endOfMonth(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-green-400" ,"md:block hidden")}>Mês</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-green-400", "md:block hidden")}>Mês</Typography>
               <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>M</Typography>
             </Button>
-          </div>      
+          </div>
           <div className="flex gap-2 items-center">
             <Button
               variant="outline"
               onClick={() => handleDateRangeUpdate(moveToToday())}
-            >            
+            >
               <Typography variant="span">Hoje</Typography>
             </Button>
             <Button
               variant="outline"
+              className="xs:!px-4 !px-3"
               onClick={() => handleDateRangeUpdate(moveBack())}
             >
               <IconChevronLeft className="!w-5 !h-5 !text-neutral-700 dark:!text-neutral-200" />
             </Button>
             <Button
               variant="outline"
+              className="xs:!px-4 !px-3"
               onClick={() => handleDateRangeUpdate(moveForward())}
             >
               <IconChevronRight className="!w-5 !h-5 !text-neutral-700 dark:!text-neutral-200" />
