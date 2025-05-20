@@ -26,7 +26,7 @@ export default function RootLayout({
       <body
         className={`antialiased min-h-screen font-nunito`}
         suppressHydrationWarning
-        // style={{ height: `calc(100vh / ${zoom})` }}
+      // style={{ height: `calc(100vh / ${zoom})` }}
       >
         <SettingsProvider zoom={zoom}>
           <ThemeProvider
@@ -35,9 +35,13 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <main>
-              {children}
-            </main>
+            {zoom > 0
+              ?
+              <main>
+                {children}
+              </main>
+              : 
+              null}
           </ThemeProvider>
           <Toaster closeButton />
         </SettingsProvider>
