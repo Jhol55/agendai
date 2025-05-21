@@ -18,7 +18,7 @@ export default function RootLayout({
   useEffect(() => {
     const calculatedZoom = Math.round(100 / window.devicePixelRatio) / 100;
     const clampedZoom = Math.max(calculatedZoom + 0.1, 0.9);
-    setZoom(clampedZoom);
+    setZoom(1);
   }, []);
 
   return (

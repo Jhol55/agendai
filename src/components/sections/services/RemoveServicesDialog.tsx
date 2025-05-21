@@ -29,13 +29,14 @@ type RawServiceType = {
   active: boolean
 }
 
-export const RemoveServicesDialog = ({ services }: { services: Row<RawServiceType>[] }) => {
+export const RemoveServicesDialog = ({ services, onSubmitSuccess }: { services: Row<RawServiceType>[], onSubmitSuccess?: () => void }) => {
 
   const [isOpened, setIsOpened] = useState(false);
 
   const Remove = useCallback(async () => {
     await deleteServices({ data: { services } });
-  }, [services])
+    onSubmitSuccess?.();
+  }, [onSubmitSuccess, services])
 
   return (
     <AlertDialog open={isOpened} onOpenChange={setIsOpened}>

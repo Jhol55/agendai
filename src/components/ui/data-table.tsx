@@ -31,6 +31,7 @@ interface DataTableProps<TData, TValue> {
   onRowSelection?: (selectedRows: Row<TData>[]) => void;
   onChange?: () => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function DataTable<TData, TValue>({
@@ -38,7 +39,8 @@ export function DataTable<TData, TValue>({
   data,
   onRowSelection,
   onChange,
-  className
+  className,
+  style
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -89,9 +91,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={cn("flex rounded-md border border-neutral-200 dark:border-neutral-800")}>
-      <div className={cn("relative w-full h-full max-h-[calc(100vh-140px)] md:max-h-[calc(100vh-110px)] overflow-auto rounded-md", className)}>
+      <div className={cn("relative w-full h-full overflow-auto rounded-md", className)} style={style}>
         <Table>
-          <TableHeader className="sticky top-0 z-50 bg-[#F8F9FA] dark:bg-neutral-800">
+          <TableHeader className="sticky top-0 z-50 bg-neutral-700 dark:bg-neutral-800">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {

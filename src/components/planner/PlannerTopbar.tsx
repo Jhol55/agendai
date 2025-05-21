@@ -4,27 +4,29 @@ import { IconUserPlus } from "@tabler/icons-react";
 import { Typography } from "../ui/typography";
 import { SearchClientInput } from "./SearchClientInput";
 import { ConfigDialog } from "./ConfigDialog";
+import { ModeToggle } from "../ui/ModeToggle";
+import { ThemeSwitcherToggle } from "../ui/theme-switch-toggle";
 
 export const PlannerTopBar = () => {
   return (
-    <div className="flex items-center justify-between absolute left-0 top-0 z-50 w-full bg-neutral-50 dark:bg-background">
-      <div className="hidden sm:flex items-center md:gap-6 gap-2 w-full pb-2 pl-4 pt-4">
+    <div className="flex items-center justify-between z-50 w-full">
+      <div className="hidden sm:flex items-center md:gap-6 gap-2 w-full">
         <Typography variant="h1">
             Agenda
         </Typography>
       </div>
-      <div className="flex items-center md:gap-6 gap-2 w-full pb-2 pl-4 pt-4">
+      <div className="flex items-center md:gap-6 gap-2 w-full">
         <SearchClientInput />
         <Button
           variant="outline"
         >
-          <IconUserPlus className="w-4 h-4" />
+          <IconUserPlus className="w-4 h-4 dark:text-white text-neutral-900" />
           <Typography variant="span" className="md:block hidden">Novo cliente</Typography>
         </Button>
       </div>
-      <div className="flex items-center gap-2 justify-between w-full pb-2 md:pl-2 pl-0 pr-4 pt-4">
+      <div className="flex items-center gap-2 justify-between w-full pb-2">
         <div></div>
-        <div className="flex items-center md:gap-6 gap-4">
+        <div className="flex items-center md:gap-6 gap-4">          
           <Notifications />
           <ConfigDialog />
         </div>

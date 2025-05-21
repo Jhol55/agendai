@@ -54,15 +54,10 @@ export type PlannerMainComponentProps = React.HTMLAttributes<HTMLDivElement>;
 const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
 
   return (
-    <div className="flex flex-col relative">
+    <div className="flex flex-col relative p-2">
       <PlannerTopBar />
-      <div className="mt-14 p-4 bg-neutral-50 dark:bg-background rounded-md"
-      // style={{ height: `calc(${(100).toFixed(3)}vh${isMobile ? ' - 30rem' : ' - 3.5rem'})` }}
-      >
-        {/* <Separator orientation="horizontal" className="!mb-4" /> */}
-        <CalendarToolbar />
-        <CalendarContent {...props} />
-      </div>
+      <CalendarToolbar />
+      <CalendarContent {...props} />
     </div>
   );
 };
@@ -561,8 +556,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
   return (appointments &&
     <div
-      className="flex flex-col border rounded-md overflow-hidden border-neutral-200 dark:border-neutral-700"
-      style={{ height: `calc(${(100).toFixed(3)}vh${isMobile ? ' - 6rem' : ' - 3.5rem'})` }}
+      className="flex flex-col border rounded-md overflow-hidden border-neutral-200 dark:border-neutral-700 md:h-[85vh] h-[79vh] leading-relaxed shadow-sm"
     >
       <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} startDate={addAppointmentStartDate} />
       <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent" id="calendar-overflow-container">
@@ -571,8 +565,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
           <TableBody ref={ref} className="relative">
             {resources.map((resource) => (
               hourLabels.map((dateTime, rowIndex) => (
-                <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px]", isLoading && "hidden")}>
-                  <td className="bg-neutral-50 dark:bg-background text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]" style={{ backgroundClip: 'padding-box' }}>
+                <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px] hover:!bg-transparent data-[state=selected]:!bg-transparent", isLoading && "hidden")}>
+                  <td className="!bg-neutral-50 dark:!bg-neutral-900 text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]" style={{ backgroundClip: 'padding-box' }}>
                     {format(dateTime, 'HH:mm')}
                   </td>
 
@@ -584,7 +578,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                       key={index}
                       className={cn(
                         "relative border border-b-0",
-                        !isResizing && "dark:[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50 [&:hover:not(:has(.handle-resize:hover))]:bg-neutral-100",
+                        !isResizing && "dark:[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50 [&:hover:not(:has(.handle-resize:hover))]:bg-neutral-200",
                         isResizing && "cursor-n-resize",
                         // shouldDisplayBackground({ viewMode, index: index + 1 }) && "bg-green-100/20 dark:bg-neutral-900"
                       )}

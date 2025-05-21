@@ -971,7 +971,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                               variant="outline"
                               role="combobox"
                               aria-expanded={false}
-                              className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
+                              className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                             >
                               <div className="flex gap-4">
                                 {units?.find(unit => unit?.value === field.value)?.label}

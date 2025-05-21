@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+import { MouseEventHandler, useEffect, useState, useTransition } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { IconEdit } from "@tabler/icons-react";
@@ -36,8 +36,10 @@ type RawServiceType = {
 export const EditServiceDialog = ({
   onSubmitSuccess,
   service,
+  onClick,
 }: {
   onSubmitSuccess?: () => void,
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void,
   service: RawServiceType
 }) => {
   const [isOpened, setIsOpened] = useState(false);
@@ -60,10 +62,6 @@ export const EditServiceDialog = ({
 
 
   async function onSubmit(values: z.infer<typeof AddNewServiceSchema>) {
-    // services.push(values);
-    // const pdf = await convertJSONToPDF({ title: "List of all available services", data: services });
-    // const base64 = await convertToBase64(pdf);
-
     const newService = {
       id: service.id,
       name: values.name,
@@ -73,8 +71,6 @@ export const EditServiceDialog = ({
       price: values.price,
       durationMinutes: values.durationMinutes,
       active: values.active,
-      // base64: base64,
-      // filename: "services.pdf"
     }
 
     startUpdateServiceTransition(() => {
@@ -108,11 +104,8 @@ export const EditServiceDialog = ({
 
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" className="!p-0 hover:bg-transparent">
-          <IconEdit className="!w-5 !h-5" />
-        </Button>
-      </DialogTrigger>
+      <Button variant="ghost" className="!p-0 hover:bg-transparent w-full h-full" onDoubleClick={() => setIsOpened(true)} onClick={onClick}>
+      </Button>
       <DialogContent
         className="max-w-[90vw] md:max-w-[36rem] max-h-[90vh] rounded-md overflow-hidden !p-0"
       >

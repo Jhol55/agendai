@@ -19,6 +19,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { EditServiceDialog } from "./EditServiceDialog";
+import { useSettings } from "@/hooks/use-settings";
+import useWindowSize from "@/hooks/use-window-size";
+import { RemoveServicesDialog } from "./RemoveServicesDialog";
 
 
 type RawServiceType = {
@@ -33,6 +36,7 @@ type RawServiceType = {
 }
 
 
+
 export const Services = () => {
   const [services, setServices] = useState<RawServiceType[]>();
   const [trigger, setTrigger] = useState(false);
@@ -41,42 +45,122 @@ export const Services = () => {
   const handleUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
   const [serviceSearchValue, setServiceSearchValue] = useState("");
   const [selectedServices, setSelectedServices] = useState<Row<RawServiceType>[]>([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
+  const [direction, setDirection] = useState<'up' | 'down' | undefined>(undefined)
+  const [selectedRows, setSelectedRows] = useState<{ index: number, id: string }[]>([]);
+  const { zoom } = useSettings();
+  const { isMobile } = useWindowSize();
+
+  useEffect(() => {
+    console.log(selectedRows)
+  }, [selectedRows])
 
   const columns = useMemo<ColumnDef<RawServiceType>[]>(() => [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: "id",
-      header: "Editar",
-      cell: ({ row }) => (
-        <div className="flex justify-center !p-0 !h-fit w-full -translate-y-[8px] hover:bg-transparent">
-          <EditServiceDialog service={row.original} onSubmitSuccess={() => handleUpdate()} />
-        </div>
+      accessorKey: "active",
+      header: () => <Typography variant="span" className="!text-neutral-200">Ativo</Typography>,
+      cell: ({ row, table, row: { index } }) => (
+        <>
+          <Typography variant="span" className="!flex !justify-center">
+            {row.getValue("active") ? <Check className="text-green-400" /> : <X className="text-red-400" />}
+          </Typography>
+          <div className="absolute top-2 left-0 flex justify-center !p-0 !h-full w-full -translate-y-[8px]">
+            <EditServiceDialog
+              service={row.original}
+              onSubmitSuccess={() => handleUpdate()}
+              onClick={(event) => {
+                setSelectedRows((prevSelectedRows) => {
+                  if (!prevSelectedRows) return [{ index, id: row.id }];
+
+                  if (event.ctrlKey) {
+                    if (prevSelectedRows.some(r => r.id === row.id && r.index === index)) {
+                      const newSelected = prevSelectedRows.filter(r => r.id !== row.id || r.index !== index);
+
+                      // Atualiza seleção na tabela
+                      const selectionObj = newSelected.reduce((acc, row) => {
+                        acc[row.id] = true;
+                        return acc;
+                      }, {} as Record<string, boolean>);
+                      table.setRowSelection(selectionObj);
+
+                      return newSelected;
+                    }
+
+                    const newSelected = [...prevSelectedRows, { index, id: row.id }];
+
+                    const selectionObj = newSelected.reduce((acc, row) => {
+                      acc[row.id] = true;
+                      return acc;
+                    }, {} as Record<string, boolean>);
+                    table.setRowSelection(selectionObj);
+
+                    return newSelected;
+                  }
+
+                  if (event.shiftKey && prevSelectedRows.length > 0) {
+                    const indices = prevSelectedRows.map(r => r.index);
+                    const min = Math.min(...indices);
+                    const max = Math.max(...indices);
+
+                    const start = (() => {
+                      if (index >= min && index <= max && direction === 'up') {
+                        return index;
+                      } else if (index <= min) {
+                        setDirection('up');
+                        return index;
+                      } else if (direction === 'up') {
+                        setDirection('down');
+                        return max;
+                      } else {
+                        return min;
+                      }
+                    })();
+
+                    const end = (() => {
+                      if (index >= min && index <= max && direction === 'down') {
+                        return index;
+                      } else if (index >= max) {
+                        setDirection('down');
+                        return index;
+                      } else if (direction === 'down') {
+                        setDirection('up');
+                        return min;
+                      } else {
+                        return max;
+                      }
+                    })();
+
+                    const allRows = table.getRowModel().rows;
+
+                    const selectedRows = allRows.slice(start, end + 1).map((value, i) => ({ index: start + i, id: value.id }));
+
+                    const selectionObj = selectedRows.reduce((acc, row) => {
+                      acc[row.id] = true;
+                      return acc;
+                    }, {} as Record<string, boolean>);
+
+                    table.setRowSelection(selectionObj);
+
+                    return selectedRows;
+                  }
+
+                  if (prevSelectedRows.length === 1 && prevSelectedRows[0].index === index) {
+                    table.setRowSelection({});
+                    return [];
+                  }
+
+                  table.setRowSelection({ [row.id]: true });
+                  return [{ index, id: row.id }];
+                });
+              }}
+            />
+          </div>
+        </>
       ),
     },
     {
       accessorKey: "name",
-      header: "Nome do Serviço",
+      header: () => <Typography variant="span" className="!text-neutral-200">Nome do serviço</Typography>,
       cell: ({ row }) => (
         <Typography variant="span" className="md:whitespace-nowrap">
           {row.getValue("name")}
@@ -85,14 +169,14 @@ export const Services = () => {
     },
     {
       accessorKey: "description",
-      header: "Descrição",
+      header: () => <Typography variant="span" className="!text-neutral-200">Descrição</Typography>,
       cell: ({ row }) => (
         <Typography variant="span" className="min-w-48">{row.getValue("description")}</Typography>
       ),
     },
     {
       accessorKey: "duration_minutes",
-      header: "Duração (min)",
+      header: () => <Typography variant="span" className="!text-neutral-200">Duração (min)</Typography>,
       cell: ({ row }) => (
         <Typography variant="span" className="!flex !justify-center">
           {row.getValue("duration_minutes")} min
@@ -100,8 +184,8 @@ export const Services = () => {
       ),
     },
     {
-      accessorKey: "price",
-      header: "Valor (R$)",
+      accessorKey: "price",    
+      header: () => <Typography variant="span" className="!text-neutral-200">Valor (R$)</Typography>,
       cell: ({ row }) => (
         <Typography variant="span" className="whitespace-nowrap !flex !justify-center">
           R$ {parseFloat(row.getValue("price")).toFixed(2)}
@@ -117,29 +201,20 @@ export const Services = () => {
     // },
     {
       accessorKey: "allow_in_person",
-      header: "Presencial",
+      header: () => <Typography variant="span" className="!text-neutral-200">Presencial</Typography>,
       cell: ({ row }) => (
         <Typography variant="span" className="!flex !justify-center">{row.getValue("allow_in_person") ? <Check className="text-green-400" /> : <X className="text-red-400" />}</Typography>
       ),
     },
     {
       accessorKey: "allow_online",
-      header: "Online",
+      header: () => <Typography variant="span" className="!text-neutral-200">Online</Typography>,
       cell: ({ row }) => (
         <Typography variant="span" className="!flex !justify-center">{row.getValue("allow_online") ? <Check className="text-green-400" /> : <X className="text-red-400" />}</Typography>
-  
+
       ),
     },
-    {
-      accessorKey: "active",
-      header: "Ativo",
-      cell: ({ row }) => (
-        <Typography variant="span" className="!flex !justify-center">
-          {row.getValue("active") ? <Check className="text-green-400" /> : <X className="text-red-400" />}
-        </Typography>
-      ),
-    },
-  ], [handleUpdate]);
+  ], [direction, handleUpdate]);
 
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
@@ -174,9 +249,9 @@ export const Services = () => {
   }, []);
 
   return (
-    <section className="w-full h-[calc(100vh-100px)] bg-transparent dark:bg-background">
-      <div className="absolute left-0 pt-4 pb-2 px-4 w-full flex items-center justify-between bg-background">
-        <Typography variant="h1" className="z-30">Serviços</Typography>
+    <section className="p-2 w-full h-[calc(100vh-100px)] bg-neutral-50 dark:bg-background">
+      <div className="py-2 w-full flex items-center justify-between">
+        <Typography variant="h1" className="z-30 md:block hidden">Serviços</Typography>
         <Input
           className="w-72"
           placeholder="Procurar serviço..."
@@ -188,12 +263,12 @@ export const Services = () => {
           }}
         />
         <div className="flex gap-2">
-          {/* <RemoveServicesDialog services={selectedServices} /> */}
+          <RemoveServicesDialog services={selectedServices} onSubmitSuccess={() => handleUpdate()} />
           <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />
         </div>
       </div>
-      <div className="py-2 px-4 mt-14 flex flex-col gap-2 flex-1 w-full p-2 bg-background rounded-md">
-        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]" />
+      <div className="flex flex-col gap-2 flex-1 w-full bg-background rounded-md">
+        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background md:h-[82vh] h-[76vh]" />
         <Pagination className="m-2">
           <PaginationContent>
             <PaginationItem>

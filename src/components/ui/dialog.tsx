@@ -6,7 +6,6 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useSettings } from "@/hooks/use-settings"
-import { FlipCard } from "./flip-card"
 
 const Dialog = DialogPrimitive.Root
 

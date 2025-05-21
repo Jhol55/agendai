@@ -165,7 +165,6 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           {viewMode === "week" && " - "}
           {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
         </Typography>
-        <Separator orientation="vertical" className="md:hidden block" />
         <AddAppointmentDialog />
       </div>
     </div>

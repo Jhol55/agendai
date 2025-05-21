@@ -449,9 +449,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                   appointment.status === "confirmed" && "text-green-600",
                   appointment.status === "canceled" && "text-red-600"
                 )} />
-              : appointment.blocked 
-              ? <IconBan className="w-4 h-4 min-w-4 min-h-4 text-white/90" />
-              : <IconCalendar className="w-4 h-4 min-w-4 min-h-4 text-white/90" />
+              : appointment.blocked
+                ? <IconBan className="w-4 h-4 min-w-4 min-h-4 text-white/90" />
+                : <IconCalendar className="w-4 h-4 min-w-4 min-h-4 text-white/90" />
             }
             <Typography variant="p" className="!text-white truncate pl-1">
               {appointment?.title ?? appointment?.description}
@@ -1313,7 +1313,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                     variant="outline"
                                     role="combobox"
                                     aria-expanded={false}
-                                    className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 bg-neutral-100")}
+                                    className={cn(!field.value && "text-muted-foreground", "w-full justify-between dark:bg-neutral-900 dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                                   >
                                     <div className="flex gap-4">
                                       {units?.find(unit => unit?.value === field.value)?.label}

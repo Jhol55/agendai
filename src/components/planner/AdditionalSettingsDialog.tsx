@@ -168,7 +168,7 @@ export const AdditionalSettingsDialog = forwardRef<HTMLDivElement, { onClose?: (
       <DialogTrigger asChild>
         <Button
           className="w-full"
-          variant="outline"
+          variant="ghost"
           onClick={onClick}
         >
           <Typography variant="span">
