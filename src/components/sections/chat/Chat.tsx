@@ -24,7 +24,7 @@ export const ChatProvider = ({
 };
 
 
-const ChatSidebar = ({ chats }: { chats: [] }) => {
+const ChatSidebar = ({ chats }: { chats: { session_id: string, message: { content: string } }[] }) => {
   const { currentSessionId, setCurrentSessionId } = useChat();
 
   if (!chats?.length) return;
@@ -98,9 +98,18 @@ const Message = ({ children, type }: { children: string, type: "ai" | "human" })
 };
 
 
+type ChatMessage = {
+  message: {
+    type: "ai" | "human"
+    content: string
+  }
+}
 
+type ChatViewProps = {
+  chat: ChatMessage[]
+}
 
-const ChatView = ({ chat }: { chat: object[] }) => {
+const ChatView = ({ chat }:  ChatViewProps) => {
   console.log(chat)
   return (
     <div className="bg-neutral-50 w-full h-full overflow-auto">
@@ -127,7 +136,7 @@ export const Chat = () => {
   useEffect(() => {
     getChat({ id: currentSessionId }).then((data) => {
       setChat(
-        data.map((history) => {
+        data.map((history: ChatMessage) => {
           const content = history?.message?.content;
           return {
             ...history,
@@ -159,7 +168,7 @@ export const Chat = () => {
           src="https://teste-chatwoot.awmygg.easypanel.host/"
           width="100%"
           height="800"
-          frameborder="0"
+          frameBorder="0"
         ></iframe>
       </div>
     </ChatProvider>
