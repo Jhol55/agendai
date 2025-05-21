@@ -24,35 +24,44 @@ export const ChatProvider = ({
 };
 
 
-const ChatSidebar = ({ chats }: { chats: { session_id: string, message: { content: string } }[] }) => {
-  const { currentSessionId, setCurrentSessionId } = useChat();
+type Chat = {
+  session_id: string
+  message: {
+    content: string
+  }
+}
 
-  if (!chats?.length) return;
+type ChatSidebarProps = {
+  chats: Chat[]
+}
+
+const ChatSidebar: React.FC<ChatSidebarProps> = ({ chats }) => {
+  const { currentSessionId, setCurrentSessionId } = useChat()
+
+  if (!chats?.length) return null
 
   return (
     <div className="flex flex-col h-full gap-1 w-1/2 p-2 truncate border-r bg-neutral-50">
-      <>
-        {chats.map((chat, index) => (
-          <div
-            key={index}
-            className={cn(
-              "flex gap-4 border p-2 h-16 overflow-hidden w-full truncate rounded-md leading-relaxed shadow-sm cursor-pointer hover:bg-neutral-200/80",
-              currentSessionId === chat.session_id && "bg-neutral-300 hover:bg-neutral-300"
-            )}
-            onClick={() => setCurrentSessionId(chat.session_id)}
-          >
-            <div className="flex min-w-12 h-12 border rounded-full"></div>
-            <div className="flex flex-col truncate">
-              <Typography variant="span" className="h-fit whitespace-nowrap !text-neutral-700">
-                {chat.session_id.replace("@s.whatsapp.net", "")}
-              </Typography>
-              <Typography variant="span" className="h-full w-full truncate whitespace-nowrap !text-neutral-700">
-                {chat.message.content}
-              </Typography>
-            </div>
+      {chats.map((chat, index) => (
+        <div
+          key={index}
+          className={cn(
+            "flex gap-4 border p-2 h-16 overflow-hidden w-full truncate rounded-md leading-relaxed shadow-sm cursor-pointer hover:bg-neutral-200/80",
+            currentSessionId === chat.session_id && "bg-neutral-300 hover:bg-neutral-300"
+          )}
+          onClick={() => setCurrentSessionId(chat.session_id)}
+        >
+          <div className="flex min-w-12 h-12 border rounded-full"></div>
+          <div className="flex flex-col truncate">
+            <Typography variant="span" className="h-fit whitespace-nowrap !text-neutral-700">
+              {chat.session_id.replace("@s.whatsapp.net", "")}
+            </Typography>
+            <Typography variant="span" className="h-full w-full truncate whitespace-nowrap !text-neutral-700">
+              {chat.message.content}
+            </Typography>
           </div>
-        ))}
-      </>
+        </div>
+      ))}
     </div>
   )
 }
