@@ -155,6 +155,12 @@ export const Chat = () => {
       <div className="flex w-full h-screen overflow-hidden">
         <ChatSidebar chats={chats} />
         <ChatView chat={chat} />
+        <iframe
+          src="https://teste-chatwoot.awmygg.easypanel.host/"
+          width="100%"
+          height="800"
+          frameborder="0"
+        ></iframe>
       </div>
     </ChatProvider>
   )
