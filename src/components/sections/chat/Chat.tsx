@@ -2,26 +2,26 @@
 // import { useChat } from "@/hooks/use-chat";
 // import { cn } from "@/lib/utils";
 // import { getChat, getChats } from "@/services/chat";
-// import { createContext, Dispatch, SetStateAction, useEffect, useState } from "react"
+import { createContext, Dispatch, SetStateAction, useEffect, useState } from "react"
 // import { splitTextIntoSentences } from "./utils";
 
-// interface ChatContextProps {
-//   currentSessionId: string;
-//   setCurrentSessionId: Dispatch<SetStateAction<string>>;
-//   chat: object[];
-// }
+interface ChatContextProps {
+  currentSessionId: string;
+  setCurrentSessionId: Dispatch<SetStateAction<string>>;
+  chat: object[];
+}
 
-// export const ChatContext = createContext<ChatContextProps | null>(null);
+export const ChatContext = createContext<ChatContextProps | null>(null);
 
-// export const ChatProvider = ({
-//   children,
-//   value,
-// }: {
-//   value: ChatContextProps;
-//   children?: React.ReactNode;
-// }) => {
-//   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
-// };
+export const ChatProvider = ({
+  children,
+  value,
+}: {
+  value: ChatContextProps;
+  children?: React.ReactNode;
+}) => {
+  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
+};
 
 
 // type Chat = {
