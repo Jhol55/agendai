@@ -23,6 +23,43 @@ export const ChatProvider = ({
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
 
+export const ChatWoot = () => {
+
+  useEffect(() => {
+    const iframe = document.querySelector('iframe');
+
+    if (iframe) {
+      iframe.onload = function () {
+        const iframeWindow = iframe.contentWindow;
+        const iframeDocument = iframeWindow?.document;
+
+        if (iframeDocument) {
+          const button = iframeDocument.querySelector('a[href="https://www.chatwoot.com/docs/product/"]');
+          if (button) {
+            button.remove();
+            console.log('Botão removido com sucesso.');
+          } else {
+            console.log('Botão não encontrado.');
+          }
+        } else {
+          console.warn('Não foi possível acessar o conteúdo do iframe.');
+        }
+      };
+    } else {
+      console.warn('Iframe não encontrado na página.');
+    }
+
+  }, [])
+
+  return (
+    <iframe
+      src="https://chat.cognic.tech/"
+      width="100%"
+      height="100%"
+    ></iframe>
+  )
+}
+
 
 // type Chat = {
 //   session_id: string
@@ -183,12 +220,3 @@ export const ChatProvider = ({
 //   )
 // }
 
-export const ChatWoot = () => {
-  return (
-    <iframe
-      src="https://chat.cognic.tech/"
-      width="100%"
-      height="100%"
-    ></iframe>
-  )
-}
