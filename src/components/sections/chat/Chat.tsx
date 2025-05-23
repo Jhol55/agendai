@@ -174,10 +174,9 @@ export const Chat = () => {
         <ChatSidebar chats={chats} />
         <ChatView chat={chat} />
         <iframe
-          src="https://teste-chatwoot.awmygg.easypanel.host/"
+          src="https://teste-chatwoot.awmygg.easypanel.host"
           width="100%"
           height="800"
-          frameBorder="0"
         ></iframe>
       </div>
     </ChatProvider>
