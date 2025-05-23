@@ -20,7 +20,7 @@ import { Services } from "../../components/sections/services/services";
 import { Scheduler } from "../../components/sections/scheduler/scheduler";
 import { useSettings } from "@/hooks/use-settings";
 import { ThemeSwitcherToggle } from "@/components/ui/theme-switch-toggle";
-import { Chat } from "@/components/sections/chat/Chat";
+import { ChatWoot } from "@/components/sections/chat/Chat";
 import { Typography } from "@/components/ui/typography";
 import { useTheme } from "next-themes";
 
@@ -82,7 +82,7 @@ export default function Admin() {
         <IconMessage className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
       ),
       content: (
-        <Chat />
+        <ChatWoot />
       )
     },
   ], []);
