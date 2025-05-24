@@ -37,7 +37,7 @@ export const ChatWoot = () => {
   }
 
   useEffect(() => {
-    sendCommandToChat({ action: 'run', script: 'console.log("Hello from admin!")' });
+    sendCommandToChat({ action: 'run', script: 'alert("Hello from admin!")' });
   }, []);
 
   return (
