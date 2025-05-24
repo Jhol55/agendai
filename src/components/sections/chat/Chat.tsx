@@ -2,7 +2,7 @@
 // import { useChat } from "@/hooks/use-chat";
 // import { cn } from "@/lib/utils";
 // import { getChat, getChats } from "@/services/chat";
-import { createContext, Dispatch, SetStateAction, useEffect, useState } from "react"
+import { createContext, Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 // import { splitTextIntoSentences } from "./utils";
 
 interface ChatContextProps {
@@ -25,39 +25,31 @@ export const ChatProvider = ({
 
 export const ChatWoot = () => {
 
-  useEffect(() => {
-    const iframe = document.querySelector('iframe');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-    if (iframe) {
-      iframe.onload = function () {
-        const iframeWindow = iframe.contentWindow;
-        const iframeDocument = iframeWindow?.document;
-
-        if (iframeDocument) {
-          const button = iframeDocument.querySelector('a[href="https://www.chatwoot.com/docs/product/"]');
-          if (button) {
-            button.remove();
-            console.log('Botão removido com sucesso.');
-          } else {
-            console.log('Botão não encontrado.');
-          }
-        } else {
-          console.warn('Não foi possível acessar o conteúdo do iframe.');
-        }
-      };
-    } else {
-      console.warn('Iframe não encontrado na página.');
+  function sendCommandToChat(command: { action: string; script: string }) {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        { type: 'EXEC_COMMAND', payload: command },
+        'https://cognic.tech'
+      );
     }
+  }
 
-  }, [])
+  useEffect(() => {
+    sendCommandToChat({ action: 'run', script: 'console.log("Hello from admin!")' });
+  }, []);
 
   return (
     <iframe
+      id="chat-iframe"
+      ref={iframeRef}
       src="https://chat.cognic.tech/"
       width="100%"
       height="100%"
-    ></iframe>
-  )
+      title="ChatWoot"
+    />
+  );
 }
 
 
