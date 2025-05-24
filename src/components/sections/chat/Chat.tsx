@@ -31,7 +31,7 @@ export const ChatWoot = () => {
     if (iframeRef.current && iframeRef.current.contentWindow) {
       iframeRef.current.contentWindow.postMessage(
         { type: 'EXEC_COMMAND', payload: command },
-        'https://cognic.tech'
+        'https://admin.cognic.tech'
       );
     }
   }
