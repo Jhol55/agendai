@@ -24,26 +24,8 @@ export const ChatProvider = ({
 };
 
 export const ChatWoot = () => {
-
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  function sendCommandToChat(command: { action: string; script: string }) {
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      iframeRef.current.contentWindow.postMessage(
-        { type: 'EXEC_COMMAND', payload: command },
-        'https://admin.cognic.tech'
-      );
-    }
-  }
-
-  useEffect(() => {
-    sendCommandToChat({ action: 'run', script: 'alert("Hello from admin!")' });
-  }, []);
-
   return (
     <iframe
-      id="chat-iframe"
-      ref={iframeRef}
       src="https://chat.cognic.tech/"
       width="100%"
       height="100%"

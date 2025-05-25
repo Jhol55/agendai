@@ -54,9 +54,11 @@ export type PlannerMainComponentProps = React.HTMLAttributes<HTMLDivElement>;
 const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
 
   return (
-    <div className="flex flex-col relative p-2">
-      <PlannerTopBar />
-      <CalendarToolbar />
+    <div className="flex flex-col relative">
+      <div className="flex flex-col relative px-2 pt-2">
+        <PlannerTopBar />
+        <CalendarToolbar />
+      </div>
       <CalendarContent {...props} />
     </div>
   );
@@ -556,10 +558,10 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
   return (appointments &&
     <div
-      className="flex flex-col border rounded-md overflow-hidden border-neutral-200 dark:border-neutral-700 md:h-[85vh] h-[79vh] leading-relaxed shadow-sm"
+      className="flex flex-col border border-l-0 border-b-0 rounded-md rounded-l-none rounded-br-none overflow-hidden border-neutral-200 dark:border-neutral-700 md:h-[86vh] h-[80vh] leading-relaxed shadow-sm"
     >
       <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} startDate={addAppointmentStartDate} />
-      <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto rounded-md bg-transparent" id="calendar-overflow-container">
+      <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto bg-transparent" id="calendar-overflow-container">
         <Table>
           <Timeline />
           <TableBody ref={ref} className="relative">
@@ -692,7 +694,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
             ))}
           </TableBody>
         </Table>
-        <div className={cn(isLoading && "!flex dark:bg-background bg-neutral-50", "w-full justify-center hidden")}>
+        <div className={cn(isLoading && "!flex bg-transparent", "w-full justify-center hidden")}>
           <Loading display={isLoading} className="!scale-[0.5] mt-10" />
         </div>
       </div>
