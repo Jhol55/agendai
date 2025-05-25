@@ -58,7 +58,7 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
             )}
           >
             {/* bug fix - th sticky border */}
-            {index === 1 && <div className="absolute top-0 left-0 w-full h-full dark:bg-neutral-800 bg-neutral-700"></div>}
+            {index === 1 && <div className="absolute top-0 left-0 w-full h-full dark:bg-neutral-800 bg-neutral-600"></div>}
             <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200 !text-neutral-200">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {shouldDisplayIcon({ index, viewMode }) &&

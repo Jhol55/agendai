@@ -116,7 +116,7 @@ export const DesktopSidebar = ({
       <motion.div
       style={{ height: `calc(100vh / ${zoom})` }}
         className={cn(
-          "absolute left-0 px-4 py-4 hidden md:flex md:flex-col bg-neutral-700 dark:bg-neutral-800 flex-shrink-0 z-50 border-r border-r-neutral-700",
+          "absolute left-0 px-4 py-4 hidden md:flex md:flex-col bg-neutral-600 dark:bg-neutral-800 flex-shrink-0 z-50 border-r dark:border-r-neutral-700 border-r-neutral-400",
           "",
           className
         )}
@@ -210,7 +210,7 @@ export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
     return (
       <div className="flex items-center w-full h-full">
         {activeLabel === label &&
-          <div className="absolute right-0 w-1 h-6 bg-green-400 border border-green-400 rounded-l"></div>
+          <div className="absolute right-0 w-1 h-6 bg-sky-400 border border-sky-400 rounded-l"></div>
         }
         <Button
           variant="ghost"
@@ -226,7 +226,7 @@ export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
           ref={ref}
           {...props}
         >
-          <div className={cn("absolute left-1 text-neutral-200", activeLabel === label && "text-green-400")}>{icon}</div>
+          <div className={cn("absolute left-1 text-neutral-200", activeLabel === label && "!text-sky-400")}>{icon}</div>
           <motion.div
             animate={{
               display: animate ? (open ? "inline-block" : "none") : "inline-block",
@@ -234,7 +234,7 @@ export const SidebarButton = forwardRef<HTMLButtonElement, SidebarButtonProps>(
             }}
             className="group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !px-2 !ml-5"
           >
-            <Typography variant="span" className={cn("!text-neutral-200", activeLabel === label && "!text-green-400")}>{label}</Typography>
+            <Typography variant="span" className={cn("!text-neutral-200", activeLabel === label && "!text-sky-400")}>{label}</Typography>
           </motion.div>
         </Button>
       </div>

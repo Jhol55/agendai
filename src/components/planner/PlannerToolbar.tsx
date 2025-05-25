@@ -106,8 +106,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfDay(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-green-400", "md:block hidden")}>Dia</Typography>
-              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>D</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-sky-400", "md:block hidden")}>Dia</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-sky-400", "md:hidden block")}>D</Typography>
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "outline"}
@@ -119,8 +119,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfWeek(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-green-400", "md:block hidden")}>Semana</Typography>
-              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>S</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-sky-400", "md:block hidden")}>Semana</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-sky-400", "md:hidden block")}>S</Typography>
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
@@ -131,8 +131,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfMonth(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-green-400", "md:block hidden")}>Mês</Typography>
-              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-green-400", "md:hidden block")}>M</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-sky-400", "md:block hidden")}>Mês</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-sky-400", "md:hidden block")}>M</Typography>
             </Button>
           </div>
           <div className="flex gap-2 items-center">

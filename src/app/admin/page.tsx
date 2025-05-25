@@ -79,7 +79,7 @@ export default function Admin() {
     {
       label: "Chat",
       icon: (
-        <IconMessage className="text-neutral-200 dark:text-neutral-200 !h-5 !w-5 flex-shrink-0" />
+        <IconMessage className="!h-5 !w-5 flex-shrink-0" />
       ),
       content: (
         <ChatWoot />
