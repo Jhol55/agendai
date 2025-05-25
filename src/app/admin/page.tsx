@@ -142,7 +142,7 @@ export default function Admin() {
           // animate={{ x: 0, opacity: 1 }}
           // exit={{ x: "100%", opacity: 0 }}
           // transition={{ duration: 0.17, ease: "easeIn" }}
-          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-neutral-900"
+          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-dark-chatwoot-primary"
         >
           {links[activeTab].content}
         </motion.div>

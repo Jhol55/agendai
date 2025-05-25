@@ -21,6 +21,9 @@ const config: Config = {
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        skyblue: '#3B9EFF',
+        "dark-chatwoot-secondary": "#17171A",
+        "dark-chatwoot-primary": "#121213",
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'

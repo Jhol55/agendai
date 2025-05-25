@@ -568,7 +568,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
             {resources.map((resource) => (
               hourLabels.map((dateTime, rowIndex) => (
                 <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px] hover:!bg-transparent data-[state=selected]:!bg-transparent", isLoading && "hidden")}>
-                  <td className="!bg-neutral-50 dark:!bg-neutral-900 text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]" style={{ backgroundClip: 'padding-box' }}>
+                  <td className="!bg-neutral-50 dark:!bg-dark-chatwoot-primary text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]" style={{ backgroundClip: 'padding-box' }}>
                     {format(dateTime, 'HH:mm')}
                   </td>
 
@@ -579,7 +579,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                       columnIndex={index}
                       key={index}
                       className={cn(
-                        "relative border border-b-0",
+                        "relative border border-b-0 dark:bg-dark-chatwoot-primary",
                         !isResizing && "dark:[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50 [&:hover:not(:has(.handle-resize:hover))]:bg-neutral-200",
                         isResizing && "cursor-n-resize",
                         // shouldDisplayBackground({ viewMode, index: index + 1 }) && "bg-green-100/20 dark:bg-neutral-900"
