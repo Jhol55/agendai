@@ -90,10 +90,10 @@ export function DataTable<TData, TValue>({
   }, [data])
 
   return (
-    <div className={cn("flex rounded-md border border-neutral-200 dark:border-neutral-800")}>
+    <div className={cn("flex border border-neutral-200 dark:border-neutral-800")}>
       <div className={cn("relative w-full h-full overflow-auto rounded-md", className)} style={style}>
         <Table>
-          <TableHeader className="sticky top-0 z-50 bg-neutral-700 dark:bg-neutral-800">
+          <TableHeader className="sticky top-0 z-50 bg-neutral-600 dark:bg-neutral-800">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {

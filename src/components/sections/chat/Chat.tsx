@@ -25,14 +25,12 @@ export const ChatProvider = ({
 
 export const ChatWoot = () => {
   return (
-    <div className="w-full h-full bg-neutral-50 dark:bg-background">
-      <iframe
-        src="https://chat.cognic.tech/"
-        width="100%"
-        height="100%"
-        title="ChatWoot"
-      />
-    </div>
+    <iframe
+      src="https://chat.cognic.tech/"
+      width="100%"
+      height="100%"
+      title="ChatWoot"
+    />
   );
 }
 

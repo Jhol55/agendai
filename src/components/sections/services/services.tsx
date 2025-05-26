@@ -249,8 +249,8 @@ export const Services = () => {
   }, []);
 
   return (
-    <section className="p-2 w-full h-[calc(100vh-100px)] bg-neutral-50 dark:bg-background">
-      <div className="py-2 w-full flex items-center justify-between">
+    <section className="w-full h-[calc(100vh-100px)] bg-neutral-50 dark:bg-background">
+      <div className="p-2 w-full flex items-center justify-between">
         <Typography variant="h1" className="z-30 md:block hidden">Serviços</Typography>
         <Input
           className="w-72"
@@ -267,8 +267,8 @@ export const Services = () => {
           <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />
         </div>
       </div>
-      <div className="flex flex-col gap-2 flex-1 w-full bg-background rounded-md">
-        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background md:h-[82vh] h-[76vh]" />
+      <div className="flex flex-col gap-2 flex-1 w-full bg-background">
+        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background md:h-[calc(84vh-2px)] h-[calc(78vh-2px)] rounded-none" />
         <Pagination className="m-2">
           <PaginationContent>
             <PaginationItem>
