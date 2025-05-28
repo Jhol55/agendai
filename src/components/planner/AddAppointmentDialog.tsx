@@ -295,7 +295,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="outline" className={cn("", className)}>
+        <Button variant="ghost" className={cn("", className)}>
           <IconCalendarPlus className="h-4 w-4 dark:text-white text-neutral-900" />
           <Typography variant="span" className="md:block hidden dark:!text-white">Novo compromisso</Typography>
         </Button>

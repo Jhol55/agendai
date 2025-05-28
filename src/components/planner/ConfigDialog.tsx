@@ -26,18 +26,18 @@ export const ConfigDialog = () => {
     <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={() => setIsOpened(true)}
-          className="flex gap-[4px] rounded-full dark:!text-neutral-200 !text-neutral-700"
+          className="flex gap-[4px] rounded-md dark:!text-neutral-200 !text-neutral-700"
         >
           <IconSettings className="!h-4 !w-4" />
           {/* <Typography variant="span" className="md:block hidden">
                         Configurações
                     </Typography> */}
-          {isOpened && !canHide
+          {/* {isOpened && !canHide
             ? <IconChevronUp className="translate-y-[1px] xs:block hidden" />
             : <IconChevronDown className="translate-y-[1px] xs:block hidden" />
-          }
+          } */}
         </Button>
       </DropdownMenuTrigger>
         <DropdownMenuContent side="top"

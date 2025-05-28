@@ -11,6 +11,7 @@ import { Typography } from "../ui/typography";
 import { capitalizeFirstLetter } from "@/utils/capitalize-first-letter";
 import { Separator } from "../ui/separator";
 import AddAppointmentDialog from "./AddAppointmentDialog";
+import { ConfigDialog } from "./ConfigDialog";
 
 
 type CalendarToolbarProps = React.HTMLAttributes<HTMLDivElement>
@@ -94,7 +95,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
       className={cn("flex flex-col", className)}
       {...props}
     >
-      <div className="flex gap-2 justify-between w-full pb-2">
+      <div className="flex gap-2 justify-between items-center w-full pb-2">
         <div className="flex gap-4 items-center">
           <div className="flex gap-2">
             <Button
@@ -167,6 +168,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
         </Typography>
         <AddAppointmentDialog />
+        <Separator orientation="vertical" className="h-[80%]" />
+        <ConfigDialog />
       </div>
     </div>
   );
