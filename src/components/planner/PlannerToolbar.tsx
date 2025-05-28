@@ -136,7 +136,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-skyblue", "md:hidden block")}>M</Typography>
             </Button>
           </div>
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-4" />
           <div className="flex gap-2 items-center">
             <Button
               variant="ghost"
@@ -168,7 +168,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
         </Typography>
         <AddAppointmentDialog />
-        <Separator orientation="vertical" className="h-6" />
+        <Separator orientation="vertical" className="h-4" />
         <ConfigDialog />
       </div>
     </div>
