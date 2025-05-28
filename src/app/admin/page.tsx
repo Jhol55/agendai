@@ -28,7 +28,6 @@ import { useTheme } from "next-themes";
 export default function Admin() {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(4);
-  const { zoom } = useSettings();
 
   const links = useMemo(() => [
     {
@@ -106,11 +105,9 @@ export default function Admin() {
     };
   }, [activeTab]);
 
-  const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col md:flex-row bg-neutral-50 dark:bg-background w-full relative"
-      style={{ minHeight: `calc(100vh / ${zoom})`, zoom }}
+    <div className="flex flex-col md:flex-row bg-neutral-50 dark:bg-background w-full relative min-h-screen"
     >
       {/* <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="" initialActiveLabel={links[activeTab].label}>

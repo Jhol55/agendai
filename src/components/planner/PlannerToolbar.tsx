@@ -146,14 +146,14 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             </Button>
             <Button
               variant="ghost"
-              className="xs:!px-4 !px-3"
+              className="xs:!px-3 !px-2"
               onClick={() => handleDateRangeUpdate(moveBack())}
             >
               <IconChevronLeft className="!w-5 !h-5 !text-neutral-700 dark:!text-neutral-200" />
             </Button>
             <Button
               variant="ghost"
-              className="xs:!px-4 !px-3"
+              className="xs:!px-3 !px-2"
               onClick={() => handleDateRangeUpdate(moveForward())}
             >
               <IconChevronRight className="!w-5 !h-5 !text-neutral-700 dark:!text-neutral-200" />

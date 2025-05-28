@@ -1,3 +1,5 @@
+"use client"
+
 import { SettingsService } from '@/services/planner';
 import { SettingsContextProps, SettingsState, } from './SettingsContext.type';
 import { createContext, useEffect, useState } from 'react';
@@ -6,10 +8,8 @@ import { createContext, useEffect, useState } from 'react';
 export const SettingsContext = createContext<SettingsContextProps | null>(null);
 
 export const SettingsProvider = ({
-  zoom,
   children,
 }: {
-  zoom: number;
   children?: React.ReactNode;
 }) => {
 
@@ -32,7 +32,6 @@ export const SettingsProvider = ({
       handleUpdate();
       return response;
     },
-    zoom
   }
 
   return (
