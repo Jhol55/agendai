@@ -95,7 +95,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
       className={cn("flex flex-col", className)}
       {...props}
     >
-      <div className="flex gap-2 justify-between items-center w-full pb-2">
+      <div className="flex gap-2 justify-between items-center w-full p-4">
         <div className="flex gap-4 items-center">
           <div className="flex gap-2">
             <Button
@@ -136,7 +136,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-skyblue", "md:hidden block")}>M</Typography>
             </Button>
           </div>
-          <Separator orientation="vertical" className="h-[80%]" />
+          <Separator orientation="vertical" className="h-6" />
           <div className="flex gap-2 items-center">
             <Button
               variant="ghost"
@@ -168,7 +168,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           {viewMode === "week" && range.to && capitalizeFirstLetter(format(range.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
         </Typography>
         <AddAppointmentDialog />
-        <Separator orientation="vertical" className="h-[80%]" />
+        <Separator orientation="vertical" className="h-6" />
         <ConfigDialog />
       </div>
     </div>
