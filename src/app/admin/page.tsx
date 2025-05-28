@@ -27,7 +27,7 @@ import { useTheme } from "next-themes";
 
 export default function Admin() {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(5);
+  const [activeTab, setActiveTab] = useState(4);
   const { zoom } = useSettings();
 
   const links = useMemo(() => [
@@ -112,7 +112,7 @@ export default function Admin() {
     <div className="flex flex-col md:flex-row bg-neutral-50 dark:bg-background w-full relative"
       style={{ minHeight: `calc(100vh / ${zoom})`, zoom }}
     >
-      <Sidebar open={open} setOpen={setOpen}>
+      {/* <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="" initialActiveLabel={links[activeTab].label}>
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             <Logo open={open} />
@@ -134,7 +134,7 @@ export default function Admin() {
             </div>
           </div>
         </SidebarBody>
-      </Sidebar>
+      </Sidebar> */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
@@ -142,7 +142,7 @@ export default function Admin() {
           // animate={{ x: 0, opacity: 1 }}
           // exit={{ x: "100%", opacity: 0 }}
           // transition={{ duration: 0.17, ease: "easeIn" }}
-          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 md:ml-[60px] light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-dark-chatwoot-primary"
+          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-dark-chatwoot-primary"
         >
           {links[activeTab].content}
         </motion.div>
