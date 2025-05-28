@@ -48,7 +48,7 @@ export const Services = () => {
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const [direction, setDirection] = useState<'up' | 'down' | undefined>(undefined)
   const [selectedRows, setSelectedRows] = useState<{ index: number, id: string }[]>([]);
-  const { zoom } = useSettings();
+
   const { isMobile } = useWindowSize();
 
   useEffect(() => {

@@ -56,7 +56,7 @@ export function Notifications() {
   const [isOpened, setIsOpened] = useState(false);
   const handleUpdate = useCallback(() => setTrigger(!trigger), [trigger])
   const toastRef = useRef<string | number | undefined>(undefined);
-  const { zoom } = useSettings();
+
 
   useEffect(() => {
     setIsLoading(message ? false : true);

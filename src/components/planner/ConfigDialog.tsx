@@ -20,7 +20,6 @@ import { useSettings } from "@/hooks/use-settings";
 export const ConfigDialog = () => {
   const [isOpened, setIsOpened] = useState(false);
   const [canHide, setCanHide] = useState(false);
-  const { zoom } = useSettings();
 
   return (
     <DropdownMenu open={isOpened} onOpenChange={setIsOpened}>
@@ -41,7 +40,6 @@ export const ConfigDialog = () => {
         </Button>
       </DropdownMenuTrigger>
         <DropdownMenuContent side="top"
-          style={{ zoom }}
           className={cn("w-56 bg-background mr-7", canHide && "hidden")}   
         >
           <DropdownMenuLabel>

@@ -102,7 +102,6 @@ export const DesktopSidebar = ({
 }: React.ComponentProps<typeof motion.div>) => {
   const { open, setOpen, animate, isLoading, setIsLoading } = useSidebar();
   const { isMobile } = useWindowSize();
-  const { zoom } = useSettings();
 
   useEffect(() => {
     if (animate && open && !isMobile) {
@@ -114,9 +113,8 @@ export const DesktopSidebar = ({
   return (
     <>
       <motion.div
-      style={{ height: `calc(100vh / ${zoom})` }}
         className={cn(
-          "absolute left-0 px-4 py-4 hidden md:flex md:flex-col bg-neutral-600 dark:bg-neutral-800 flex-shrink-0 z-50 border-r dark:border-r-neutral-700 border-r-neutral-400",
+          "absolute h-screen left-0 px-4 py-4 hidden md:flex md:flex-col bg-neutral-600 dark:bg-neutral-800 flex-shrink-0 z-50 border-r dark:border-r-neutral-700 border-r-neutral-400",
           "",
           className
         )}
