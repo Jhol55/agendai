@@ -30,7 +30,7 @@ export const PlannerTopBar = () => {
           {viewMode === "week" && dateRange?.to && capitalizeFirstLetter(format(dateRange?.to, "eeee, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))}
         </Typography> */}
       </div>
-      <div className="flex items-center md:gap-6 gap-2 w-full">
+      {/* <div className="flex items-center md:gap-6 gap-2 w-full">
         <SearchClientInput />
         <Button
           variant="outline"
@@ -38,7 +38,7 @@ export const PlannerTopBar = () => {
           <IconUserPlus className="w-4 h-4 dark:text-white text-neutral-900" />
           <Typography variant="span" className="md:block hidden">Novo cliente</Typography>
         </Button>
-      </div>
+      </div> */}
       <div className="flex items-center gap-2 justify-between w-full pb-2">
         <div></div>
         <div className="flex items-center md:gap-6 gap-4">

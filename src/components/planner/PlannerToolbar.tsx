@@ -95,12 +95,12 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
       {...props}
     >
       <div className="flex gap-2 justify-between w-full pb-2">
-        <div className="flex gap-4 items-end">
+        <div className="flex gap-4 items-center">
           <div className="flex gap-2">
             <Button
-              variant={viewMode === "day" ? "default" : "outline"}
+              variant={viewMode === "day" ? "default" : "ghost"}
               disabled
-              className={cn(viewMode === "day" && "border bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-700/60 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
+              className={cn(viewMode === "day" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfDay(new Date()),
                 to: endOfDay(new Date()),
@@ -110,8 +110,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-skyblue", "md:hidden block")}>D</Typography>
             </Button>
             <Button
-              variant={viewMode === "week" ? "default" : "outline"}
-              className={cn(viewMode === "week" && "border bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-700/60 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
+              variant={viewMode === "week" ? "default" : "ghost"}
+              className={cn(viewMode === "week" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfWeek(new Date(), {
                   locale: { options: { weekStartsOn: 0 } },
@@ -123,9 +123,9 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-skyblue", "md:hidden block")}>S</Typography>
             </Button>
             <Button
-              variant={viewMode === "month" ? "default" : "outline"}
+              variant={viewMode === "month" ? "default" : "ghost"}
               disabled
-              className={cn(viewMode === "month" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border-neutral-700/60 dark:text-white text-black hover:bg-neutral-700")}
+              className={cn(viewMode === "month" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfMonth(new Date()),
                 to: endOfMonth(new Date()),
@@ -135,22 +135,23 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-skyblue", "md:hidden block")}>M</Typography>
             </Button>
           </div>
+          <Separator orientation="vertical" className="h-[80%]" />
           <div className="flex gap-2 items-center">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => handleDateRangeUpdate(moveToToday())}
             >
               <Typography variant="span">Hoje</Typography>
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               className="xs:!px-4 !px-3"
               onClick={() => handleDateRangeUpdate(moveBack())}
             >
               <IconChevronLeft className="!w-5 !h-5 !text-neutral-700 dark:!text-neutral-200" />
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               className="xs:!px-4 !px-3"
               onClick={() => handleDateRangeUpdate(moveForward())}
             >

@@ -56,7 +56,7 @@ const PlannerMainComponent: FC<PlannerMainComponentProps> = ({ ...props }) => {
   return (
     <div className="flex flex-col relative">
       <div className="flex flex-col relative px-2 pt-2">
-        <PlannerTopBar />
+        {/* <PlannerTopBar /> */}
         <CalendarToolbar />
       </div>
       <CalendarContent {...props} />
@@ -558,7 +558,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
 
   return (appointments &&
     <div
-      className="flex flex-col border border-l-0 border-b-0 rounded-md rounded-l-none rounded-br-none overflow-hidden border-neutral-200 dark:border-neutral-700 md:h-[86vh] h-[80vh] leading-relaxed shadow-sm"
+      className="flex flex-col border border-l-0 border-b-0 rounded-md rounded-l-none rounded-br-none overflow-hidden border-neutral-200 dark:border-neutral-700 md:h-[93vh] h-[93vh] leading-relaxed shadow-sm"
     >
       <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} startDate={addAppointmentStartDate} />
       <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto bg-transparent" id="calendar-overflow-container">
