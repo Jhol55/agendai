@@ -3,7 +3,7 @@ import { ColumnDef, Row } from "@tanstack/react-table";
 import { Typography } from "@/components/ui/typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AddNewServiceDialog } from "./AddNewServiceDialog";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getServices } from "@/services/services";
 import { Check, X } from "lucide-react";
 import { motion } from "framer-motion";
@@ -49,6 +49,8 @@ export const Services = () => {
   const [direction, setDirection] = useState<'up' | 'down' | undefined>(undefined)
   const [selectedRows, setSelectedRows] = useState<{ index: number, id: string }[]>([]);
 
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const columns = useMemo<ColumnDef<RawServiceType>[]>(() => [
     {
       accessorKey: "active",
@@ -64,12 +66,31 @@ export const Services = () => {
               service={row.original}
               onSubmitSuccess={() => handleUpdate()}
               onClick={(event) => {
-                setSelectedRows((prevSelectedRows) => {
-                  if (!prevSelectedRows) return [{ index, id: row.id }];
+                if (clickTimeoutRef.current) {
+                  clearTimeout(clickTimeoutRef.current);
+                  clickTimeoutRef.current = null;
+                  return;
+                }
 
-                  if (event.ctrlKey) {
-                    if (prevSelectedRows.some(r => r.id === row.id && r.index === index)) {
-                      const newSelected = prevSelectedRows.filter(r => r.id !== row.id || r.index !== index);
+                clickTimeoutRef.current = setTimeout(() => {
+                  clickTimeoutRef.current = null;            
+                  setSelectedRows((prevSelectedRows) => {
+                    if (!prevSelectedRows) return [{ index, id: row.id }];
+
+                    if (event.ctrlKey) {
+                      if (prevSelectedRows.some(r => r.id === row.id && r.index === index)) {
+                        const newSelected = prevSelectedRows.filter(r => r.id !== row.id || r.index !== index);
+
+                        const selectionObj = newSelected.reduce((acc, row) => {
+                          acc[row.id] = true;
+                          return acc;
+                        }, {} as Record<string, boolean>);
+                        table.setRowSelection(selectionObj);
+
+                        return newSelected;
+                      }
+
+                      const newSelected = [...prevSelectedRows, { index, id: row.id }];
 
                       const selectionObj = newSelected.reduce((acc, row) => {
                         acc[row.id] = true;
@@ -80,72 +101,62 @@ export const Services = () => {
                       return newSelected;
                     }
 
-                    const newSelected = [...prevSelectedRows, { index, id: row.id }];
+                    if (event.shiftKey && prevSelectedRows.length > 0) {
+                      const indices = prevSelectedRows.map(r => r.index);
+                      const min = Math.min(...indices);
+                      const max = Math.max(...indices);
 
-                    const selectionObj = newSelected.reduce((acc, row) => {
-                      acc[row.id] = true;
-                      return acc;
-                    }, {} as Record<string, boolean>);
-                    table.setRowSelection(selectionObj);
+                      const start = (() => {
+                        if (index >= min && index <= max && direction === 'up') {
+                          return index;
+                        } else if (index <= min) {
+                          setDirection('up');
+                          return index;
+                        } else if (direction === 'up') {
+                          setDirection('down');
+                          return max;
+                        } else {
+                          return min;
+                        }
+                      })();
 
-                    return newSelected;
-                  }
+                      const end = (() => {
+                        if (index >= min && index <= max && direction === 'down') {
+                          return index;
+                        } else if (index >= max) {
+                          setDirection('down');
+                          return index;
+                        } else if (direction === 'down') {
+                          setDirection('up');
+                          return min;
+                        } else {
+                          return max;
+                        }
+                      })();
 
-                  if (event.shiftKey && prevSelectedRows.length > 0) {
-                    const indices = prevSelectedRows.map(r => r.index);
-                    const min = Math.min(...indices);
-                    const max = Math.max(...indices);
+                      const allRows = table.getRowModel().rows;
 
-                    const start = (() => {
-                      if (index >= min && index <= max && direction === 'up') {
-                        return index;
-                      } else if (index <= min) {
-                        setDirection('up');
-                        return index;
-                      } else if (direction === 'up') {
-                        setDirection('down');
-                        return max;
-                      } else {
-                        return min;
-                      }
-                    })();
+                      const selectedRows = allRows.slice(start, end + 1).map((value, i) => ({ index: start + i, id: value.id }));
 
-                    const end = (() => {
-                      if (index >= min && index <= max && direction === 'down') {
-                        return index;
-                      } else if (index >= max) {
-                        setDirection('down');
-                        return index;
-                      } else if (direction === 'down') {
-                        setDirection('up');
-                        return min;
-                      } else {
-                        return max;
-                      }
-                    })();
+                      const selectionObj = selectedRows.reduce((acc, row) => {
+                        acc[row.id] = true;
+                        return acc;
+                      }, {} as Record<string, boolean>);
 
-                    const allRows = table.getRowModel().rows;
+                      table.setRowSelection(selectionObj);
 
-                    const selectedRows = allRows.slice(start, end + 1).map((value, i) => ({ index: start + i, id: value.id }));
+                      return selectedRows;
+                    }
 
-                    const selectionObj = selectedRows.reduce((acc, row) => {
-                      acc[row.id] = true;
-                      return acc;
-                    }, {} as Record<string, boolean>);
+                    if (prevSelectedRows.length === 1 && prevSelectedRows[0].index === index) {
+                      table.setRowSelection({});
+                      return [];
+                    }
 
-                    table.setRowSelection(selectionObj);
-
-                    return selectedRows;
-                  }
-
-                  if (prevSelectedRows.length === 1 && prevSelectedRows[0].index === index) {
-                    table.setRowSelection({});
-                    return [];
-                  }
-
-                  table.setRowSelection({ [row.id]: true });
-                  return [{ index, id: row.id }];
-                });
+                    table.setRowSelection({ [row.id]: true });
+                    return [{ index, id: row.id }];
+                  });
+                }, 250);
               }}
             />
           </div>
@@ -258,7 +269,7 @@ export const Services = () => {
             }}
           />
           <Separator orientation="vertical" className="h-4 mx-2" />
-          <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />          
+          <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />
           <RemoveServicesDialog services={selectedServices} onSubmitSuccess={() => handleUpdate()} />
         </div>
       </div>
