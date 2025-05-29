@@ -46,15 +46,8 @@ export const Services = () => {
   const handleUpdate = useCallback(() => setTrigger(() => !trigger), [trigger]);
   const [serviceSearchValue, setServiceSearchValue] = useState("");
   const [selectedServices, setSelectedServices] = useState<Row<RawServiceType>[]>([]);
-  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const [direction, setDirection] = useState<'up' | 'down' | undefined>(undefined)
   const [selectedRows, setSelectedRows] = useState<{ index: number, id: string }[]>([]);
-
-  const { isMobile } = useWindowSize();
-
-  useEffect(() => {
-    console.log(selectedRows)
-  }, [selectedRows])
 
   const columns = useMemo<ColumnDef<RawServiceType>[]>(() => [
     {
@@ -77,7 +70,6 @@ export const Services = () => {
                     if (prevSelectedRows.some(r => r.id === row.id && r.index === index)) {
                       const newSelected = prevSelectedRows.filter(r => r.id !== row.id || r.index !== index);
 
-                      // Atualiza seleção na tabela
                       const selectionObj = newSelected.reduce((acc, row) => {
                         acc[row.id] = true;
                         return acc;
