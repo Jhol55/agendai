@@ -875,9 +875,9 @@ const Appointment: React.FC<AppointmentProps> = ({
                                   }}
                                   className={cn(
                                     "bg-neutral-100 dark:!text-neutral-200",
-                                    watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none"
+                                    watch.details.payments[feeIndex].status !== "pending" && watch.details.payments[feeIndex].status !== undefined && "pointer-events-none"
                                   )}
-                                  disabled={!watch.start || !watch.details.service}
+                                  // disabled={!watch.start || !watch.details.service}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -892,7 +892,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                               <FormLabel className="text-left">Data de vencimento</FormLabel>
                               <FormControl>
                                 <TimePicker
-                                  className={cn(watch.details.payments[feeIndex].status !== "pending" && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
+                                  className={cn(watch.details.payments[feeIndex].status !== "pending" && watch.details.payments[feeIndex].status !== undefined && "pointer-events-none", "dark:hover:bg-neutral-800 bg-neutral-100 hover:bg-neutral-200 dark:!text-neutral-200")}
                                   placeholder="Selecione uma data"
                                   value={field.value}
                                   mode="date"

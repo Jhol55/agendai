@@ -59,6 +59,7 @@ export const Services = () => {
             {row.getValue("active") ? <Check className="text-green-400" /> : <X className="text-red-400" />}
           </Typography>
           <div className="absolute top-2 left-0 flex justify-center !p-0 !h-full w-full -translate-y-[8px]">
+            {selectedRows.some(r => r.id === row.id) && <div className="h-full w-[2px] bg-skyblue z-50"></div>}
             <EditServiceDialog
               service={row.original}
               onSubmitSuccess={() => handleUpdate()}
@@ -207,7 +208,7 @@ export const Services = () => {
 
       ),
     },
-  ], [direction, handleUpdate]);
+  ], [direction, handleUpdate, selectedRows]);
 
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
