@@ -93,7 +93,7 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="">
+        <Button variant="ghost" className="bg-skyblue hover:bg-skyblue hover:enabled:brightness-110 focus-visible:brightness-110 transition-all duration-200 ease-in-out">
           <IconFilePlus className="h-4 w-4 dark:text-white text-neutral-900" />
           <Typography variant="span" className="md:block hidden dark:!text-white !text-neutral-900">Novo serviço</Typography>
         </Button>
