@@ -22,6 +22,7 @@ const config: Config = {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         skyblue: '#2781F6',
+        "woot-500": "#3B9EFF",
         "dark-chatwoot-secondary": "#17171A",
         "dark-chatwoot-primary": "#121213",
         card: {
