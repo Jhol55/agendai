@@ -129,7 +129,7 @@ export const EditServiceDialog = ({
                         }}
                         variant={field.value === true ? "default" : "outline"}
                         className={cn(
-                          "w-1/3 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white",
+                          "w-1/3 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white !text-white",
                           field.value === true && "bg-green-500 dark:bg-green-500 text-white hover:bg-green-500 dark:hover:bg-green-500"
                         )}
                         type="button"
@@ -142,7 +142,7 @@ export const EditServiceDialog = ({
                         }}
                         variant={field.value === false ? "default" : "outline"}
                         className={cn(
-                          "w-1/3 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white",
+                          "w-1/3 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white !text-white",
                           field.value === false && "bg-red-500 dark:bg-red-500 text-white hover:bg-red-500 dark:hover:bg-red-500"
                         )}
                         type="button"
