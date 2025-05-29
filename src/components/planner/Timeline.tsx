@@ -52,16 +52,16 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           <TableHead
             key={index}
             className={cn(
-              "bg-background text-center max-w-full whitespace-nowrap bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
-              shouldDisplayIcon({ index, viewMode })
-                ? "z-30" : "z-20"
+              "relative bg-background text-center max-w-full whitespace-nowrap bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
+              // shouldDisplayIcon({ index, viewMode })
+              //   ? "z-30" : "z-20"
             )}
           >
             {/* bug fix - th sticky border */}
             {index === 1 && <div className="absolute top-0 left-0 w-full h-full dark:bg-neutral-800 bg-neutral-600"></div>}
             <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200 !text-neutral-200">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
-              {shouldDisplayIcon({ index, viewMode }) &&
+              {/* {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -89,8 +89,9 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              }
+              } */}
             </Typography>
+            {shouldDisplayIcon({ index, viewMode }) && <div className="absolute left-0 bottom-0 bg-skyblue h-[2px] w-full rounded-full"></div>}
           </TableHead>
         ))}
       </TableRow>
