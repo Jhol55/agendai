@@ -270,7 +270,7 @@ export const Services = () => {
         </div>
       </div>
       <div className="flex flex-col gap-2 flex-1 w-full bg-background">
-        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background md:h-[calc(83vh-8px)] h-[calc(83vh-8px)] rounded-none" />
+        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background md:h-[calc(83vh-12px)] h-[calc(83vh-12px)] rounded-none" />
         <Pagination className="m-2">
           <PaginationContent>
             <PaginationItem>
