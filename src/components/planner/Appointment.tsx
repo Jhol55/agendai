@@ -983,6 +983,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                             <AlertDialogFooter>
                                               <AlertDialogCancel
                                                 onClick={(e) => {
+                                                  className = "!text-white dark!:text-white"
                                                   e.preventDefault();
                                                   field.onChange(field.value);
                                                   setIsFeeRefundOpen(false);
@@ -1151,6 +1152,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                               <AlertDialogCancel
+                                                className="!text-white dark!:text-white"
                                                 onClick={(e) => {
                                                   e.preventDefault();
                                                   field.onChange(field.value);
@@ -1232,6 +1234,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel
+                            className="!text-white dark!:text-white"
                             onClick={(e) => {
                               e.preventDefault();
                               setIsRemoveAppointmentOpen(false);
@@ -1616,6 +1619,7 @@ const Appointment: React.FC<AppointmentProps> = ({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel
+                            className="!text-white dark!:text-white"
                             onClick={(e) => {
                               e.preventDefault();
                               setIsRemoveOtherOpen(false);

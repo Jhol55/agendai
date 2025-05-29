@@ -93,7 +93,7 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-neutral-200 hover:bg-neutral-300/90 dark:bg-neutral-800">
+        <Button variant="ghost" className="">
           <IconFilePlus className="h-4 w-4 dark:text-white text-neutral-900" />
           <Typography variant="span" className="md:block hidden dark:!text-white !text-neutral-900">Novo serviço</Typography>
         </Button>
@@ -121,7 +121,7 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
                         }}
                         variant={field.value === true ? "default" : "outline"}
                         className={cn(
-                          "w-1/3 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white",
+                          "w-1/3 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white !text-white",
                           field.value === true && "bg-green-500 dark:bg-green-500 text-white hover:bg-green-500 dark:hover:bg-green-500"
                         )}
                         type="button"
@@ -134,7 +134,7 @@ export const AddNewServiceDialog = ({ onSubmitSuccess }: { onSubmitSuccess: () =
                         }}
                         variant={field.value === false ? "default" : "outline"}
                         className={cn(
-                          "w-1/3 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white",
+                          "w-1/3 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white !text-white",
                           field.value === false && "bg-red-500 dark:bg-red-500 text-white hover:bg-red-500 dark:hover:bg-red-500"
                         )}
                         type="button"

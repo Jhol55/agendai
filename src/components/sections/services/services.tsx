@@ -22,6 +22,7 @@ import { EditServiceDialog } from "./EditServiceDialog";
 import { useSettings } from "@/hooks/use-settings";
 import useWindowSize from "@/hooks/use-window-size";
 import { RemoveServicesDialog } from "./RemoveServicesDialog";
+import { Separator } from "@/components/ui/separator";
 
 
 type RawServiceType = {
@@ -184,7 +185,7 @@ export const Services = () => {
       ),
     },
     {
-      accessorKey: "price",    
+      accessorKey: "price",
       header: () => <Typography variant="span" className="!text-neutral-200">Valor (R$)</Typography>,
       cell: ({ row }) => (
         <Typography variant="span" className="whitespace-nowrap !flex !justify-center">
@@ -249,26 +250,27 @@ export const Services = () => {
   }, []);
 
   return (
-    <section className="w-full h-[calc(100vh-100px)] bg-neutral-50 dark:bg-background">
-      <div className="p-2 w-full flex items-center justify-between">
-        <Typography variant="h1" className="z-30 md:block hidden">Serviços</Typography>
-        <Input
-          className="w-72"
-          placeholder="Procurar serviço..."
-          onInput={(e) => {
-            setServiceSearchValue((e.target as HTMLInputElement).value);
-            if (!(e.target as HTMLInputElement).value.length) {
-              handleUpdate();
-            }
-          }}
-        />
-        <div className="flex gap-2">
-          <RemoveServicesDialog services={selectedServices} onSubmitSuccess={() => handleUpdate()} />
+    <section className="w-full h-[calc(100vh-120px)] bg-neutral-50 dark:bg-background">
+      <div className="p-4 w-full flex items-center justify-end">
+        {/* <Typography variant="h1" className="z-30 md:block hidden">Serviços</Typography> */}
+        <div className="flex gap-2 items-center">
+          <Input
+            className="w-72"
+            placeholder="Procurar serviço..."
+            onInput={(e) => {
+              setServiceSearchValue((e.target as HTMLInputElement).value);
+              if (!(e.target as HTMLInputElement).value.length) {
+                handleUpdate();
+              }
+            }}
+          />
+          <Separator orientation="vertical" className="h-4" />
           <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />
+          <RemoveServicesDialog services={selectedServices} onSubmitSuccess={() => handleUpdate()} />
         </div>
       </div>
       <div className="flex flex-col gap-2 flex-1 w-full bg-background">
-        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background md:h-[calc(84vh-2px)] h-[calc(78vh-2px)] rounded-none" />
+        <DataTable columns={columns} data={services || []} onRowSelection={handleRowSelection} className="bg-background md:h-[calc(82vh-5px)] h-[calc(82vh-5px)] rounded-none" />
         <Pagination className="m-2">
           <PaginationContent>
             <PaginationItem>

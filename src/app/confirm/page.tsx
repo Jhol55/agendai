@@ -155,7 +155,7 @@ function ConfirmationLink() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel
-                        className="md:w-32 w-full text-black dark:text-white"
+                        className="md:w-32 w-full !text-white dark:!text-white"
                       >
                         Voltar
                       </AlertDialogCancel>
@@ -196,7 +196,7 @@ function ConfirmationLink() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel
-                        className="md:w-32 w-full text-black dark:text-white"
+                        className="md:w-32 w-full !text-white dark!:text-white"
                       >
                         Voltar
                       </AlertDialogCancel>

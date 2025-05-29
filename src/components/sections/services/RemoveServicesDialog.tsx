@@ -41,9 +41,9 @@ export const RemoveServicesDialog = ({ services, onSubmitSuccess }: { services: 
   return (
     <AlertDialog open={isOpened} onOpenChange={setIsOpened}>
       <AlertDialogTrigger className="flex items-center" asChild>
-      <Button variant="outline" className="!bg-red-500 hover:!bg-red-600" disabled={!services.length}>
-          <IconTrash className="h-4 w-4 text-white" />
-          <Typography variant="span" className="md:block hidden !text-white">Remover</Typography>
+      <Button variant="ghost" disabled={!services.length}>
+          <IconTrash className="h-4 w-4 !text-red-400" />
+          <Typography variant="span" className="md:block hidden !text-red-400">Remover</Typography>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -66,6 +66,7 @@ export const RemoveServicesDialog = ({ services, onSubmitSuccess }: { services: 
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel
+          className="!text-white dark!:text-white"
             onClick={(e) => {
               e.preventDefault();
               setIsOpened(false);
