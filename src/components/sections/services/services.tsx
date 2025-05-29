@@ -251,8 +251,8 @@ export const Services = () => {
 
   return (
     <section className="w-full h-[calc(100vh-120px)] bg-neutral-50 dark:bg-background">
-      <div className="p-4 w-full flex items-center justify-end">
-        {/* <Typography variant="h1" className="z-30 md:block hidden">Serviços</Typography> */}
+      <div className="p-4 w-full flex items-center justify-between">
+        <Typography variant="h1" className="z-30 md:block hidden">Serviços</Typography>
         <div className="flex gap-2 items-center">
           <Input
             className="w-72"
