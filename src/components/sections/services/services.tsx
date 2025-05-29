@@ -264,7 +264,7 @@ export const Services = () => {
               }
             }}
           />
-          <Separator orientation="vertical" className="h-4" />
+          <Separator orientation="vertical" className="h-4 mx-2" />
           <AddNewServiceDialog onSubmitSuccess={() => handleUpdate()} />          
           <RemoveServicesDialog services={selectedServices} onSubmitSuccess={() => handleUpdate()} />
         </div>
