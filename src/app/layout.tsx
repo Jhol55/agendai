@@ -19,7 +19,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Suspense fallback={<div>Carregando layout...</div>}>
+            <Suspense fallback={<div></div>}>
               <main>
                 {children}
               </main>
