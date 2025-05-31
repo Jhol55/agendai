@@ -1,36 +1,29 @@
-
-
-
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 import { SettingsProvider } from '@/contexts/settings';
 import { ThemeProvider } from '@/contexts/theme/ThemeProvider';
-import { cookies } from 'next/headers';
-
-
+import { Suspense } from 'react';
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`antialiased min-h-screen font-nunito`}
-        suppressHydrationWarning
-      >
+      <body className={`antialiased min-h-screen font-nunito`} suppressHydrationWarning>
         <SettingsProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
-          >           
-            <main>
-              {children}
-            </main>
+          >
+            <Suspense fallback={<div>Carregando layout...</div>}>
+              <main>
+                {children}
+              </main>
+            </Suspense>
           </ThemeProvider>
           <Toaster closeButton />
         </SettingsProvider>
