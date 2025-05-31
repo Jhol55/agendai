@@ -33,7 +33,9 @@ export default function Admin() {
   const searchParams = useSearchParams();
   const theme = searchParams.get("theme");
 
-  console.log("Theme from query:", theme);
+  const { setTheme } = useTheme();
+
+  if (theme) setTheme(theme);
 
   const links = useMemo(() => [
     {
