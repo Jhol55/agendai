@@ -23,11 +23,17 @@ import { ThemeSwitcherToggle } from "@/components/ui/theme-switch-toggle";
 import { ChatWoot } from "@/components/sections/chat/Chat";
 import { Typography } from "@/components/ui/typography";
 import { useTheme } from "next-themes";
+import { useSearchParams } from "next/navigation";
 
 
 export default function Admin() {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(4);
+
+  const searchParams = useSearchParams();
+  const theme = searchParams.get("theme");
+
+  console.log("Theme from query:", theme);
 
   const links = useMemo(() => [
     {
