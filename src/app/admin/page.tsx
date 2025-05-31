@@ -31,11 +31,15 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState(4);
 
   const searchParams = useSearchParams();
-  const theme = searchParams.get("theme");
 
   const { setTheme } = useTheme();
 
-  if (theme) setTheme(theme);
+  useEffect(() => {
+    const theme = searchParams.get("theme");
+    if (theme) {
+      setTheme(theme);
+    }
+  }, [searchParams, setTheme]);
 
   const links = useMemo(() => [
     {
