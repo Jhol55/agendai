@@ -20,7 +20,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <Suspense fallback={
-              <div>1</div>
+              <div></div>
             }>
               <main>
                 {children}
