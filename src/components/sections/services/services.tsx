@@ -49,7 +49,7 @@ export const Services = () => {
   const [direction, setDirection] = useState<'up' | 'down' | undefined>(undefined)
   const [selectedRows, setSelectedRows] = useState<{ index: number, id: string }[]>([]);
 
-  const lastClickTimeRef = useRef<number>(0);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const columns = useMemo<ColumnDef<RawServiceType>[]>(() => [
     {
@@ -66,102 +66,97 @@ export const Services = () => {
               service={row.original}
               onSubmitSuccess={() => handleUpdate()}
               onClick={(event) => {
-                const now = Date.now();
-                const diff = now - lastClickTimeRef.current;
-                lastClickTimeRef.current = now;
-        
-                if (diff < 250) {
-                  // Double click detected, do nothing here
+                if (clickTimeoutRef.current) {
+                  clearTimeout(clickTimeoutRef.current);
+                  clickTimeoutRef.current = null;
                   return;
                 }
-        
-                // Execute click action immediately
-                setSelectedRows((prevSelectedRows) => {
-                  if (!prevSelectedRows) return [{ index, id: row.id }];
-        
-                  if (event.ctrlKey) {
-                    if (prevSelectedRows.some((r) => r.id === row.id && r.index === index)) {
-                      const newSelected = prevSelectedRows.filter(
-                        (r) => r.id !== row.id || r.index !== index
-                      );
-        
+
+                clickTimeoutRef.current = setTimeout(() => {
+                  clickTimeoutRef.current = null;
+                  setSelectedRows((prevSelectedRows) => {
+                    if (!prevSelectedRows) return [{ index, id: row.id }];
+
+                    if (event.ctrlKey) {
+                      if (prevSelectedRows.some(r => r.id === row.id && r.index === index)) {
+                        const newSelected = prevSelectedRows.filter(r => r.id !== row.id || r.index !== index);
+
+                        const selectionObj = newSelected.reduce((acc, row) => {
+                          acc[row.id] = true;
+                          return acc;
+                        }, {} as Record<string, boolean>);
+                        table.setRowSelection(selectionObj);
+
+                        return newSelected;
+                      }
+
+                      const newSelected = [...prevSelectedRows, { index, id: row.id }];
+
                       const selectionObj = newSelected.reduce((acc, row) => {
                         acc[row.id] = true;
                         return acc;
                       }, {} as Record<string, boolean>);
                       table.setRowSelection(selectionObj);
-        
+
                       return newSelected;
                     }
-        
-                    const newSelected = [...prevSelectedRows, { index, id: row.id }];
-        
-                    const selectionObj = newSelected.reduce((acc, row) => {
-                      acc[row.id] = true;
-                      return acc;
-                    }, {} as Record<string, boolean>);
-                    table.setRowSelection(selectionObj);
-        
-                    return newSelected;
-                  }
-        
-                  if (event.shiftKey && prevSelectedRows.length > 0) {
-                    const indices = prevSelectedRows.map((r) => r.index);
-                    const min = Math.min(...indices);
-                    const max = Math.max(...indices);
-        
-                    const start = (() => {
-                      if (index >= min && index <= max && direction === "up") {
-                        return index;
-                      } else if (index <= min) {
-                        setDirection("up");
-                        return index;
-                      } else if (direction === "up") {
-                        setDirection("down");
-                        return max;
-                      } else {
-                        return min;
-                      }
-                    })();
-        
-                    const end = (() => {
-                      if (index >= min && index <= max && direction === "down") {
-                        return index;
-                      } else if (index >= max) {
-                        setDirection("down");
-                        return index;
-                      } else if (direction === "down") {
-                        setDirection("up");
-                        return min;
-                      } else {
-                        return max;
-                      }
-                    })();
-        
-                    const allRows = table.getRowModel().rows;
-        
-                    const selectedRows = allRows
-                      .slice(start, end + 1)
-                      .map((value, i) => ({ index: start + i, id: value.id }));
-        
-                    const selectionObj = selectedRows.reduce((acc, row) => {
-                      acc[row.id] = true;
-                      return acc;
-                    }, {} as Record<string, boolean>);
-        
-                    table.setRowSelection(selectionObj);
-        
-                    return selectedRows;
-                  }
-        
-                  if (prevSelectedRows.length === 1 && prevSelectedRows[0].index === index) {
-                    table.setRowSelection({});
-                    return [];
-                  }
-        
-                  table.setRowSelection({ [row.id]: true });
-                  return [{ index, id: row.id }];
-                });
+
+                    if (event.shiftKey && prevSelectedRows.length > 0) {
+                      const indices = prevSelectedRows.map(r => r.index);
+                      const min = Math.min(...indices);
+                      const max = Math.max(...indices);
+
+                      const start = (() => {
+                        if (index >= min && index <= max && direction === 'up') {
+                          return index;
+                        } else if (index <= min) {
+                          setDirection('up');
+                          return index;
+                        } else if (direction === 'up') {
+                          setDirection('down');
+                          return max;
+                        } else {
+                          return min;
+                        }
+                      })();
+
+                      const end = (() => {
+                        if (index >= min && index <= max && direction === 'down') {
+                          return index;
+                        } else if (index >= max) {
+                          setDirection('down');
+                          return index;
+                        } else if (direction === 'down') {
+                          setDirection('up');
+                          return min;
+                        } else {
+                          return max;
+                        }
+                      })();
+
+                      const allRows = table.getRowModel().rows;
+
+                      const selectedRows = allRows.slice(start, end + 1).map((value, i) => ({ index: start + i, id: value.id }));
+
+                      const selectionObj = selectedRows.reduce((acc, row) => {
+                        acc[row.id] = true;
+                        return acc;
+                      }, {} as Record<string, boolean>);
+
+                      table.setRowSelection(selectionObj);
+
+                      return selectedRows;
+                    }
+
+                    if (prevSelectedRows.length === 1 && prevSelectedRows[0].index === index) {
+                      table.setRowSelection({});
+                      return [];
+                    }
+
+                    table.setRowSelection({ [row.id]: true });
+                    return [{ index, id: row.id }];
+                  });
+                }, 180);
               }}
             />
           </div>
