@@ -17,7 +17,7 @@ import {
 import { KnowledgeBases } from "../../components/sections/knowledge-bases/knowledge-bases";
 import { Prompts } from "../../components/sections/prompts/prompts";
 import { Services } from "../../components/sections/services/services";
-import { Scheduler } from "../../components/sections/scheduler/scheduler";
+import { Calendars } from "../../components/calendars/Calendars";
 import { useSettings } from "@/hooks/use-settings";
 import { ThemeSwitcherToggle } from "@/components/ui/theme-switch-toggle";
 import { ChatWoot } from "@/components/sections/chat/Chat";
@@ -72,7 +72,7 @@ export default function Admin() {
           // transition={{ duration: 0.17, ease: "easeIn" }}
           className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-dark-chatwoot-primary"
         >
-          <Services />
+          <Calendars />
         </motion.div>
       </AnimatePresence>
     </div>

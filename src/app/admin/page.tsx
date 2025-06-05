@@ -27,9 +27,6 @@ import { useSearchParams } from "next/navigation";
 
 
 export default function Admin() {
-  const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(4);
-
   const searchParams = useSearchParams();
 
   const { setTheme } = useTheme();
@@ -40,83 +37,6 @@ export default function Admin() {
       setTheme(theme);
     }
   }, [searchParams, setTheme]);
-
-  const links = useMemo(() => [
-    {
-      label: "Dashboard",
-      icon: (
-        <IconBrandTabler className="!h-5 !w-5 flex-shrink-0" />
-      ),
-      content: (
-        <KnowledgeBases />
-      )
-    },
-    {
-      label: "Bases de Conhecimento",
-      icon: (
-        <IconBrain className="!h-5 !w-5 flex-shrink-0" />
-      ),
-      content: (
-        <KnowledgeBases />
-      )
-    },
-    {
-      label: "Prompts",
-      icon: (
-        <IconMessage className="!h-5 !w-5 flex-shrink-0" />
-      ),
-      content: (
-        <Prompts />
-      )
-    },
-    {
-      label: "Serviços",
-      icon: (
-        <IconBriefcase className="!h-5 !w-5 flex-shrink-0" />
-      ),
-      content: (
-        <Services />
-      )
-    },
-    {
-      label: "Agenda",
-      icon: (
-        <IconCalendarWeek className="!h-5 !w-5 flex-shrink-0" />
-      ),
-      content: (
-        <Scheduler />
-      )
-    },
-    {
-      label: "Chat",
-      icon: (
-        <IconMessage className="!h-5 !w-5 flex-shrink-0" />
-      ),
-      content: (
-        <ChatWoot />
-      )
-    },
-  ], []);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (typeof document !== "undefined" && document.body) {
-        document.body.style.overflow = "auto";
-      }
-    }, 500);
-
-    if (typeof document !== "undefined" && document.body) {
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      if (typeof document !== "undefined" && document.body) {
-        document.body.style.overflow = "auto";
-      }
-      clearTimeout(timeout);
-    };
-  }, [activeTab]);
-
 
   return (
     <div className="flex flex-col md:flex-row bg-neutral-50 dark:bg-background w-full relative min-h-screen"
@@ -146,14 +66,13 @@ export default function Admin() {
       </Sidebar> */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={activeTab}
           // initial={{ x: "-100%", opacity: 0 }}
           // animate={{ x: 0, opacity: 1 }}
           // exit={{ x: "100%", opacity: 0 }}
           // transition={{ duration: 0.17, ease: "easeIn" }}
           className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-dark-chatwoot-primary"
         >
-          {links[activeTab].content}
+          <Scheduler />
         </motion.div>
       </AnimatePresence>
     </div>

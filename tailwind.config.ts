@@ -14,6 +14,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         nunito: ['Nunito', ...fontFamily.sans],
+        inter: ['Inter', 'sans-serif']
       },
       screens: {
         'xs': '480px',

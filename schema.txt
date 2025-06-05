@@ -3,13 +3,13 @@
     {
       "type": "app",
       "data": {
-        "projectName": "teste",
+        "projectName": "$(PROJECT_NAME)",
         "serviceName": "evolution",
         "source": {
           "type": "image",
           "image": "atendai/evolution-api:latest"
         },
-        "env": "SERVER_URL=https://$(PRIMARY_DOMAIN)\r\nDEL_INSTANCE=false\r\nDEL_TEMP_INSTANCES=false\r\nPROVIDER_ENABLED=false\r\nPROVIDER_HOST=127.0.0.1\r\nPROVIDER_PORT=5656\r\nPROVIDER_PREFIX=evolution-app\r\nDATABASE_ENABLED=true\r\nDATABASE_PROVIDER=postgresql\r\nDATABASE_CONNECTION_URI=postgres://postgres:D417B88531C7D68BDA8B5B9FBEC45@teste_postgres:5432/evolution-app\r\nDATABASE_CONNECTION_CLIENT_NAME=evolution-app\r\nCONFIG_SESSION_PHONE_VERSION=2.3000.1019078222\r\nSQS_ENABLED=false\r\nSQS_ACCESS_KEY_ID=\r\nSQS_SECRET_ACCESS_KEY=\r\nSQS_ACCOUNT_ID=\r\nSQS_REGION=\r\nWEBSOCKET_ENABLED=false\r\nWEBSOCKET_GLOBAL_EVENTS=false\r\nWA_BUSINESS_TOKEN_WEBHOOK=evolution\r\nWA_BUSINESS_URL=https://graph.facebook.com\r\nWA_BUSINESS_VERSION=v20.0\r\nWA_BUSINESS_LANGUAGE=pt_BR\r\nWEBHOOK_GLOBAL_URL=\r\nWEBHOOK_GLOBAL_ENABLED=false\r\nWEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false\r\nWEBHOOK_EVENTS_APPLICATION_STARTUP=true\r\nWEBHOOK_EVENTS_QRCODE_UPDATED=true\r\nWEBHOOK_EVENTS_MESSAGES_SET=false\r\nWEBHOOK_EVENTS_MESSAGES_UPSERT=false\r\nWEBHOOK_EVENTS_MESSAGES_EDITED=false\r\nWEBHOOK_EVENTS_MESSAGES_UPDATE=false\r\nWEBHOOK_EVENTS_MESSAGES_DELETE=false\r\nWEBHOOK_EVENTS_SEND_MESSAGE=false\r\nWEBHOOK_EVENTS_CONTACTS_SET=false\r\nWEBHOOK_EVENTS_CONTACTS_UPSERT=false\r\nWEBHOOK_EVENTS_CONTACTS_UPDATE=false\r\nWEBHOOK_EVENTS_PRESENCE_UPDATE=false\r\nWEBHOOK_EVENTS_CHATS_SET=false\r\nWEBHOOK_EVENTS_CHATS_UPSERT=false\r\nWEBHOOK_EVENTS_CHATS_UPDATE=false\r\nWEBHOOK_EVENTS_CHATS_DELETE=false\r\nWEBHOOK_EVENTS_GROUPS_UPSERT=false\r\nWEBHOOK_EVENTS_GROUPS_UPDATE=false\r\nWEBHOOK_EVENTS_GROUP_PARTICIPANTS_UPDATE=false\r\nWEBHOOK_EVENTS_CONNECTION_UPDATE=true\r\nWEBHOOK_EVENTS_LABELS_EDIT=false\r\nWEBHOOK_EVENTS_LABELS_ASSOCIATION=false\r\nWEBHOOK_EVENTS_CALL=false\r\nWEBHOOK_EVENTS_TYPEBOT_START=false\r\nWEBHOOK_EVENTS_TYPEBOT_CHANGE_STATUS=false\r\nWEBHOOK_EVENTS_ERRORS=false\r\nWEBHOOK_EVENTS_ERRORS_WEBHOOK=\r\nCONFIG_SESSION_PHONE_CLIENT=rpbank\r\nCONFIG_SESSION_PHONE_NAME=Chrome\r\nQRCODE_LIMIT=2\r\nQRCODE_COLOR=#000000\r\nOPENAI_ENABLED=true\r\nDIFY_ENABLED=true\r\nTYPEBOT_ENABLED=false\r\nTYPEBOT_API_VERSION=latest\r\nCHATWOOT_ENABLED=false\r\nCHATWOOT_MESSAGE_READ=true\r\nCHATWOOT_IMPORT_DATABASE_CONNECTION_URI=postgresql://[USUARIO]:[SENHA]@[HOST]:5432/[CHATWOPOT_DATABASE]?sslmode=disable\r\nCHATWOOT_IMPORT_PLACEHOLDER_MEDIA_MESSAGE=true\r\nCACHE_REDIS_ENABLED=true\r\nCACHE_REDIS_URI=redis://default:F948F752BAC66568E8ED12ABE8FD2@teste_redis:6379/5\r\nCACHE_REDIS_PREFIX_KEY=evolution-app\r\nCACHE_REDIS_SAVE_INSTANCES=false\r\nCACHE_LOCAL_ENABLED=false\r\nS3_ENABLED=false\r\nS3_ACCESS_KEY=\r\nS3_SECRET_KEY=\r\nS3_BUCKET=evolution\r\nS3_PORT=443\r\nS3_ENDPOINT=\r\nS3_USE_SSL=true\r\nAUTHENTICATION_API_KEY=BCC5EA39EACA78865A9122176458D\r\nAUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true\r\nLANGUAGE=pt-BR",
+        "env": "SERVER_URL=https://$(PRIMARY_DOMAIN)\r\nDEL_INSTANCE=false\r\nDEL_TEMP_INSTANCES=false\r\nPROVIDER_ENABLED=false\r\nPROVIDER_HOST=127.0.0.1\r\nPROVIDER_PORT=5656\r\nPROVIDER_PREFIX=evolution-app\r\nDATABASE_ENABLED=true\r\nDATABASE_PROVIDER=postgresql\r\nDATABASE_CONNECTION_URI=postgres://postgres:D417B88531C7D68BDA8B5B9FBEC45@$(PROJECT_NAME)_postgres:5432/evolution-app\r\nDATABASE_CONNECTION_CLIENT_NAME=evolution-app\r\nCONFIG_SESSION_PHONE_VERSION=2.3000.1019078222\r\nSQS_ENABLED=false\r\nSQS_ACCESS_KEY_ID=\r\nSQS_SECRET_ACCESS_KEY=\r\nSQS_ACCOUNT_ID=\r\nSQS_REGION=\r\nWEBSOCKET_ENABLED=false\r\nWEBSOCKET_GLOBAL_EVENTS=false\r\nWA_BUSINESS_TOKEN_WEBHOOK=evolution\r\nWA_BUSINESS_URL=https://graph.facebook.com\r\nWA_BUSINESS_VERSION=v20.0\r\nWA_BUSINESS_LANGUAGE=pt_BR\r\nWEBHOOK_GLOBAL_URL=\r\nWEBHOOK_GLOBAL_ENABLED=false\r\nWEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false\r\nWEBHOOK_EVENTS_APPLICATION_STARTUP=true\r\nWEBHOOK_EVENTS_QRCODE_UPDATED=true\r\nWEBHOOK_EVENTS_MESSAGES_SET=false\r\nWEBHOOK_EVENTS_MESSAGES_UPSERT=false\r\nWEBHOOK_EVENTS_MESSAGES_EDITED=false\r\nWEBHOOK_EVENTS_MESSAGES_UPDATE=false\r\nWEBHOOK_EVENTS_MESSAGES_DELETE=false\r\nWEBHOOK_EVENTS_SEND_MESSAGE=false\r\nWEBHOOK_EVENTS_CONTACTS_SET=false\r\nWEBHOOK_EVENTS_CONTACTS_UPSERT=false\r\nWEBHOOK_EVENTS_CONTACTS_UPDATE=false\r\nWEBHOOK_EVENTS_PRESENCE_UPDATE=false\r\nWEBHOOK_EVENTS_CHATS_SET=false\r\nWEBHOOK_EVENTS_CHATS_UPSERT=false\r\nWEBHOOK_EVENTS_CHATS_UPDATE=false\r\nWEBHOOK_EVENTS_CHATS_DELETE=false\r\nWEBHOOK_EVENTS_GROUPS_UPSERT=false\r\nWEBHOOK_EVENTS_GROUPS_UPDATE=false\r\nWEBHOOK_EVENTS_GROUP_PARTICIPANTS_UPDATE=false\r\nWEBHOOK_EVENTS_CONNECTION_UPDATE=true\r\nWEBHOOK_EVENTS_LABELS_EDIT=false\r\nWEBHOOK_EVENTS_LABELS_ASSOCIATION=false\r\nWEBHOOK_EVENTS_CALL=false\r\nWEBHOOK_EVENTS_TYPEBOT_START=false\r\nWEBHOOK_EVENTS_TYPEBOT_CHANGE_STATUS=false\r\nWEBHOOK_EVENTS_ERRORS=false\r\nWEBHOOK_EVENTS_ERRORS_WEBHOOK=\r\nCONFIG_SESSION_PHONE_CLIENT=rpbank\r\nCONFIG_SESSION_PHONE_NAME=Chrome\r\nQRCODE_LIMIT=2\r\nQRCODE_COLOR=#000000\r\nOPENAI_ENABLED=true\r\nDIFY_ENABLED=true\r\nTYPEBOT_ENABLED=false\r\nTYPEBOT_API_VERSION=latest\r\nCHATWOOT_ENABLED=false\r\nCHATWOOT_MESSAGE_READ=true\r\nCHATWOOT_IMPORT_DATABASE_CONNECTION_URI=postgresql://[USUARIO]:[SENHA]@[HOST]:5432/[CHATWOPOT_DATABASE]?sslmode=disable\r\nCHATWOOT_IMPORT_PLACEHOLDER_MEDIA_MESSAGE=true\r\nCACHE_REDIS_ENABLED=true\r\nCACHE_REDIS_URI=redis://default:F948F752BAC66568E8ED12ABE8FD2@$(PROJECT_NAME)_redis:6379/5\r\nCACHE_REDIS_PREFIX_KEY=evolution-app\r\nCACHE_REDIS_SAVE_INSTANCES=false\r\nCACHE_LOCAL_ENABLED=false\r\nS3_ENABLED=false\r\nS3_ACCESS_KEY=\r\nS3_SECRET_KEY=\r\nS3_BUCKET=evolution\r\nS3_PORT=443\r\nS3_ENDPOINT=\r\nS3_USE_SSL=true\r\nAUTHENTICATION_API_KEY=BCC5EA39EACA78865A9122176458D\r\nAUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true\r\nLANGUAGE=pt-BR",
         "deploy": {
           "replicas": 1,
           "command": null,
@@ -17,7 +17,7 @@
         },
         "domains": [
           {
-            "host": "teste-evolution.awmygg.easypanel.host",
+            "host": "$(PROJECT_NAME)-evolution.awmygg.easypanel.host",
             "https": true,
             "port": 8080,
             "path": "/",
@@ -30,13 +30,13 @@
     {
       "type": "app",
       "data": {
-        "projectName": "teste",
+        "projectName": "$(PROJECT_NAME)",
         "serviceName": "n8n_editor",
         "source": {
           "type": "image",
           "image": "n8nio/n8n:latest"
         },
-        "env": "DB_TYPE=postgresdb\r\nDB_POSTGRESDB_PORT=5432\r\nDB_POSTGRESDB_HOST=teste_postgres\r\nDB_POSTGRESDB_DATABASE=n8n\r\nDB_POSTGRESDB_USER=postgres\r\nDB_POSTGRESDB_PASSWORD=D417B88531C7D68BDA8B5B9FBEC45\r\n# criar chave https://acte.ltd/utils/randomkeygen\r\nN8N_ENCRYPTION_KEY=E6B84F17CFAC9628796E8537F7E11\r\n# hosts e URL\r\nN8N_HOST=https://teste-n8n-editor.awmygg.easypanel.host\nN8N_EDITOR_BASE_URL=https://teste-n8n-editor.awmygg.easypanel.host\nN8N_PROTOCOL=https\nNODE_ENV=production\r\n# webhooks\r\nWEBHOOK_URL=https://teste-n8n-webhook.awmygg.easypanel.host\r\n# modo de execuçao para fila\r\nEXECUTIONS_MODE=queue\r\n# redis\r\nQUEUE_BULL_REDIS_HOST=teste_redis\r\nQUEUE_BULL_REDIS_PASSWORD=F948F752BAC66568E8ED12ABE8FD2\r\nQUEUE_BULL_REDIS_PORT=6379\r\nQUEUE_BULL_REDIS_DB=2\r\n# bibliotecas utilizadas\r\nNODE_FUNCTION_ALLOW_EXTERNAL=*\r\nEXECUTIONS_DATA_PRUNE='true'\r\nEXECUTIONS_DATA_MAX_AGE=336\r\n#timezone\r\nGENERIC_TIMEZONE=America/Sao_Paulo\r\nN8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true",
+        "env": "DB_TYPE=postgresdb\r\nDB_POSTGRESDB_PORT=5432\r\nDB_POSTGRESDB_HOST=$(PROJECT_NAME)_postgres\r\nDB_POSTGRESDB_DATABASE=$(PROJECT_NAME)\r\nDB_POSTGRESDB_USER=postgres\r\nDB_POSTGRESDB_PASSWORD=D417B88531C7D68BDA8B5B9FBEC45\r\n# criar chave https://acte.ltd/utils/randomkeygen\r\nN8N_ENCRYPTION_KEY=E6B84F17CFAC9628796E8537F7E11\r\n# hosts e URL\r\nN8N_HOST=https://$(PROJECT_NAME)-n8n-editor.awmygg.easypanel.host\nN8N_EDITOR_BASE_URL=https://$(PROJECT_NAME)-n8n-editor.awmygg.easypanel.host\nN8N_PROTOCOL=https\nNODE_ENV=production\r\n# webhooks\r\nWEBHOOK_URL=https://$(PROJECT_NAME)-n8n-webhook.awmygg.easypanel.host\r\n# modo de execuçao para fila\r\nEXECUTIONS_MODE=queue\r\n# redis\r\nQUEUE_BULL_REDIS_HOST=$(PROJECT_NAME)_redis\r\nQUEUE_BULL_REDIS_PASSWORD=F948F752BAC66568E8ED12ABE8FD2\r\nQUEUE_BULL_REDIS_PORT=6379\r\nQUEUE_BULL_REDIS_DB=2\r\n# bibliotecas utilizadas\r\nNODE_FUNCTION_ALLOW_EXTERNAL=*\r\nEXECUTIONS_DATA_PRUNE='true'\r\nEXECUTIONS_DATA_MAX_AGE=336\r\n#timezone\r\nGENERIC_TIMEZONE=America/Sao_Paulo\r\nN8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true",
         "deploy": {
           "replicas": 1,
           "command": "n8n start",
@@ -44,7 +44,7 @@
         },
         "domains": [
           {
-            "host": "teste-n8n-editor.awmygg.easypanel.host",
+            "host": "$(PROJECT_NAME)-n8n-editor.awmygg.easypanel.host",
             "https": true,
             "port": 5678,
             "path": "/",
@@ -57,13 +57,13 @@
     {
       "type": "app",
       "data": {
-        "projectName": "teste",
+        "projectName": "$(PROJECT_NAME)",
         "serviceName": "n8n_webhook",
         "source": {
           "type": "image",
           "image": "n8nio/n8n:latest"
         },
-        "env": "DB_TYPE=postgresdb\r\nDB_POSTGRESDB_PORT=5432\r\nDB_POSTGRESDB_HOST=teste_postgres\r\nDB_POSTGRESDB_DATABASE=n8n\r\nDB_POSTGRESDB_USER=postgres\r\nDB_POSTGRESDB_PASSWORD=D417B88531C7D68BDA8B5B9FBEC45\r\n# criar chave https://acte.ltd/utils/randomkeygen\r\nN8N_ENCRYPTION_KEY=E6B84F17CFAC9628796E8537F7E11\r\n# hosts e URL\r\nN8N_HOST=https://teste-n8n-editor.awmygg.easypanel.host\nN8N_EDITOR_BASE_URL=https://teste-n8n-editor.awmygg.easypanel.host\nN8N_PROTOCOL=https\nNODE_ENV=production\r\n# webhooks\r\nWEBHOOK_URL=https://teste-n8n-webhook.awmygg.easypanel.host\r\n# modo de execuçao para fila\r\nEXECUTIONS_MODE=queue\r\n# redis\r\nQUEUE_BULL_REDIS_HOST=teste_redis\r\nQUEUE_BULL_REDIS_PASSWORD=F948F752BAC66568E8ED12ABE8FD2\r\nQUEUE_BULL_REDIS_PORT=6379\r\nQUEUE_BULL_REDIS_DB=2\r\n# bibliotecas utilizadas\r\nNODE_FUNCTION_ALLOW_EXTERNAL=*\r\nEXECUTIONS_DATA_PRUNE='true'\r\nEXECUTIONS_DATA_MAX_AGE=336\r\n#timezone\r\nGENERIC_TIMEZONE=America/Sao_Paulo\r\nN8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true",
+        "env": "DB_TYPE=postgresdb\r\nDB_POSTGRESDB_PORT=5432\r\nDB_POSTGRESDB_HOST=$(PROJECT_NAME)_postgres\r\nDB_POSTGRESDB_DATABASE=$(PROJECT_NAME)\r\nDB_POSTGRESDB_USER=postgres\r\nDB_POSTGRESDB_PASSWORD=D417B88531C7D68BDA8B5B9FBEC45\r\n# criar chave https://acte.ltd/utils/randomkeygen\r\nN8N_ENCRYPTION_KEY=E6B84F17CFAC9628796E8537F7E11\r\n# hosts e URL\r\nN8N_HOST=https://$(PROJECT_NAME)-n8n-editor.awmygg.easypanel.host\nN8N_EDITOR_BASE_URL=https://$(PROJECT_NAME)-n8n-editor.awmygg.easypanel.host\nN8N_PROTOCOL=https\nNODE_ENV=production\r\n# webhooks\r\nWEBHOOK_URL=https://$(PROJECT_NAME)-n8n-webhook.awmygg.easypanel.host\r\n# modo de execuçao para fila\r\nEXECUTIONS_MODE=queue\r\n# redis\r\nQUEUE_BULL_REDIS_HOST=$(PROJECT_NAME)_redis\r\nQUEUE_BULL_REDIS_PASSWORD=F948F752BAC66568E8ED12ABE8FD2\r\nQUEUE_BULL_REDIS_PORT=6379\r\nQUEUE_BULL_REDIS_DB=2\r\n# bibliotecas utilizadas\r\nNODE_FUNCTION_ALLOW_EXTERNAL=*\r\nEXECUTIONS_DATA_PRUNE='true'\r\nEXECUTIONS_DATA_MAX_AGE=336\r\n#timezone\r\nGENERIC_TIMEZONE=America/Sao_Paulo\r\nN8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true",
         "deploy": {
           "replicas": 2,
           "command": "n8n webhook",
@@ -71,7 +71,7 @@
         },
         "domains": [
           {
-            "host": "teste-n8n-webhook.awmygg.easypanel.host",
+            "host": "$(PROJECT_NAME)-n8n-webhook.awmygg.easypanel.host",
             "https": true,
             "port": 5678,
             "path": "/",
@@ -84,13 +84,13 @@
     {
       "type": "app",
       "data": {
-        "projectName": "teste",
+        "projectName": "$(PROJECT_NAME)",
         "serviceName": "n8n_worker",
         "source": {
           "type": "image",
           "image": "n8nio/n8n:latest"
         },
-        "env": "DB_TYPE=postgresdb\r\nDB_POSTGRESDB_PORT=5432\r\nDB_POSTGRESDB_HOST=teste_postgres\r\nDB_POSTGRESDB_DATABASE=n8n\r\nDB_POSTGRESDB_USER=postgres\r\nDB_POSTGRESDB_PASSWORD=D417B88531C7D68BDA8B5B9FBEC45\r\n# criar chave https://acte.ltd/utils/randomkeygen\r\nN8N_ENCRYPTION_KEY=E6B84F17CFAC9628796E8537F7E11\r\n# hosts e URL\r\nN8N_HOST=https://teste-n8n-editor.awmygg.easypanel.host\nN8N_EDITOR_BASE_URL=https://teste-n8n-editor.awmygg.easypanel.host\nN8N_PROTOCOL=https\nNODE_ENV=production\r\n# webhooks\r\nWEBHOOK_URL=https://teste-n8n-webhook.awmygg.easypanel.host\r\n# modo de execuçao para fila\r\nEXECUTIONS_MODE=queue\r\n# redis\r\nQUEUE_BULL_REDIS_HOST=teste_redis\r\nQUEUE_BULL_REDIS_PASSWORD=F948F752BAC66568E8ED12ABE8FD2\r\nQUEUE_BULL_REDIS_PORT=6379\r\nQUEUE_BULL_REDIS_DB=2\r\n# bibliotecas utilizadas\r\nNODE_FUNCTION_ALLOW_EXTERNAL=*\r\nEXECUTIONS_DATA_PRUNE='true'\r\nEXECUTIONS_DATA_MAX_AGE=336\r\n#timezone\r\nGENERIC_TIMEZONE=America/Sao_Paulo\r\nN8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true",
+        "env": "DB_TYPE=postgresdb\r\nDB_POSTGRESDB_PORT=5432\r\nDB_POSTGRESDB_HOST=$(PROJECT_NAME)_postgres\r\nDB_POSTGRESDB_DATABASE=$(PROJECT_NAME)\r\nDB_POSTGRESDB_USER=postgres\r\nDB_POSTGRESDB_PASSWORD=D417B88531C7D68BDA8B5B9FBEC45\r\n# criar chave https://acte.ltd/utils/randomkeygen\r\nN8N_ENCRYPTION_KEY=E6B84F17CFAC9628796E8537F7E11\r\n# hosts e URL\r\nN8N_HOST=https://$(PROJECT_NAME)-n8n-editor.awmygg.easypanel.host\nN8N_EDITOR_BASE_URL=https://$(PROJECT_NAME)-n8n-editor.awmygg.easypanel.host\nN8N_PROTOCOL=https\nNODE_ENV=production\r\n# webhooks\r\nWEBHOOK_URL=https://$(PROJECT_NAME)-n8n-webhook.awmygg.easypanel.host\r\n# modo de execuçao para fila\r\nEXECUTIONS_MODE=queue\r\n# redis\r\nQUEUE_BULL_REDIS_HOST=$(PROJECT_NAME)_redis\r\nQUEUE_BULL_REDIS_PASSWORD=F948F752BAC66568E8ED12ABE8FD2\r\nQUEUE_BULL_REDIS_PORT=6379\r\nQUEUE_BULL_REDIS_DB=2\r\n# bibliotecas utilizadas\r\nNODE_FUNCTION_ALLOW_EXTERNAL=*\r\nEXECUTIONS_DATA_PRUNE='true'\r\nEXECUTIONS_DATA_MAX_AGE=336\r\n#timezone\r\nGENERIC_TIMEZONE=America/Sao_Paulo\r\nN8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true",
         "deploy": {
           "replicas": 1,
           "command": "n8n worker --concurrency=10",
@@ -98,7 +98,7 @@
         },
         "domains": [
           {
-            "host": "teste-n8n-worker.awmygg.easypanel.host",
+            "host": "$(PROJECT_NAME)-n8n-worker.awmygg.easypanel.host",
             "https": true,
             "port": 80,
             "path": "/",
@@ -111,7 +111,7 @@
     {
       "type": "postgres",
       "data": {
-        "projectName": "teste",
+        "projectName": "$(PROJECT_NAME)",
         "serviceName": "postgres",
         "image": "postgres:17",
         "password": "D417B88531C7D68BDA8B5B9FBEC45"
@@ -120,10 +120,78 @@
     {
       "type": "redis",
       "data": {
-        "projectName": "teste",
+        "projectName": "$(PROJECT_NAME)",
         "serviceName": "redis",
         "image": "redis:7",
         "password": "F948F752BAC66568E8ED12ABE8FD2"
+      }
+    },
+    {
+      "type": "app",
+      "data": {
+          "serviceName": "chatwoot",
+          "env": "SECRET_KEY_BASE=9b810ee0999b6bd10b7cee29f224e2fd\nFRONTEND_URL=https://$(PRIMARY_DOMAIN)\nDEFAULT_LOCALE=en\nFORCE_SSL=false\nENABLE_ACCOUNT_SIGNUP=true\nREDIS_URL=redis://default@$(PROJECT_NAME)_chatwoot-redis:6379\nREDIS_PASSWORD=ca6b9b25e373116ac033\nREDIS_OPENSSL_VERIFY_MODE=none\nPOSTGRES_DATABASE=$(PROJECT_NAME)\nPOSTGRES_HOST=$(PROJECT_NAME)_chatwoot-db\nPOSTGRES_USERNAME=postgres\nPOSTGRES_PASSWORD=2166cfb7a5f3942cd206\nRAILS_MAX_THREADS=5\nNODE_ENV=production\nRAILS_ENV=production\nINSTALLATION_ENV=docker\nTRUSTED_PROXIES=*\nCHATWOOT_DOMAIN=$(PRIMARY_DOMAIN)\nPROJECT_NAME=$(PROJECT_NAME)\nCALENDAR_SERVICE_NAME=agendai",
+          "source": {
+              "type": "image",
+              "image": "jhonathangalhardo/chatwoot:latest"
+          },
+          "domains": [
+              {
+                  "host": "$(EASYPANEL_DOMAIN)",
+                  "port": 3000
+              }
+          ],
+          "deploy": {
+              "command": "bundle exec rails db:chatwoot_prepare && bundle exec rails s -p 3000 -b 0.0.0.0"
+          },
+          "mounts": [
+              {
+                  "type": "volume",
+                  "name": "data",
+                  "mountPath": "/data/storage"
+              },
+              {
+                  "type": "volume",
+                  "name": "app",
+                  "mountPath": "/app/storage"
+              }
+          ]
+      }
+  },
+  {
+      "type": "app",
+      "data": {
+          "serviceName": "chatwoot-sidekiq",
+          "env": "SECRET_KEY_BASE=9b810ee0999b6bd10b7cee29f224e2fd\nFRONTEND_URL=https://$(PRIMARY_DOMAIN)\nDEFAULT_LOCALE=en\nFORCE_SSL=false\nENABLE_ACCOUNT_SIGNUP=true\nREDIS_URL=redis://default@$(PROJECT_NAME)_chatwoot-redis:6379\nREDIS_PASSWORD=ca6b9b25e373116ac033\nREDIS_OPENSSL_VERIFY_MODE=none\nPOSTGRES_DATABASE=$(PROJECT_NAME)\nPOSTGRES_HOST=$(PROJECT_NAME)_chatwoot-db\nPOSTGRES_USERNAME=postgres\nPOSTGRES_PASSWORD=2166cfb7a5f3942cd206\nRAILS_MAX_THREADS=5\nNODE_ENV=production\nRAILS_ENV=production\nINSTALLATION_ENV=docker\nTRUSTED_PROXIES=*\nCHATWOOT_DOMAIN=$(PRIMARY_DOMAIN)\nPROJECT_NAME=$(PROJECT_NAME)\nCALENDAR_SERVICE_NAME=agendai",
+          "source": {
+              "type": "image",
+              "image": "jhonathangalhardo/chatwoot:latest"
+          },
+          "deploy": {
+              "command": "bundle exec sidekiq -C config/sidekiq.yml"
+          },
+          "mounts": [
+              {
+                  "type": "bind",
+                  "hostPath": "/etc/easypanel/projects/$(PROJECT_NAME)/chatwoot/volumes/app",
+                  "mountPath": "/app/storage"
+              }
+          ]
+      }
+  },
+  {
+      "type": "redis",
+      "data": {
+          "serviceName": "chatwoot-redis",
+          "password": "ca6b9b25e373116ac033"
+      }
+  },
+  {
+      "type": "postgres",
+      "data": {
+          "serviceName": "chatwoot-db",
+          "image": "pgvector/pgvector:pg17",
+          "password": "2166cfb7a5f3942cd206"
       }
     }
   ]

@@ -96,7 +96,7 @@ export function TimePicker({
   return (
     <div ref={ref}>
       <Popover open={open} onOpenChange={onOpenChange} modal>
-        <PopoverTrigger
+        <PopoverTrigger    
           asChild
           disabled={disabled}
           className="disabled:!cursor-not-allowed disabled:hover:bg-neutral-50 disabled:text-neutral-50 disabled:hover:text-neutral-50 disabled:!pointer-events-auto"
