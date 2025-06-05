@@ -141,7 +141,7 @@ export const Calendars = () => {
   }, [])
 
   return (
-    <main className={cn("flex sm:flex-row flex-col items-center justify-center w-full gap-8")}>
+    <main className={cn("flex sm:flex-row flex-col items-center justify-center w-full gap-8 !bg-[rgb(253,253,253)]")}>
       <section className={cn("flex flex-col md:w-fit w-full", !showForm && "md:w-full h-full", showForm && "md:h-full md:!w-[20rem] w-full")}>
         <header className={cn("block md:pb-10 px-6 sm:px-0", showForm && "md:fixed px-0")}>
           <div className="flex items-center justify-between gap-2 w-full mx-auto">
