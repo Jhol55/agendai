@@ -561,7 +561,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
       className="flex flex-col border border-l-0 border-b-0 rounded-md rounded-l-none rounded-br-none overflow-hidden md:h-[calc(91vh-2px)] h-[calc(91vh-2px] leading-relaxed shadow-sm"
     >
       <AddAppointmentDialog className="hidden" open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen} startDate={addAppointmentStartDate} />
-      <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto bg-transparent" id="calendar-overflow-container">
+      <div className="light-scrollbar dark:dark-scrollbar flex-grow overflow-auto !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary" id="calendar-overflow-container">
         <Table>
           <Timeline />
           <TableBody ref={ref} className="relative">
@@ -580,7 +580,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
                       key={index}
                       className={cn(
                         "relative border border-b-0 dark:bg-dark-chatwoot-primary",
-                        !isResizing && "dark:[&:hover:not(:has(.handle-resize:hover))]:bg-muted/50 [&:hover:not(:has(.handle-resize:hover))]:bg-neutral-200",
+                        !isResizing && "dark:[&:hover:not(:has(.handle-resize:hover))]:bg-neutral-800 [&:hover:not(:has(.handle-resize:hover))]:bg-neutral-200",
                         isResizing && "cursor-n-resize",
                         // shouldDisplayBackground({ viewMode, index: index + 1 }) && "bg-green-100/20 dark:bg-neutral-900"
                       )}

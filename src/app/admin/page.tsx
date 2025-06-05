@@ -70,7 +70,7 @@ export default function Admin() {
           // animate={{ x: 0, opacity: 1 }}
           // exit={{ x: "100%", opacity: 0 }}
           // transition={{ duration: 0.17, ease: "easeIn" }}
-          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto !bg-[rgb(253,253,253)] dark:bg-dark-chatwoot-primary"
+          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary"
         >
           <Scheduler />
         </motion.div>
