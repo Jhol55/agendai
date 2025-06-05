@@ -141,15 +141,15 @@ export const Calendars = () => {
   }, [])
 3
   return (
-    <main className={cn("flex sm:flex-row flex-col items-center justify-center w-full gap-14 !bg-[rgb(253,253,253)]")}>
+    <main className={cn("flex md:flex-row flex-col w-full md:gap-14 !bg-[rgb(253,253,253)]")}>
       <section className={cn("flex flex-col md:w-fit w-full", !showForm && "md:w-full h-full", showForm && "md:h-full md:!w-[30rem] w-full")}>
-        <header className={cn("block md:pb-10 px-6 sm:px-0", showForm && "md:fixed px-0")}>
+        <header className={cn("md:pb-10 px-6 sm:px-0", showForm && "md:fixed px-0")}>
           <div className="flex items-center justify-between gap-2 w-full mx-auto">
             <div className="flex items-center gap-4 sm:px-0">
               {showForm &&
                 <Button
                   variant="ghost"
-                  className="hover:bg-transparent sm:!p-0 px-2"
+                  className="hover:bg-transparent md:!p-0 px-2"
                   onClick={() => setStep((prevStep) => {
                     if (prevStep === 0) {
                       form.reset();
@@ -171,7 +171,7 @@ export const Calendars = () => {
           </div>
         </header>
         {showForm &&
-          <aside className={cn("block top-16", showForm && "md:fixed")}>
+          <aside className={cn("top-16", showForm && "md:fixed")}>
             <Timeline className="max-w-[20rem] w-full md:block hidden">
               {timelines.map((timeline, index) => (
                 <TimelineItem key={index} status="done">
