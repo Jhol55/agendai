@@ -141,8 +141,8 @@ export const Calendars = () => {
   }, [])
 
   return (
-    <main className={cn("flex sm:flex-row flex-col items-center justify-center w-full m-0 md:p-6 py-8 lg:px-16")}>
-      <section className={cn("flex flex-col md:w-fit w-full", !showForm && "md:w-full h-full md:max-w-[60rem]", showForm && "md:h-full md:!w-[20rem] w-full")}>
+    <main className={cn("flex sm:flex-row flex-col items-center justify-center w-full gap-8")}>
+      <section className={cn("flex flex-col md:w-fit w-full", !showForm && "md:w-full h-full", showForm && "md:h-full md:!w-[20rem] w-full")}>
         <header className={cn("block md:pb-10 px-6 sm:px-0", showForm && "md:fixed px-0")}>
           <div className="flex items-center justify-between gap-2 w-full mx-auto">
             <div className="flex items-center gap-4 sm:px-0">
@@ -197,7 +197,7 @@ export const Calendars = () => {
         }
       </section>
       {showForm &&
-        <section className={cn("flex flex-col gap-4 p-4 w-full md:max-w-[60rem] h-full")}>
+        <section className={cn("flex flex-col gap-4 p-4 w-full h-full")}>
           <div className="dark:bg-neutral-800 shadow-md bg-neutral-100 py-6 rounded-lg h-fit sm:h-full">
             <header className="px-[1.5rem] pb-4">
               <Typography variant="h1">{formHeaders[step].title}</Typography>
