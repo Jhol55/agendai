@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 interface DayProps {
-  start: Date | null;
-  end: Date | null;
+  start: Date | undefined;
+  end: Date | undefined;
   closed?: boolean;
 }
 
@@ -24,17 +24,15 @@ export interface AddCalendarProps {
 
 const daySchema = z.object({
   start: z
-    .date({ required_error: "O horário de início é obrigatório" })
-    .or(z.null()), 
+    .date({ required_error: "O horário de início é obrigatório" }), 
   end: z
-    .date({ required_error: "O horário de fim é obrigatório" })
-    .or(z.null()),
+    .date({ required_error: "O horário de fim é obrigatório" }),
   closed: z.boolean().optional(),
 });
 
 export const AddCalendarSchema = z.object({
   calendar: z.object({
-    name: z.string(),
+    name: z.string().min(1, "O nome do calendário é obrigatório"),
     description: z.string(),
   }),
   operatingHours: z.object({

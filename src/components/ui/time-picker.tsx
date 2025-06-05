@@ -61,6 +61,7 @@ export function TimePicker({
     if (!date) {
       newDate.setHours(0);
       newDate.setMinutes(0);
+      newDate.setSeconds(0);
     }
     if (type === "hour") {
       newDate.setHours(parseInt(value));
@@ -108,8 +109,8 @@ export function TimePicker({
             }}
             disabled={disabled}
             className={cn(
-              "w-full justify-start text-left font-normal dark:bg-neutral-900 z-50",
-              disabled && "dark:hover:bg-neutral-900",
+              "w-full justify-start text-left font-normal dark:bg-neutral-900 bg-neutral-50 z-50",
+              disabled && "dark:hover:bg-neutral-900 hover:!bg-neutral-50",
               (!date && !value) && "text-gray-500",
               className
             )}
