@@ -79,32 +79,32 @@ export const Calendars = () => {
       { name: "calendar.description", component: TextArea, label: "Descrição", placeholder: "Descrição do calendário", className: "min-h-20" }
     ],
     [
-      { name: "operatingHours.sunday.start", component: TimePicker, label: "Domingo", placeholder: "Selecione um horário", className: "" },
-      { name: "operatingHours.sunday.end", component: TimePicker, label: "", placeholder: "Selecione um horário", className: "" },
+      { name: "operatingHours.sunday.start", component: TimePicker, label: "Domingo", placeholder: "Início", className: "" },
+      { name: "operatingHours.sunday.end", component: TimePicker, label: "", placeholder: "Fim", className: "" },
       { name: "operatingHours.sunday.closed", component: Checkbox, label: "Fechado", placeholder: "", className: "" },
 
-      { name: "operatingHours.monday.start", component: TimePicker, label: "Segunda-feira", placeholder: "Selecione um horário", className: "" },
-      { name: "operatingHours.monday.end", component: TimePicker, label: "", placeholder: "Selecione um horário", className: "" },
+      { name: "operatingHours.monday.start", component: TimePicker, label: "Segunda-feira", placeholder: "Início", className: "" },
+      { name: "operatingHours.monday.end", component: TimePicker, label: "", placeholder: "Fim", className: "" },
       { name: "operatingHours.monday.closed", component: Checkbox, label: "Fechado", placeholder: "", className: "" },
 
-      { name: "operatingHours.tuesday.start", component: TimePicker, label: "Terça-feira", placeholder: "Selecione um horário", className: "" },
-      { name: "operatingHours.tuesday.end", component: TimePicker, label: "", placeholder: "Selecione um horário", className: "" },
+      { name: "operatingHours.tuesday.start", component: TimePicker, label: "Terça-feira", placeholder: "Início", className: "" },
+      { name: "operatingHours.tuesday.end", component: TimePicker, label: "", placeholder: "Fim", className: "" },
       { name: "operatingHours.tuesday.closed", component: Checkbox, label: "Fechado", placeholder: "", className: "" },
 
-      { name: "operatingHours.wednesday.start", component: TimePicker, label: "Quarta-feira", placeholder: "Selecione um horário", className: "" },
-      { name: "operatingHours.wednesday.end", component: TimePicker, label: "", placeholder: "Selecione um horário", className: "" },
+      { name: "operatingHours.wednesday.start", component: TimePicker, label: "Quarta-feira", placeholder: "Início", className: "" },
+      { name: "operatingHours.wednesday.end", component: TimePicker, label: "", placeholder: "Fim", className: "" },
       { name: "operatingHours.wednesday.closed", component: Checkbox, label: "Fechado", placeholder: "", className: "" },
 
-      { name: "operatingHours.thursday.start", component: TimePicker, label: "Quinta-feira", placeholder: "Selecione um horário", className: "" },
-      { name: "operatingHours.thursday.end", component: TimePicker, label: "", placeholder: "Selecione um horário", className: "" },
+      { name: "operatingHours.thursday.start", component: TimePicker, label: "Quinta-feira", placeholder: "Início", className: "" },
+      { name: "operatingHours.thursday.end", component: TimePicker, label: "", placeholder: "Fim", className: "" },
       { name: "operatingHours.thursday.closed", component: Checkbox, label: "Fechado", placeholder: "", className: "" },
 
-      { name: "operatingHours.friday.start", component: TimePicker, label: "Sexta-feira", placeholder: "Selecione um horário", className: "" },
-      { name: "operatingHours.friday.end", component: TimePicker, label: "", placeholder: "Selecione um horário", className: "" },
+      { name: "operatingHours.friday.start", component: TimePicker, label: "Sexta-feira", placeholder: "Início", className: "" },
+      { name: "operatingHours.friday.end", component: TimePicker, label: "", placeholder: "Fim", className: "" },
       { name: "operatingHours.friday.closed", component: Checkbox, label: "Fechado", placeholder: "", className: "" },
 
-      { name: "operatingHours.saturday.start", component: TimePicker, label: "Sábado", placeholder: "Selecione um horário", className: "" },
-      { name: "operatingHours.saturday.end", component: TimePicker, label: "", placeholder: "Selecione um horário", className: "" },
+      { name: "operatingHours.saturday.start", component: TimePicker, label: "Sábado", placeholder: "Início", className: "" },
+      { name: "operatingHours.saturday.end", component: TimePicker, label: "", placeholder: "Fim", className: "" },
       { name: "operatingHours.saturday.closed", component: Checkbox, label: "Fechado", placeholder: "", className: "" },
     ],
     [
@@ -201,7 +201,7 @@ export const Calendars = () => {
           <div className="dark:bg-neutral-800 shadow-md bg-neutral-100 py-6 rounded-lg h-fit sm:h-full">
             <header className="px-[1.5rem] pb-4">
               <Typography variant="h1">{formHeaders[step].title}</Typography>
-              <Typography variant="span" className="!text-neutral-400">{formHeaders[step].content}</Typography>
+              <Typography variant="span" className="dark:!text-neutral-400 !text-neutral-600">{formHeaders[step].content}</Typography>
             </header>
             <Form {...form}>
               <form id="add-calendar" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 px-[1.5rem] pb-[1.5rem] overflow-auto">
@@ -213,7 +213,7 @@ export const Calendars = () => {
                     const PrevComponent = prev.component;
                     const NextComponent = next.component;
                     return (
-                      <div key={input.name} className="relative flex gap-4 items-end">
+                      <div key={input.name} className="relative flex sm:flex-row flex-col w-full gap-4 sm:items-end">
                         <FormField
                           control={form.control}
                           name={prev.name as Path<AddCalendarProps>}
