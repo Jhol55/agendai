@@ -279,7 +279,7 @@ export const Calendars = () => {
   return (
     <main
       className={cn(
-        "flex md:flex-row flex-col w-full md:gap-14 !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary"
+        "flex md:flex-row flex-col w-full md:gap-10 !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary"
       )}
     >
       <section
@@ -370,7 +370,7 @@ export const Calendars = () => {
                   <>
                     <WootButton onClick={handleNextStep}>Avançar</WootButton>
                     {step === 2 &&
-                      <div className="w-1/2">
+                      <div className="w-2/3">
                         <PaginationControls
                           totalItems={services.length}
                           itemsPerPage={itemsPerPage}

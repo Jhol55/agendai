@@ -57,14 +57,14 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
     <div className="flex flex-col items-center gap-4">
       <div className="rounded-lg overflow-hidden w-full max-w-[95%]">
         {/* Table Header */}
-        <div className="grid grid-cols-8 p-4 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-          <div className="col-span-1"></div> {/* Checkbox column */}
-          <div className="col-span-2">Serviço</div>
-          <div className="col-span-1 text-center">Online</div> {/* Nova coluna Online */}
-          <div className="col-span-1 text-center">Presencial</div> {/* Nova coluna Presencial */}
-          <div className="col-span-1 text-right">Valor</div>
-          <div className="col-span-1 text-right">Duração</div>
-          <div className="col-span-1"></div> {/* Coluna para a seta */}
+        <div className="grid grid-cols-8 p-4 text-neutral-700 dark:text-neutral-300">
+          <div className="col-span-1"></div>
+          <Typography variant='span' className="col-span-2">Serviço</Typography>
+          <Typography variant='span' className="col-span-1 text-center">Online</Typography>
+          <Typography variant='span' className="col-span-1 text-center">Presencial</Typography>
+          <Typography variant='span' className="col-span-1 text-right">Valor</Typography>
+          <Typography variant='span' className="col-span-1 text-right">Duração</Typography>
+          <div className="col-span-1"></div>
         </div>
 
         {/* Table Body */}
@@ -108,8 +108,8 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       <X className="h-4 w-4 text-red-600" />
                     )}
                   </div>
-                  <div className="col-span-1 text-neutral-700 dark:text-neutral-400 truncate text-right">R$ {Number(service.price).toFixed(2).replace('.', ',')}</div>
-                  <div className="col-span-1 text-neutral-700 dark:text-neutral-400 truncate text-right">{service.duration_minutes} min</div>
+                  <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-right">R$ {Number(service.price).toFixed(2).replace('.', ',')}</Typography>
+                  <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-right">{service.duration_minutes} min</Typography>
                   <div className="col-span-1 flex justify-end pr-2">
                     <button
                       onClick={() => handleToggleExpand(service.id)}
