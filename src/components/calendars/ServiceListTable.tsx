@@ -56,7 +56,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="rounded-lg overflow-hidden w-full max-w-[95%]">
+      <div className="rounded-lg overflow-hidden w-full">
         {/* Table Header */}
         <div className="grid grid-cols-8 p-4 text-neutral-700 dark:text-neutral-300">
           <div className="col-span-1"></div>

@@ -230,7 +230,7 @@ export const Calendars = () => {
         { name: "operatingHours.saturday", label: "Sábado", type: "dayHours" },
       ],
     ];
-  }, [agentOrTeamType, currentPage, form, handlePageChange, services, teamsSelectList, usersSelectList]);
+  }, [agentOrTeamType, form, paginatedServices, teamsSelectList, usersSelectList]);
 
   // Callback for form submission
   const onSubmit = useCallback(
