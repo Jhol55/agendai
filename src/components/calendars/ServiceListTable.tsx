@@ -113,6 +113,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                   <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-center">{service.duration_minutes} min</Typography>
                   <div className="col-span-1 flex justify-end pr-2">
                     <button
+                      type='button'
                       onClick={() => handleToggleExpand(service.id)}
                       className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                       aria-expanded={isExpanded}
