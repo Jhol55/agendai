@@ -60,10 +60,10 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
         {/* Table Header */}
         <div className="grid grid-cols-10 p-4 text-neutral-700 dark:text-neutral-300">
           <div className="col-span-1"></div>
-          <Typography variant='span' className="col-span-4">Serviço</Typography>
+          <Typography variant='span' className="col-span-3">Serviço</Typography>
           <Typography variant='span' className="col-span-1 text-center">Online</Typography>
           <Typography variant='span' className="col-span-1 text-center">Presencial</Typography>
-          <Typography variant='span' className="col-span-1 text-right">Valor</Typography>
+          <Typography variant='span' className="col-span-2 text-right">Valor</Typography>
           <Typography variant='span' className="col-span-1 text-right">Duração</Typography>
           <div className="col-span-1"></div>
         </div>
@@ -93,7 +93,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       }
                     />
                   </div>
-                  <div className="col-span-4 text-neutral-700 dark:text-neutral-400 truncate font-medium">{service.name}</div>
+                  <div className="col-span-3 text-neutral-700 dark:text-neutral-400 truncate font-medium">{service.name}</div>
                   {/* Colunas Online e Presencial na linha principal */}
                   <div className="col-span-1 flex justify-center">
                     {service.allow_online ? (
@@ -109,7 +109,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       <X className="h-4 w-4 text-red-600" />
                     )}
                   </div>
-                  <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-right">R$ {Number(service.price).toFixed(2).replace('.', ',')}</Typography>
+                  <Typography variant='span' className="col-span-2 !text-neutral-700 dark:!text-neutral-400 truncate text-right">R$ {Number(service.price).toFixed(2).replace('.', ',')}</Typography>
                   <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-right">{service.duration_minutes} min</Typography>
                   <div className="col-span-1 flex justify-end pr-2">
                     <button
