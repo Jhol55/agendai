@@ -252,7 +252,7 @@ export const Calendars = () => {
                               <FormLabel className="text-left">{prev.label}</FormLabel>
                               <FormControl>
                                 <PrevComponent
-                                  className={cn("dark:focus:ring-skyblue dark:focus:ring-1 h-10 data-[state=closed]:!ring-0 data-[state=open]:ring-1 data-[state=open]:ring-skyblue transition-all duration-75 !text-neutral-400", field.value && "dark:!text-neutral-200 !text-neutral-700", prev.className)}
+                                  className={cn("dark:focus:ring-skyblue dark:focus:ring-1 h-10 data-[state=closed]:!ring-0 data-[state=open]:ring-1 data-[state=open]:ring-skyblue transition-all duration-75 !text-neutral-400 hover:bg-neutral-200/60 dark:hover:bg-dark-chatwoot-primary", field.value && "dark:!text-neutral-200 !text-neutral-700", prev.className)}
                                   placeholder={prev.placeholder}
                                   mode="time"
                                   value={field.value as ((string | number | readonly string[]) & (Date | null)) | undefined}
@@ -272,7 +272,7 @@ export const Calendars = () => {
                               <FormLabel className="text-left">{input.label}</FormLabel>
                               <FormControl>
                                 <Component
-                                  className={cn("dark:focus:ring-skyblue dark:focus:ring-1 h-10 data-[state=closed]:!ring-0 data-[state=open]:ring-1 data-[state=open]:ring-skyblue transition-all duration-75 !text-neutral-400", field.value && "dark:!text-neutral-200 !text-neutral-700", input.className)}
+                                  className={cn("dark:focus:ring-skyblue dark:focus:ring-1 h-10 data-[state=closed]:!ring-0 data-[state=open]:ring-1 data-[state=open]:ring-skyblue transition-all duration-75 !text-neutral-400 hover:bg-neutral-200/60 dark:hover:bg-dark-chatwoot-primary", field.value && "dark:!text-neutral-200 !text-neutral-700", input.className)}
                                   placeholder={input.placeholder}
                                   mode="time"
                                   value={field.value as ((string | number | readonly string[]) & (Date | null)) | undefined}

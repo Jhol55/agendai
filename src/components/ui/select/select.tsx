@@ -34,7 +34,7 @@ export const Select = ({
           aria-expanded={isOpened}
           className={cn(
             !value && "text-muted-foreground",
-            "h-10 w-full justify-between bg-neutral-50 dark:bg-dark-chatwoot-primary",
+            "h-10 w-full justify-between bg-neutral-50 dark:bg-dark-chatwoot-primary hover:bg-neutral-200/60 dark:hover:bg-dark-chatwoot-primary",
             className
           )}
         >
