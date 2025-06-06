@@ -15,6 +15,18 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 
+export interface TimePickerProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  value?: Date | undefined | null;
+  disabled?: boolean;
+  onChange?: (date: Date | undefined) => void;
+  onClick?: () => void;
+  onInteractOutside?: (event: MouseEvent | TouchEvent) => void;
+  placeholder?: string;
+  mode?: "datetime" | "date" | "time";
+  className?: string;
+}
 
 export function TimePicker({
   open,
@@ -27,18 +39,7 @@ export function TimePicker({
   placeholder,
   mode = "datetime",
   className
-}: {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  value?: Date | undefined | null;
-  disabled?: boolean;
-  onChange?: (date: Date | undefined) => void;
-  onClick?: () => void;
-  onInteractOutside?: (event: MouseEvent | TouchEvent) => void;
-  placeholder?: string;
-  mode?: "datetime" | "date" | "time";
-  className?: string;
-}) {
+}: TimePickerProps) {
   const [date, setDate] = React.useState<Date | undefined>(value ?? undefined);
   const isFirstRender = React.useRef(true);
 

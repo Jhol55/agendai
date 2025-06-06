@@ -9,20 +9,21 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../button";
 
-
-export const Select = ({
-  list,
-  onSelect,
-  value,
-  className,
-  placeholder
-}: {
-  list?: { label: string; value: string }[];
+export interface SelectProps {
+  src?: { label: string; value: string }[];
   onSelect?: (value: string) => void;
   value?: ((string | number | readonly string[]) & (Date | null)) | undefined;
   className?: string;
   placeholder?: string;
-}) => {
+}
+
+export const Select = ({
+  src,
+  onSelect,
+  value,
+  className,
+  placeholder
+}: SelectProps) => {
   const [isOpened, setIsOpened] = useState(false);
 
   return (
@@ -39,7 +40,7 @@ export const Select = ({
           )}
         >
           <div className="flex gap-4">
-            {(list?.length && list?.find((item) => item?.value === value)?.label) ?? placeholder}
+            {(src?.length && src?.find((item) => item?.value === value)?.label) ?? placeholder}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -48,7 +49,7 @@ export const Select = ({
         <Command className="pl-1">
           <CommandList>
             <CommandGroup>
-              {list?.length && list?.map((item, index) => (
+              {src?.length && src?.map((item, index) => (
                 <CommandItem
                   key={index}
                   value={item.value}

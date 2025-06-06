@@ -39,6 +39,10 @@ export const AddCalendarSchema = z.object({
     name: z.string().min(1, "O nome do calendário é obrigatório"),
     description: z.string(),
   }),
+  agentOrTeam: z.object({
+    id: z.string().min(1, "É obrigatório selecionar um agente ou time"),
+    type: z.string(),
+  }),
   operatingHours: z.object({
     sunday: daySchema,
     monday: daySchema,
