@@ -58,13 +58,13 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
     <div className="flex flex-col items-center gap-4">
       <div className="rounded-lg overflow-hidden w-full">
         {/* Table Header */}
-        <div className="grid grid-cols-10 p-4 text-neutral-700 dark:text-neutral-300">
+        <div className="grid grid-cols-10 p-4">
           <div className="col-span-1"></div>
-          <Typography variant='span' className="col-span-3 text-md">Serviço</Typography>
-          <Typography variant='span' className="col-span-1 text-md text-center">Online</Typography>
-          <Typography variant='span' className="col-span-1 text-md text-center">Presencial</Typography>
-          <Typography variant='span' className="col-span-2 text-md text-center">Valor</Typography>
-          <Typography variant='span' className="col-span-1 text-md text-center">Duração</Typography>
+          <Typography variant='span' className="col-span-3 text-md !text-neutral-700 dark:!text-neutral-300">Serviço</Typography>
+          <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-300">Online</Typography>
+          <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-300">Presencial</Typography>
+          <Typography variant='span' className="col-span-2 text-md text-center !text-neutral-700 dark:!text-neutral-300">Valor</Typography>
+          <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-300">Duração</Typography>
           <div className="col-span-1"></div>
         </div>
 
