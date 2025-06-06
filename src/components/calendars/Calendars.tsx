@@ -109,7 +109,7 @@ export const Calendars = () => {
       { name: "calendar.description", component: TextArea, label: "Descrição", placeholder: "Descrição do calendário", className: "min-h-20" }
     ],
     [
-      { name: "agent.id", component: Select, label: "Nome", placeholder: "Nome...", className: "" },
+      { name: "agentOrTeam.id", component: Select, label: "Nome", placeholder: "Nome...", className: "" },
     ],
     [
       { name: "operatingHours.sunday.start", component: TimePicker, label: "Domingo", placeholder: "Início", className: "" },
@@ -146,6 +146,10 @@ export const Calendars = () => {
     calendar: {
       name: "",
       description: ""
+    },
+    agentOrTeam: {
+      id: "",
+      type: ""
     },
     operatingHours: {
       sunday: { start: undefined, end: undefined, closed: false },
@@ -330,6 +334,7 @@ export const Calendars = () => {
                                 onClick={() => {
                                   setIsUsers(true);
                                   form.resetField(input.name as Path<AddCalendarProps>);
+                                  form.setValue("agentOrTeam.type", "agent")
                                 }}
                               >
                                 <Typography variant="span">
@@ -341,6 +346,7 @@ export const Calendars = () => {
                                 onClick={() => {
                                   setIsUsers(false);
                                   form.resetField(input.name as Path<AddCalendarProps>);
+                                  form.setValue("agentOrTeam.type", "team")
                                 }}
                               >
                                 <Typography variant="span">

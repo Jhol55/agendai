@@ -11,6 +11,10 @@ export interface AddCalendarProps {
     name: string;
     description: string;
   };
+  agentOrTeam: {
+    id: string;
+    type: string;
+  }
   operatingHours: {
     sunday: DayProps;
     monday: DayProps;
