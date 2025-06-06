@@ -58,9 +58,9 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
     <div className="flex flex-col items-center gap-4">
       <div className="rounded-lg overflow-hidden w-full">
         {/* Table Header */}
-        <div className="grid grid-cols-8 p-4 text-neutral-700 dark:text-neutral-300">
+        <div className="grid grid-cols-10 p-4 text-neutral-700 dark:text-neutral-300">
           <div className="col-span-1"></div>
-          <Typography variant='span' className="col-span-2">Serviço</Typography>
+          <Typography variant='span' className="col-span-4">Serviço</Typography>
           <Typography variant='span' className="col-span-1 text-center">Online</Typography>
           <Typography variant='span' className="col-span-1 text-center">Presencial</Typography>
           <Typography variant='span' className="col-span-1 text-right">Valor</Typography>
@@ -80,7 +80,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
               <React.Fragment key={service.id}>
                 <div
                   className={cn(
-                    "grid grid-cols-8 p-4 items-center text-sm dark:text-neutral-200 rounded-lg border bg-[rgb(253,253,253)] shadow-sm mb-2",
+                    "grid grid-cols-10 p-4 items-center text-sm dark:text-neutral-200 rounded-lg border bg-[rgb(253,253,253)] shadow-sm mb-2",
                     // Se expandido, remove a borda inferior e o arredondamento inferior para que o conteúdo expandido se "una"
                     isExpanded && "rounded-b-none border-b-0"
                   )}
@@ -93,7 +93,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       }
                     />
                   </div>
-                  <div className="col-span-2 text-neutral-700 dark:text-neutral-400 truncate font-medium">{service.name}</div>
+                  <div className="col-span-4 text-neutral-700 dark:text-neutral-400 truncate font-medium">{service.name}</div>
                   {/* Colunas Online e Presencial na linha principal */}
                   <div className="col-span-1 flex justify-center">
                     {service.allow_online ? (

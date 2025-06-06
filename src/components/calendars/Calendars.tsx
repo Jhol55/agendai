@@ -127,7 +127,7 @@ export const Calendars = () => {
   }, [teams]);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const paginatedServices = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -349,8 +349,8 @@ export const Calendars = () => {
         )}
       </section>
       {showForm && (
-        <section className={cn("relative flex flex-col gap-4 p-4 w-full h-full")}>
-          <div className="dark:bg-neutral-800 shadow-md bg-neutral-100 py-6 rounded-lg h-fit sm:h-full">
+        <section className={cn("flex flex-col gap-4 p-4 w-full h-full")}>
+          <div className="relative dark:bg-neutral-800 shadow-md bg-neutral-100 py-6 rounded-lg h-fit sm:h-full">
             <header className="px-[1.5rem] pb-4">
               <Typography variant="h1">{formHeaders[step]?.title}</Typography>
               <Typography variant="span" className="dark:!text-neutral-400 !text-neutral-600">
