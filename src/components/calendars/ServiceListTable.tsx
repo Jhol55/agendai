@@ -80,7 +80,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
               <React.Fragment key={service.id}>
                 <div
                   className={cn(
-                    "grid grid-cols-10 p-4 items-center text-sm dark:text-neutral-200 rounded-lg border bg-[rgb(253,253,253)] shadow-sm mb-2",
+                    "grid grid-cols-10 p-4 items-center text-sm dark:text-neutral-200 rounded-lg border bg-[rgb(253,253,253)] dark:bg-dark-chatwoot-primary shadow-sm mb-2",
                     // Se expandido, remove a borda inferior e o arredondamento inferior para que o conteúdo expandido se "una"
                     isExpanded && "rounded-b-none border-b-0"
                   )}
