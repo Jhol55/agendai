@@ -9,7 +9,7 @@ import {
   TimelineItem,
   TimelineLine,
 } from "@/components/ui/timeline";
-import { Form } from "@/components/ui/form";
+import { Form, FormMessage } from "@/components/ui/form";
 import { WootButton } from "../ui/woot-button";
 import { Path, useForm, FormProvider } from "react-hook-form";
 import { AddCalendarProps, AddCalendarSchema } from "./models/AddCalendar";
@@ -213,7 +213,9 @@ export const Calendars = () => {
         {
           name: "services", type: "custom",
           component: (
-            <ServiceListTable services={paginatedServices} fieldName="services" />
+            <>
+              <ServiceListTable services={paginatedServices} fieldName="services" />
+            </>
           )
         },
       ],
@@ -360,7 +362,7 @@ export const Calendars = () => {
               <form
                 id="add-calendar"
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8 px-[1.5rem] pb-[1.5rem] overflow-auto"
+                className="space-y-8 px-[1.5rem] pb-[1.5rem] overflow-hidden"
               >
                 {/* Render the current step's fields using FormSteps component */}
                 <FormSteps fields={formStepsConfig[step]} />
@@ -368,7 +370,10 @@ export const Calendars = () => {
               <footer className="flex w-full items-start justify-between px-[1.5rem]">
                 {step < formStepsConfig.length - 1 && (
                   <>
-                    <WootButton onClick={handleNextStep}>Avançar</WootButton>
+                    <div className="flex flex-col gap-2">
+                      <FormMessage>{form.formState.errors.services?.message as string}</FormMessage>
+                      <WootButton className="w-fit" onClick={handleNextStep}>Avançar</WootButton>
+                    </div>
                     {step === 2 &&
                       <div className="w-2/3">
                         <PaginationControls

@@ -76,7 +76,7 @@ export const FormSteps: React.FC<FormStepsProps> = ({
                         onChange={(date) => field.onChange(date)}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className='absolute' />
                   </FormItem>
                 )}
               />
@@ -86,7 +86,6 @@ export const FormSteps: React.FC<FormStepsProps> = ({
                 name={`${dayPath}.end` as FieldPath<AddCalendarProps>}
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel className="text-left"></FormLabel>
                     <FormControl>
                       <TimePicker
                         {...commonFieldProps(field.value, dayConfig.className || "")}
@@ -96,7 +95,7 @@ export const FormSteps: React.FC<FormStepsProps> = ({
                         onChange={(date) => field.onChange(date)}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className='absolute' />
                   </FormItem>
                 )}
               />
@@ -112,7 +111,7 @@ export const FormSteps: React.FC<FormStepsProps> = ({
                           checked={field.value as boolean}
                           onCheckedChange={(checked: boolean) => field.onChange(checked)}
                         />
-                      </FormControl>
+                      </FormControl>                   
                       <FormLabel className="text-left !mt-[1px]">Fechado</FormLabel>
                       <FormMessage />
                     </FormItem>
