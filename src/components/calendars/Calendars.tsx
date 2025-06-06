@@ -371,7 +371,7 @@ export const Calendars = () => {
                 {step < formStepsConfig.length - 1 && (
                   <>
                     <div className="flex flex-col gap-2">
-                      <FormMessage>{form.formState.errors.services?.message as string}</FormMessage>
+                    {step === 2 && <FormMessage>{form.formState.errors.services?.message as string}</FormMessage>}
                       <WootButton className="w-fit" onClick={handleNextStep}>Avançar</WootButton>
                     </div>
                     {step === 2 &&
