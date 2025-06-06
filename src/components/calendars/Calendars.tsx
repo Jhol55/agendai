@@ -42,8 +42,8 @@ const calendars = [
 ]
 
 export const Calendars = () => {
-  const [step, setStep] = useState(1);
-  const [showForm, setShowForm] = useState(true);
+  const [step, setStep] = useState(0);
+  const [showForm, setShowForm] = useState(false);
   const [isUsers, setIsUsers] = useState(true);
   const [users, setUsers] = useState<{ id: string, name: string }[]>([]);
   const [teams, setTeams] = useState<{ id: string, name: string }[]>([]);
