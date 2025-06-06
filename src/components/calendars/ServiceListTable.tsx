@@ -63,8 +63,8 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
           <Typography variant='span' className="col-span-3">Serviço</Typography>
           <Typography variant='span' className="col-span-1 text-center">Online</Typography>
           <Typography variant='span' className="col-span-1 text-center">Presencial</Typography>
-          <Typography variant='span' className="col-span-2 text-right">Valor</Typography>
-          <Typography variant='span' className="col-span-1 text-right">Duração</Typography>
+          <Typography variant='span' className="col-span-2 text-center">Valor</Typography>
+          <Typography variant='span' className="col-span-1 text-center">Duração</Typography>
           <div className="col-span-1"></div>
         </div>
 
@@ -109,8 +109,8 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       <X className="h-4 w-4 text-red-600" />
                     )}
                   </div>
-                  <Typography variant='span' className="col-span-2 !text-neutral-700 dark:!text-neutral-400 truncate text-right">R$ {Number(service.price).toFixed(2).replace('.', ',')}</Typography>
-                  <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-right">{service.duration_minutes} min</Typography>
+                  <Typography variant='span' className="col-span-2 !text-neutral-700 dark:!text-neutral-400 truncate text-center">R$ {Number(service.price).toFixed(2).replace('.', ',')}</Typography>
+                  <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-center">{service.duration_minutes} min</Typography>
                   <div className="col-span-1 flex justify-end pr-2">
                     <button
                       onClick={() => handleToggleExpand(service.id)}
