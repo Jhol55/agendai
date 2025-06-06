@@ -60,11 +60,11 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
         {/* Table Header */}
         <div className="grid grid-cols-10 p-4 text-neutral-700 dark:text-neutral-300">
           <div className="col-span-1"></div>
-          <Typography variant='span' className="col-span-3">Serviço</Typography>
-          <Typography variant='span' className="col-span-1 text-center">Online</Typography>
-          <Typography variant='span' className="col-span-1 text-center">Presencial</Typography>
-          <Typography variant='span' className="col-span-2 text-center">Valor</Typography>
-          <Typography variant='span' className="col-span-1 text-center">Duração</Typography>
+          <Typography variant='span' className="col-span-3 text-md">Serviço</Typography>
+          <Typography variant='span' className="col-span-1 text-md text-center">Online</Typography>
+          <Typography variant='span' className="col-span-1 text-md text-center">Presencial</Typography>
+          <Typography variant='span' className="col-span-2 text-md text-center">Valor</Typography>
+          <Typography variant='span' className="col-span-1 text-md text-center">Duração</Typography>
           <div className="col-span-1"></div>
         </div>
 
