@@ -207,7 +207,7 @@ export const Calendars = () => {
                   <TimelineHeading>{timeline.title}</TimelineHeading>
                   <TimelineDot
                     status={step > index ? "done" : step === index ? "current" : "default"}
-                    className={cn(step > index && "bg-green-500 border-green-500")}
+                    className={cn(step > index && "bg-green-500 border-green-500", step === index && "border-neutral-600 [&>svg]:!text-neutral-600")}
                   />
                   {index < timelines.length - 1 &&
                     <TimelineLine
