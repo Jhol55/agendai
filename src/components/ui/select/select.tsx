@@ -10,7 +10,7 @@ import { useState } from "react";
 import { Button } from "../button";
 
 export interface SelectProps {
-  src?: { label: string; value: string }[];
+  src?: { label: React.ReactNode; value: string }[];
   onSelect?: (value: string) => void;
   value?: ((string | number | readonly string[]) & (Date | null)) | undefined;
   className?: string;

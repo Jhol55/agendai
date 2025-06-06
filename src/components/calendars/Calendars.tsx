@@ -27,6 +27,10 @@ import { getTeams } from "@/services/teams";
 import { FormSteps } from './FormSteps'; // Import the new FormSteps component
 import { FormFieldConfig } from './types'; // Import strict field configuration types
 import { Select } from "@/components/ui/select/select"; // Needed for formStepsConfig reference
+import { getAllServices, getServices } from "@/services/services";
+import { ServiceListTable } from "./ServiceListTable";
+import { PaginationControls } from "./PaginationControls";
+
 
 // Placeholder for calendars, typically fetched from an API
 const calendars = [
@@ -44,17 +48,29 @@ export const Calendars = () => {
   );
   const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+  const [services, setServices] = useState<{
+    id: string,
+    name: string,
+    price: number,
+    duration_minutes: number,
+    allow_online: boolean,
+    allow_in_person: boolean
+    description: string;
+  }[]>([]);
+  const [servicesPage, setServicesPage] = useState(1);
 
   // Effect to fetch initial user and team data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersData, teamsData] = await Promise.all([
+        const [usersData, teamsData, servicesData] = await Promise.all([
           getUsers({}),
           getTeams({}),
+          getAllServices({}).then((data) => data.services)
         ]);
         setUsers(usersData);
         setTeams(teamsData);
+        setServices(servicesData);
       } catch (error) {
         console.error("Failed to fetch data:", error);
         // In a real application, you might use a toast or alert to show the error
@@ -74,6 +90,7 @@ export const Calendars = () => {
         id: "",
         type: "agent" as "agent" | "team", // Explicitly cast type
       },
+      services: [],
       operatingHours: {
         sunday: { start: undefined, end: undefined, closed: false },
         monday: { start: undefined, end: undefined, closed: false },
@@ -109,10 +126,28 @@ export const Calendars = () => {
     }));
   }, [teams]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const paginatedServices = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return services.slice(startIndex, endIndex);
+  }, [services, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(services.length / itemsPerPage);
+
+  const handlePageChange = useCallback((page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  }, [totalPages]);
+
   // Configuration for the timeline steps
   const timelines = [
-    { title: "Criar novo calendário", content: "Crie um novo calendário para um profissional." },
-    { title: "Adicionar agentes", content: "Adicione um agente ou uma equipe para organizar e gerenciar agendamentos no calendário." },
+    { title: "Criar novo calendário", content: "Crie um novo calendário de serviços." },
+    { title: "Adicionar agentes", content: "Adicione um agente ou um time de agentes." },
+    { title: "Adicionar serviços", content: "Adicione um ou mais serviços." },
     { title: "Definir horários", content: "Defina os horários de funcionamento semanais para o calendário." },
   ];
 
@@ -120,6 +155,7 @@ export const Calendars = () => {
   const formHeaders = [
     { title: "Criar novo calendário", content: "Adicione um nome e descrição ao seu novo calendário." },
     { title: "Adicionar agentes", content: "Adicione um agente ou uma equipe para organizar e gerenciar agendamentos no calendário." },
+    { title: "Adicionar serviços", content: "Adicione um ou mais serviços previamente cadastrados ao seu calendário." },
     { title: "Definir horários", content: "Defina os horários de início e fim para cada dia da semana. Após criar o calendário, você também poderá bloquear horários específicos." },
   ];
 
@@ -134,10 +170,9 @@ export const Calendars = () => {
       // Step 1: Agent or Team selection
       [
         {
-          name: "agentOrTeam.id", component: Select, label: "Name", placeholder: "Nome...", type: "select",
+          name: "agentOrTeam.id", component: Select, placeholder: "Nome...", type: "select", className: "",
           src: agentOrTeamType === "agent" ? usersSelectList : teamsSelectList,
-          className: "dark:focus:ring-skyblue dark:focus:ring-1 h-10 data-[state=closed]:!ring-0 data-[state=open]:ring-1 data-[state=open]:ring-skyblue transition-all duration-75",
-          customHeader: (
+          label: (
             <div>
               <Button
                 variant="ghost"
@@ -173,7 +208,16 @@ export const Calendars = () => {
           )
         },
       ],
-      // Step 2: Operating hours
+      // Step 2: Add services
+      [
+        {
+          name: "services", type: "custom",
+          component: (
+            <ServiceListTable services={paginatedServices} fieldName="services" />
+          )
+        },
+      ],
+      // Step 3: Operating hours
       [
         { name: "operatingHours.sunday", label: "Domingo", type: "dayHours" },
         { name: "operatingHours.monday", label: "Segunda-feira", type: "dayHours" },
@@ -182,9 +226,9 @@ export const Calendars = () => {
         { name: "operatingHours.thursday", label: "Quinta-feira", type: "dayHours" },
         { name: "operatingHours.friday", label: "Sexta-feira", type: "dayHours" },
         { name: "operatingHours.saturday", label: "Sábado", type: "dayHours" },
-      ],      
+      ],
     ];
-  }, [agentOrTeamType, form, teamsSelectList, usersSelectList]);
+  }, [agentOrTeamType, currentPage, form, handlePageChange, services, teamsSelectList, usersSelectList]);
 
   // Callback for form submission
   const onSubmit = useCallback(
@@ -303,10 +347,10 @@ export const Calendars = () => {
         )}
       </section>
       {showForm && (
-        <section className={cn("flex flex-col gap-4 p-4 w-full h-full")}>
+        <section className={cn("relative flex flex-col gap-4 p-4 w-full h-full")}>
           <div className="dark:bg-neutral-800 shadow-md bg-neutral-100 py-6 rounded-lg h-fit sm:h-full">
             <header className="px-[1.5rem] pb-4">
-              <Typography variant="h1">{formHeaders[step].title}</Typography>
+              <Typography variant="h1">{formHeaders[step]?.title}</Typography>
               <Typography variant="span" className="dark:!text-neutral-400 !text-neutral-600">
                 {formHeaders[step].content}
               </Typography>
@@ -319,16 +363,22 @@ export const Calendars = () => {
                 className="space-y-8 px-[1.5rem] pb-[1.5rem] overflow-auto"
               >
                 {/* Render the current step's fields using FormSteps component */}
-                <FormSteps
-                  fields={formStepsConfig[step]}
-                  agentOrTeamType={agentOrTeamType}
-                  usersSelectList={usersSelectList}
-                  teamsSelectList={teamsSelectList}
-                />
+                <FormSteps fields={formStepsConfig[step]} />
               </form>
               <footer className="flex w-full items-start justify-between px-[1.5rem]">
                 {step < formStepsConfig.length - 1 && (
-                  <WootButton onClick={handleNextStep}>Avançar</WootButton>
+                  <>
+                    <WootButton onClick={handleNextStep}>Avançar</WootButton>
+                    {step === 2 &&
+                      <div className="w-1/2">
+                        <PaginationControls
+                          totalItems={services.length}
+                          itemsPerPage={itemsPerPage}
+                          currentPage={currentPage}
+                          onPageChange={handlePageChange}
+                        />
+                      </div>}
+                  </>
                 )}
                 {step === formStepsConfig.length - 1 && (
                   <WootButton type="submit" form="add-calendar" onClick={() => console.log(form.watch())}>

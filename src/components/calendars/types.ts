@@ -3,6 +3,7 @@ import { AddCalendarProps } from "./models/AddCalendar";
 import { InputProps } from '../ui/input';
 import { TextAreaProps } from '../ui/text-area';
 import { SelectProps } from '../ui/select/select';
+import React from "react";
 
 // New: A more specific ReactComponentType that can infer the ref type
 // This type allows you to specify the element type (e.g., HTMLInputElement)
@@ -15,9 +16,14 @@ type ReactComponentType<P = NonNullable<unknown>, TElement = unknown> =
 // Base interface for all form fields
 export interface BaseFormField {
   name: Path<AddCalendarProps>;
-  label: string;
+  label?: React.ReactNode;
   placeholder?: string;
   className?: string;
+}
+
+export interface CustomFieldConfig extends BaseFormField {
+  component: React.ReactNode | (() => React.ReactNode);
+  type: "custom";
 }
 
 // Type for text input fields (Input, TextArea)
@@ -37,7 +43,6 @@ export interface SelectFieldConfig extends BaseFormField {
   // Adjust 'HTMLSelectElement' if your Select component forwards to a different element
   component: ReactComponentType<SelectProps, HTMLSelectElement>;
   type: "select";
-  customHeader?: React.ReactNode;
   src: {
     label: string;
     value: string;
@@ -52,6 +57,7 @@ export interface DayHoursFieldConfig extends BaseFormField {
 
 // Union type for all possible form field configurations
 export type FormFieldConfig =
+  | CustomFieldConfig
   | InputFieldConfig
   | TextAreaFieldConfig
   | SelectFieldConfig

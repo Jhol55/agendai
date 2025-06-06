@@ -11,20 +11,14 @@ import { cn } from "@/lib/utils";
 import { TimePicker } from "../ui/time-picker";
 import { Checkbox } from "../ui/checkbox";
 import { AddCalendarProps } from "./models/AddCalendar";
-import { FormFieldConfig, TextAreaFieldConfig, InputFieldConfig, SelectFieldConfig, DayHoursFieldConfig } from './types';
+import { FormFieldConfig, CustomFieldConfig, TextAreaFieldConfig, InputFieldConfig, SelectFieldConfig, DayHoursFieldConfig } from './types';
 
 interface FormStepsProps {
   fields: FormFieldConfig[];
-  agentOrTeamType: "agent" | "team";
-  usersSelectList: { label: string; value: string }[];
-  teamsSelectList: { label: string; value: string }[];
 }
 
 export const FormSteps: React.FC<FormStepsProps> = ({
   fields,
-  agentOrTeamType,
-  usersSelectList,
-  teamsSelectList,
 }) => {
   const form = useFormContext<AddCalendarProps>();
 
@@ -40,6 +34,20 @@ export const FormSteps: React.FC<FormStepsProps> = ({
   return (
     <>
       {fields.map((fieldConfig) => {
+        if (!fieldConfig.type) return;
+
+        if (fieldConfig.type === "custom") {
+          const customField = fieldConfig as CustomFieldConfig;
+        
+          return (
+            <div key={customField.name as string}>
+              {typeof customField.component === "function"
+                ? customField.component()
+                : customField.component}
+            </div>
+          );
+        }
+
         if (fieldConfig.type === "dayHours") {
           const dayConfig = fieldConfig as DayHoursFieldConfig;
           // dayPath is like "operatingHours.sunday"
@@ -126,7 +134,7 @@ export const FormSteps: React.FC<FormStepsProps> = ({
               name={selectField.name}
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-2">
-                  {selectField.customHeader}
+                  <FormLabel className="text-left">{selectField.label}</FormLabel>
                   <FormControl>
                     <SelectComponent
                       {...commonFieldProps(field.value, selectField.className || "")}

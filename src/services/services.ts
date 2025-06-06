@@ -10,6 +10,15 @@ export const getServices = async ({ test = false, name }: { test?: boolean, name
   }
 }
 
+export const getAllServices = async ({ test = false, page }: { test?: boolean, page?: number }) => {
+  try {
+    const response = await api(test).get(`get-services?page=${page}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao carregar os serviços: ', error);
+  }
+}
+
 export const AddService = async ({ test = false, data }: { test?: boolean, data: object }) => {
   try {
     const response = await api(test).post("add-service", data);

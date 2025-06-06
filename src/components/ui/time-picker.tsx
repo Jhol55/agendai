@@ -110,6 +110,7 @@ export function TimePicker({
             }}
             disabled={disabled}
             className={cn(
+              "dark:focus:ring-skyblue dark:focus:ring-1 h-10 data-[state=closed]:!ring-0 data-[state=open]:ring-1 data-[state=open]:ring-skyblue transition-all duration-75",
               "w-full justify-start text-left font-normal dark:bg-neutral-900 bg-neutral-50 z-50",
               disabled && "dark:hover:bg-neutral-900 hover:!bg-neutral-50",
               (!date && !value) && "text-gray-500",

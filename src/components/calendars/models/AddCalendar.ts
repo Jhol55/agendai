@@ -15,6 +15,7 @@ export interface AddCalendarProps {
     id: string;
     type: string;
   }
+  services: string[],
   operatingHours: {
     sunday: DayProps;
     monday: DayProps;
@@ -43,6 +44,7 @@ export const AddCalendarSchema = z.object({
     id: z.string().min(1, "É obrigatório selecionar um agente ou time"),
     type: z.string(),
   }),
+  services: z.array(z.string()),
   operatingHours: z.object({
     sunday: daySchema,
     monday: daySchema,
