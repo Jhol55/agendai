@@ -35,7 +35,7 @@ export const Select = ({
           aria-expanded={isOpened}
           className={cn(
             !value && "text-muted-foreground",
-            "h-10 w-full justify-between bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-200/60 dark:hover:bg-neutral-900",
+            "h-10 w-full justify-between bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-900",
             className
           )}
         >
@@ -46,7 +46,7 @@ export const Select = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0 popover-content-width-fix">
-        <Command className="pl-1 bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-200/60 dark:hover:bg-neutral-900">
+        <Command className="pl-1 bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-900">
           <CommandList>
             <CommandGroup>
               {src?.length && src?.map((item, index) => (
