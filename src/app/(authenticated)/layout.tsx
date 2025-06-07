@@ -15,7 +15,7 @@ export default function RootLayout({
       // **IMPORTANT: Verify the origin of the message!**
       // This is a critical security step to prevent cross-site scripting (XSS) attacks.
       // Replace 'https://your-calendar-app.com' with the actual origin of your iframe content.
-      if (event.origin !== 'https://chat.cognic.tech') {
+      if (event.origin !== 'https://teste-agendai.awmygg.easypanel.host') {
          console.warn('Message received from unknown origin:', event.origin);
          return; // Do not process messages from untrusted origins
       }
