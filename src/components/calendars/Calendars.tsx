@@ -79,7 +79,7 @@ export const Calendars = () => {
       }
     };
     fetchData();
-    const sessionCookieValue = getCookie('cw_d_session_info');
+    const sessionCookieValue = getCookie('uid');
     console.log(sessionCookieValue);
   }, []);
 
