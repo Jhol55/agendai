@@ -28,19 +28,27 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
 
   const [expandedServiceIds, setExpandedServiceIds] = useState<Set<string>>(new Set());
 
+  // selectedServiceIds é um array de objetos { id: string }
   const selectedServiceIds = useMemo(() => {
-    return (watch(fieldName) as string[] || []);
+    return (watch(fieldName) as { id: string }[] || []);
   }, [watch, fieldName]);
 
   const handleServiceToggle = useCallback((serviceId: string, isChecked: boolean) => {
-    let newSelectedIds: string[];
+    // Primeiro, obtenha um array de *apenas os IDs em string* dos serviços já selecionados
+    const currentIdsAsStrings = selectedServiceIds.map(item => item.id);
+
+    let updatedIdsAsStrings: string[];
+
     if (isChecked) {
-      newSelectedIds = [...new Set([...selectedServiceIds, serviceId])];
+      updatedIdsAsStrings = [...new Set([...currentIdsAsStrings, serviceId])];
     } else {
-      newSelectedIds = selectedServiceIds.filter(id => id !== serviceId);
+      updatedIdsAsStrings = currentIdsAsStrings.filter(id => id !== serviceId);
     }
-    setValue(fieldName, newSelectedIds);
-  }, [selectedServiceIds, setValue, fieldName]);
+
+    const servicesAsObjects = updatedIdsAsStrings.map(id => ({ id }));
+
+    setValue(fieldName, servicesAsObjects);
+  }, [selectedServiceIds, setValue, fieldName]); // selectedServiceIds agora é uma dependência que funciona corretamente
 
   const handleToggleExpand = useCallback((serviceId: string) => {
     setExpandedServiceIds(prev => {
@@ -86,7 +94,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                 >
                   <div className="col-span-1">
                     <Checkbox
-                      checked={selectedServiceIds.includes(service.id)}
+                      checked={selectedServiceIds.some(item => item.id === service.id)} // <-- AQUI ESTÁ A MUDANÇA
                       onCheckedChange={(checked: boolean) =>
                         handleServiceToggle(service.id, checked)
                       }

@@ -12,6 +12,19 @@ type ReactComponentType<P = NonNullable<unknown>, TElement = unknown> =
   | React.ComponentType<P>
   | React.ForwardRefExoticComponent<P & React.RefAttributes<TElement>>;
 
+export type MaskType =
+  | 'cpf'
+  | 'cnpj'
+  | 'phone'
+  | 'currency'
+  | 'date'
+  | 'time'
+  | 'number'
+  | 'email'
+  | 'tel'
+  | 'url'
+  | 'password'
+  | 'text';
 
 // Base interface for all form fields
 export interface BaseFormField {
@@ -19,6 +32,8 @@ export interface BaseFormField {
   label?: React.ReactNode;
   placeholder?: string;
   className?: string;
+  group?: string;
+  mask?: MaskType;
 }
 
 export interface CustomFieldConfig extends BaseFormField {

@@ -30,6 +30,8 @@ import { Select } from "@/components/ui/select/select"; // Needed for formStepsC
 import { getAllServices, getServices } from "@/services/services";
 import { ServiceListTable } from "./ServiceListTable";
 import { PaginationControls } from "./PaginationControls";
+import { createCalendar } from "@/services/calendars";
+import { getCookie } from "@/utils/cookies";
 
 
 // Placeholder for calendars, typically fetched from an API
@@ -48,6 +50,7 @@ export const Calendars = () => {
   );
   const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | undefined>(undefined);
   const [services, setServices] = useState<{
     id: string,
     name: string,
@@ -57,7 +60,6 @@ export const Calendars = () => {
     allow_in_person: boolean
     description: string;
   }[]>([]);
-  const [servicesPage, setServicesPage] = useState(1);
 
   // Effect to fetch initial user and team data
   useEffect(() => {
@@ -77,6 +79,8 @@ export const Calendars = () => {
       }
     };
     fetchData();
+    const sessionCookieValue = getCookie('cw_d_session_info');
+    console.log(sessionCookieValue);
   }, []);
 
   // Default values for the form, memoized for stability
@@ -231,13 +235,23 @@ export const Calendars = () => {
         { name: "operatingHours.friday", label: "Sexta-feira", type: "dayHours" },
         { name: "operatingHours.saturday", label: "Sábado", type: "dayHours" },
       ],
+      // Step 4: Settings
+      [
+        { name: "settings.tax", component: Input, label: "Taxa de reserva", placeholder: "", className: "", type: "text", mask: "currency" },
+        { name: "settings.taxDeadlineValue", component: Input, label: "Prazo para pagamento da taxa de reserva (Dias antes)", placeholder: "", className: "", type: "text" },
+        { name: "settings.rescheduleDeadlineValue", component: Input, label: "Prazo para reagendamento (Dias antes)", className: "w-full", placeholder: "", type: "text", group: "reschedule" },
+        { name: "settings.rescheduleDeadlineUnit", component: Select, src: [{ label: "Dias", value: "days" }, { label: "Horas", value: "hours" }], label: "Unidade", placeholder: "", className: "w-full", type: "select", group: "reschedule" },
+        { name: "settings.paymentDeadlineValue", component: Input, label: "Prazo para pagamento do serviço (Dias após)", placeholder: "", className: "", type: "text" },      
+      ],
     ];
   }, [agentOrTeamType, form, paginatedServices, teamsSelectList, usersSelectList]);
 
   // Callback for form submission
   const onSubmit = useCallback(
     (data: AddCalendarProps) => {
-      console.log("Form submitted:", data);
+      createCalendar({ test: true, data });
+
+
       form.reset(); // Reset form after submission
       setStep(0); // Go back to the first step
       setShowForm(false); // Hide the form
@@ -331,13 +345,13 @@ export const Calendars = () => {
                           : "default"
                     }
                     className={cn(
-                      step > index && "bg-woot-500 border-woot-500",
+                      step > index && "bg-green-500 border-green-500",
                       step === index &&
                       "border-neutral-600 [&>svg]:!text-neutral-600"
                     )}
                   />
                   {index < timelines.length - 1 && (
-                    <TimelineLine done={step > index} className={cn(step > index && "bg-woot-500")} />
+                    <TimelineLine done={step > index} className={cn(step > index && "bg-green-500")} />
                   )}
                   <TimelineContent>
                     <Typography variant="span" className="!text-neutral-600 dark:!text-neutral-400">
@@ -388,7 +402,7 @@ export const Calendars = () => {
                   </>
                 )}
                 {step === formStepsConfig.length - 1 && (
-                  <WootButton type="submit" form="add-calendar" onClick={() => console.log(form.watch())}>
+                  <WootButton type="submit" form="add-calendar" onClick={() => console.log(form.formState.errors)}>
                     Criar Calendário
                   </WootButton>
                 )}
