@@ -149,6 +149,7 @@ export const Calendars = () => {
     { title: "Adicionar agentes", content: "Adicione um agente ou um time de agentes." },
     { title: "Adicionar serviços", content: "Adicione um ou mais serviços." },
     { title: "Definir horários", content: "Defina os horários de funcionamento semanais para o calendário." },
+    { title: "Configurações adicionais", content: "Ajuste as preferências do calendário." },
   ];
 
   // Headers and content for each form step
@@ -157,6 +158,7 @@ export const Calendars = () => {
     { title: "Adicionar agentes", content: "Adicione um agente ou uma equipe para organizar e gerenciar agendamentos no calendário." },
     { title: "Adicionar serviços", content: "Adicione um ou mais serviços previamente cadastrados ao seu calendário." },
     { title: "Definir horários", content: "Defina os horários de início e fim para cada dia da semana. Após criar o calendário, você também poderá bloquear horários específicos." },
+    { title: "Configurações adicionais", content: "Refine as definições do calendário, incluindo a taxa de reserva, as políticas de agendamento e aspectos financeiros, para atender às suas necessidades específicas." },
   ];
 
   // Explicit typing for the form steps configuration array
