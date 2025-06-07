@@ -4,7 +4,7 @@ import { useEffect } from "react";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== 'https://chat.cognic.tech') {
+      if (event.origin !== 'https://teste-agendai.awmygg.easypanel.host') {
         console.warn('Mensagem rejeitada de origem não confiável:', event.origin)
         return
       }
