@@ -24,8 +24,13 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
   const canGoNext = currentPage < totalPages;
 
   return (
+<<<<<<< HEAD
     <div className="flex items-center justify-between p-4 bg-white dark:bg-[rgb(0,0,0,0.2)] rounded-lg">
       <div className="text-sm text-neutral-600 dark:text-neutral-200">
+=======
+    <div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-900 rounded-lg">
+      <div className="text-sm text-neutral-600 dark:text-neutral-400">
+>>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
         Exibindo {startItem} - {endItem} de {totalItems} items
       </div>
       <div className="flex items-center space-x-2">
@@ -34,7 +39,11 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
           onClick={() => onPageChange(1)}
           disabled={!canGoPrev}
           className={cn(
+<<<<<<< HEAD
             "p-1 rounded-md text-neutral-500 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+=======
+            "p-1 rounded-md text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+>>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
             !canGoPrev && "pointer-events-none"
           )}
         >
@@ -46,7 +55,11 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={!canGoPrev}
           className={cn(
+<<<<<<< HEAD
             "p-1 rounded-md text-neutral-500 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+=======
+            "p-1 rounded-md text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+>>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
             !canGoPrev && "pointer-events-none"
           )}
         >
@@ -57,7 +70,11 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
         <span className="px-3 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-md text-sm font-medium">
           {currentPage}
         </span>
+<<<<<<< HEAD
         <span className="text-sm text-neutral-600 dark:text-neutral-200">
+=======
+        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+>>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
           de {totalPages} páginas
         </span>
 
@@ -66,7 +83,11 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={!canGoNext}
           className={cn(
+<<<<<<< HEAD
             "p-1 rounded-md text-neutral-500 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+=======
+            "p-1 rounded-md text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+>>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
             !canGoNext && "pointer-events-none"
           )}
         >
@@ -78,7 +99,11 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
           onClick={() => onPageChange(totalPages)}
           disabled={!canGoNext}
           className={cn(
+<<<<<<< HEAD
             "p-1 rounded-md text-neutral-500 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+=======
+            "p-1 rounded-md text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed",
+>>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
             !canGoNext && "pointer-events-none"
           )}
         >
