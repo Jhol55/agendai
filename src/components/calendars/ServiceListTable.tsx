@@ -60,29 +60,17 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
         {/* Table Header */}
         <div className="grid grid-cols-10 p-4">
           <div className="col-span-1"></div>
-<<<<<<< HEAD
           <Typography variant='span' className="col-span-3 text-md !text-neutral-700 dark:!text-neutral-100">Serviço</Typography>
           <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-100">Online</Typography>
           <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-100">Presencial</Typography>
           <Typography variant='span' className="col-span-2 text-md text-center !text-neutral-700 dark:!text-neutral-100">Valor</Typography>
           <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-100">Duração</Typography>
-=======
-          <Typography variant='span' className="col-span-3 text-md !text-neutral-700 dark:!text-neutral-300">Serviço</Typography>
-          <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-300">Online</Typography>
-          <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-300">Presencial</Typography>
-          <Typography variant='span' className="col-span-2 text-md text-center !text-neutral-700 dark:!text-neutral-300">Valor</Typography>
-          <Typography variant='span' className="col-span-1 text-md text-center !text-neutral-700 dark:!text-neutral-300">Duração</Typography>
->>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
           <div className="col-span-1"></div>
         </div>
 
         {/* Table Body */}
         {services.length === 0 ? (
-<<<<<<< HEAD
           <div className="p-4 text-center text-neutral-700 dark:text-neutral-200">
-=======
-          <div className="p-4 text-center text-neutral-500 dark:text-neutral-400">
->>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
             Nenhum serviço encontrado.
           </div>
         ) : (
@@ -92,12 +80,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
               <React.Fragment key={service.id}>
                 <div
                   className={cn(
-<<<<<<< HEAD
                     "grid grid-cols-10 p-4 items-center text-sm rounded-lg border bg-[rgb(253,253,253)] dark:bg-[rgb(0,0,0,0.2)] shadow-sm mb-2",
-=======
-                    "grid grid-cols-10 p-4 items-center text-sm dark:text-neutral-200 rounded-lg border bg-[rgb(253,253,253)] dark:bg-dark-chatwoot-primary shadow-sm mb-2",
-                    // Se expandido, remove a borda inferior e o arredondamento inferior para que o conteúdo expandido se "una"
->>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
                     isExpanded && "rounded-b-none border-b-0"
                   )}
                 >
@@ -109,11 +92,7 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       }
                     />
                   </div>
-<<<<<<< HEAD
                   <div className="col-span-3 text-neutral-700 dark:text-neutral-200 truncate font-medium">{service.name}</div>
-=======
-                  <div className="col-span-3 text-neutral-700 dark:text-neutral-400 truncate font-medium">{service.name}</div>
->>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
                   {/* Colunas Online e Presencial na linha principal */}
                   <div className="col-span-1 flex justify-center">
                     {service.allow_online ? (
@@ -129,13 +108,8 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       <X className="h-4 w-4 text-red-600" />
                     )}
                   </div>
-<<<<<<< HEAD
                   <Typography variant='span' className="col-span-2 !text-neutral-700 dark:!text-neutral-200 truncate text-center">R$ {Number(service.price).toFixed(2).replace('.', ',')}</Typography>
                   <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-200 truncate text-center">{service.duration_minutes} min</Typography>
-=======
-                  <Typography variant='span' className="col-span-2 !text-neutral-700 dark:!text-neutral-400 truncate text-center">R$ {Number(service.price).toFixed(2).replace('.', ',')}</Typography>
-                  <Typography variant='span' className="col-span-1 !text-neutral-700 dark:!text-neutral-400 truncate text-center">{service.duration_minutes} min</Typography>
->>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
                   <div className="col-span-1 flex justify-end pr-2">
                     <button
                       type='button'
@@ -145,15 +119,9 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                       aria-controls={`service-description-${service.id}`}
                     >
                       {isExpanded ? (
-<<<<<<< HEAD
                         <ChevronUp className="h-5 w-5 text-neutral-500 dark:text-neutral-200" />
                       ) : (
                         <ChevronDown className="h-5 w-5 text-neutral-500 dark:text-neutral-200" />
-=======
-                        <ChevronUp className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
->>>>>>> fb12602a76ab2764a3d684e0e69f39f6c3ce6cf0
                       )}
                     </button>
                   </div>
