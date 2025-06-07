@@ -14,10 +14,10 @@ import {
   IconBriefcase,
   IconCalendarWeek
 } from "@tabler/icons-react";
-import { KnowledgeBases } from "../../components/sections/knowledge-bases/knowledge-bases";
-import { Prompts } from "../../components/sections/prompts/prompts";
-import { Services } from "../../components/sections/services/services";
-import { Calendars } from "../../components/calendars/Calendars";
+import { KnowledgeBases } from "../../../components/sections/knowledge-bases/knowledge-bases";
+import { Prompts } from "../../../components/sections/prompts/prompts";
+import { Services } from "../../../components/sections/services/services";
+import { Calendars } from "../../../components/calendars/Calendars";
 import { useSettings } from "@/hooks/use-settings";
 import { ThemeSwitcherToggle } from "@/components/ui/theme-switch-toggle";
 import { ChatWoot } from "@/components/sections/chat/Chat";

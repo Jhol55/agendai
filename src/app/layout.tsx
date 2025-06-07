@@ -1,14 +1,19 @@
+
+
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 import { SettingsProvider } from '@/contexts/settings';
 import { ThemeProvider } from '@/contexts/theme/ThemeProvider';
 import { Suspense } from 'react';
 
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`antialiased min-h-screen font-nunito`} suppressHydrationWarning>

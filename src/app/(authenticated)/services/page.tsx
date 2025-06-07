@@ -1,8 +1,27 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react";
+import { Sidebar, SidebarBody, SidebarButton } from "@/components/ui/sidebar"
+import { Logo } from "@/components/sections/container/logo";
 import { AnimatePresence, motion } from "framer-motion";
-import { Scheduler } from "../../components/sections/scheduler/scheduler";
+import {
+  IconArrowLeft,
+  IconBrandTabler,
+  IconSettings,
+  IconMessage,
+  IconBrain,
+  IconCode,
+  IconBriefcase,
+  IconCalendarWeek
+} from "@tabler/icons-react";
+import { KnowledgeBases } from "../../../components/sections/knowledge-bases/knowledge-bases";
+import { Prompts } from "../../../components/sections/prompts/prompts";
+import { Services } from "../../../components/sections/services/services";
+import { Scheduler } from "../../../components/sections/scheduler/scheduler";
+import { useSettings } from "@/hooks/use-settings";
+import { ThemeSwitcherToggle } from "@/components/ui/theme-switch-toggle";
+import { ChatWoot } from "@/components/sections/chat/Chat";
+import { Typography } from "@/components/ui/typography";
 import { useTheme } from "next-themes";
 import { useSearchParams } from "next/navigation";
 
@@ -18,38 +37,6 @@ export default function Admin() {
       setTheme(theme);
     }
   }, [searchParams, setTheme]);
-
-  const [receivedMessage, setReceivedMessage] = useState(null);
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // **IMPORTANT: Verify the origin of the message!**
-      // This is a critical security step to prevent cross-site scripting (XSS) attacks.
-      // Replace 'https://your-calendar-app.com' with the actual origin of your iframe content.
-      // if (event.origin !== 'https://your-calendar-app.com') {
-      //    console.warn('Message received from unknown origin:', event.origin);
-      //    return; // Do not process messages from untrusted origins
-      // }
-
-      // Process the message
-      console.log('Message received from iframe:', event.data);
-      setReceivedMessage(event.data); // Update state with the received message
-
-      // You can also add logic based on the message type
-      if (event.data && event.data.type === 'IFRAME_LOADED') {
-        console.log('Iframe reported that it has finished loading!');
-        // Perform actions when the iframe loads, e.g., show a success message
-      }
-    };
-
-    // Add the event listener when the component mounts
-    window.addEventListener('message', handleMessage);
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, []);
 
   return (
     <div className="flex flex-col md:flex-row bg-neutral-50 dark:bg-background w-full relative min-h-screen"
@@ -83,9 +70,9 @@ export default function Admin() {
           // animate={{ x: 0, opacity: 1 }}
           // exit={{ x: "100%", opacity: 0 }}
           // transition={{ duration: 0.17, ease: "easeIn" }}
-          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary"
+          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-dark-chatwoot-primary"
         >
-          <Scheduler />
+          <Services />
         </motion.div>
       </AnimatePresence>
     </div>

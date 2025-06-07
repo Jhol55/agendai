@@ -1,27 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react";
-import { Sidebar, SidebarBody, SidebarButton } from "@/components/ui/sidebar"
-import { Logo } from "@/components/sections/container/logo";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  IconArrowLeft,
-  IconBrandTabler,
-  IconSettings,
-  IconMessage,
-  IconBrain,
-  IconCode,
-  IconBriefcase,
-  IconCalendarWeek
-} from "@tabler/icons-react";
-import { KnowledgeBases } from "../../components/sections/knowledge-bases/knowledge-bases";
-import { Prompts } from "../../components/sections/prompts/prompts";
-import { Services } from "../../components/sections/services/services";
-import { Scheduler } from "../../components/sections/scheduler/scheduler";
-import { useSettings } from "@/hooks/use-settings";
-import { ThemeSwitcherToggle } from "@/components/ui/theme-switch-toggle";
-import { ChatWoot } from "@/components/sections/chat/Chat";
-import { Typography } from "@/components/ui/typography";
+import { Scheduler } from "../../../components/sections/scheduler/scheduler";
 import { useTheme } from "next-themes";
 import { useSearchParams } from "next/navigation";
 
@@ -70,9 +51,9 @@ export default function Admin() {
           // animate={{ x: 0, opacity: 1 }}
           // exit={{ x: "100%", opacity: 0 }}
           // transition={{ duration: 0.17, ease: "easeIn" }}
-          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-dark-chatwoot-primary"
+          className="relative -z-0 flex w-full md:min-h-screen min-h-[86vh] flex-1 basis-0 light-scrollbar dark:dark-scrollbar overflow-x-hidden overflow-y-auto !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary"
         >
-          <Services />
+          <Scheduler />
         </motion.div>
       </AnimatePresence>
     </div>
