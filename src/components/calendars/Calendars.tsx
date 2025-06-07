@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { IconChevronLeft } from "@tabler/icons-react";
 
-import { getUsers } from "@/services/users";
+import { GetSession, getUsers } from "@/services/users";
 import { getTeams } from "@/services/teams";
 
 import { FormSteps } from './FormSteps'; // Import the new FormSteps component
@@ -30,27 +30,18 @@ import { Select } from "@/components/ui/select/select"; // Needed for formStepsC
 import { getAllServices, getServices } from "@/services/services";
 import { ServiceListTable } from "./ServiceListTable";
 import { PaginationControls } from "./PaginationControls";
-import { createCalendar } from "@/services/calendars";
+import { createCalendar, getCalendars } from "@/services/calendars";
 import { getCookie } from "@/utils/cookies";
+import { CalendarList } from "./CalendarList";
 
 
-// Placeholder for calendars, typically fetched from an API
-const calendars = [
-  {
-    id: 1,
-    name: "Jhonathan Galhardo",
-  },
-];
 
 export const Calendars = () => {
   const [step, setStep] = useState(0);
   const [showForm, setShowForm] = useState(false);
-  const [agentOrTeamType, setAgentOrTeamType] = useState<"agent" | "team">(
-    "agent"
-  );
   const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<number | undefined>(undefined);
+  const [calendars, setCalendars] = useState<number | undefined>(undefined);
   const [services, setServices] = useState<{
     id: string,
     name: string,
@@ -73,14 +64,19 @@ export const Calendars = () => {
         setUsers(usersData);
         setTeams(teamsData);
         setServices(servicesData);
+
+        const rawSession = await GetSession()
+        const session = JSON.parse(rawSession.session);
+        const user = await getUsers({ email: session.uid });
+        const calendarsData = await getCalendars({ test:true, id: user[0].id });
+        console.log(calendarsData)
+        setCalendars(calendarsData);
+
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        // In a real application, you might use a toast or alert to show the error
       }
     };
     fetchData();
-    const sessionCookieValue = getCookie('uid');
-    console.log(sessionCookieValue);
   }, []);
 
   // Default values for the form, memoized for stability
@@ -113,6 +109,8 @@ export const Calendars = () => {
     resolver: zodResolver(AddCalendarSchema),
     defaultValues,
   });
+
+  const watch = form.watch();
 
   // Memoized list of users formatted for the Select component
   const usersSelectList = useMemo(() => {
@@ -177,18 +175,17 @@ export const Calendars = () => {
       [
         {
           name: "agentOrTeam.id", component: Select, placeholder: "Nome...", type: "select", className: "",
-          src: agentOrTeamType === "agent" ? usersSelectList : teamsSelectList,
+          src: watch.agentOrTeam.type === "agent" ? usersSelectList : teamsSelectList,
           label: (
             <div>
               <Button
                 variant="ghost"
                 type="button"
                 className={cn(
-                  agentOrTeamType === "agent" &&
+                  watch.agentOrTeam.type === "agent" &&
                   "bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-700"
                 )}
                 onClick={() => {
-                  setAgentOrTeamType("agent");
                   form.setValue("agentOrTeam.type", "agent");
                   form.setValue("agentOrTeam.id", "");
                 }}
@@ -199,11 +196,10 @@ export const Calendars = () => {
                 variant="ghost"
                 type="button"
                 className={cn(
-                  agentOrTeamType === "team" &&
+                  watch.agentOrTeam.type === "team" &&
                   "bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-700"
                 )}
                 onClick={() => {
-                  setAgentOrTeamType("team");
                   form.setValue("agentOrTeam.type", "team");
                   form.setValue("agentOrTeam.id", "");
                 }}
@@ -239,17 +235,17 @@ export const Calendars = () => {
       [
         { name: "settings.tax", component: Input, label: "Taxa de reserva", placeholder: "", className: "", type: "text", mask: "currency" },
         { name: "settings.taxDeadlineValue", component: Input, label: "Prazo para pagamento da taxa de reserva (Dias antes)", placeholder: "", className: "", type: "text" },
-        { name: "settings.rescheduleDeadlineValue", component: Input, label: "Prazo para reagendamento (Dias antes)", className: "w-full", placeholder: "", type: "text", group: "reschedule" },
+        { name: "settings.rescheduleDeadlineValue", component: Input, label: "Prazo para reagendamento", className: "w-full", placeholder: "", type: "text", group: "reschedule" },
         { name: "settings.rescheduleDeadlineUnit", component: Select, src: [{ label: "Dias", value: "days" }, { label: "Horas", value: "hours" }], label: "Unidade", placeholder: "", className: "w-full", type: "select", group: "reschedule" },
-        { name: "settings.paymentDeadlineValue", component: Input, label: "Prazo para pagamento do serviço (Dias após)", placeholder: "", className: "", type: "text" },      
+        { name: "settings.paymentDeadlineValue", component: Input, label: "Prazo para pagamento do serviço (Dias após)", placeholder: "", className: "", type: "text" },
       ],
     ];
-  }, [agentOrTeamType, form, paginatedServices, teamsSelectList, usersSelectList]);
+  }, [form, paginatedServices, teamsSelectList, usersSelectList, watch]);
 
   // Callback for form submission
   const onSubmit = useCallback(
     (data: AddCalendarProps) => {
-      createCalendar({ test: true, data });
+      createCalendar({ data });
 
 
       form.reset(); // Reset form after submission
@@ -387,7 +383,7 @@ export const Calendars = () => {
                 {step < formStepsConfig.length - 1 && (
                   <>
                     <div className="flex flex-col gap-2">
-                    {step === 2 && <FormMessage>{form.formState.errors.services?.message as string}</FormMessage>}
+                      {step === 2 && <FormMessage>{form.formState.errors.services?.message as string}</FormMessage>}
                       <WootButton className="w-fit" onClick={handleNextStep}>Avançar</WootButton>
                     </div>
                     {step === 2 &&
@@ -411,7 +407,8 @@ export const Calendars = () => {
           </div>
         </section>
       )}
-      {/* <CalendarList calendarList={calendars} /> */}
+      {console.log(calendars)}
+      <CalendarList calendarList={calendars || []} />
     </main>
   );
 };
