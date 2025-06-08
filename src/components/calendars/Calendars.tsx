@@ -56,8 +56,8 @@ export const Calendars = () => {
 
   const searchParams = useSearchParams();
   const accountId = searchParams.get("accountId");
-
-  useEffect(() => {
+  
+  useEffect(() => { 
     const fetchData = async () => {
       try {
         const [usersData, teamsData, servicesData, calendarsData] = await Promise.all([
@@ -76,7 +76,7 @@ export const Calendars = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [accountId]);
 
   // Default values for the form, memoized for stability
   const defaultValues = useMemo(
