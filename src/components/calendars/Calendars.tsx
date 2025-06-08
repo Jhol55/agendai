@@ -32,6 +32,7 @@ import { ServiceListTable } from "./ServiceListTable";
 import { PaginationControls } from "./PaginationControls";
 import { createCalendar, getCalendars } from "@/services/calendars";
 import { CalendarList, CalendarType } from "./CalendarList";
+import { useSearchParams } from "next/navigation";
 
 
 // Version 1.90.2
@@ -53,22 +54,21 @@ export const Calendars = () => {
     description: string;
   }[]>([]);
 
+  const searchParams = useSearchParams();
+  const accountId = searchParams.get("accountId");
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersData, teamsData, servicesData] = await Promise.all([
+        const [usersData, teamsData, servicesData, calendarsData] = await Promise.all([
           getUsers({}),
           getTeams({}),
-          getAllServices({}).then((data) => data.services)
+          getAllServices({}).then((data) => data.services),
+          getCalendars({ id: accountId ?? undefined })
         ]);
         setUsers(usersData);
         setTeams(teamsData);
         setServices(servicesData);
-
-        const cookie = await getCookie()
-        const session = JSON.parse(cookie.session);
-        const user = await getUsers({ email: session.uid });
-        const calendarsData = await getCalendars({ id: user[0].id })
         setCalendars(calendarsData);
 
       } catch (error) {
