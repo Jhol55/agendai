@@ -84,10 +84,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const { ref, width } = useDebouncedResizeObserver<HTMLTableSectionElement>(0);
 
   useEffect(() => {
-    console.log(appointments)
-  }, [appointments])
-
-  useEffect(() => {
     const observed = new WeakSet<Element>();
 
     const handleDragStart = (event: Event) => {

@@ -5,18 +5,16 @@ import Image from 'next/image'
 import { cn } from "@/lib/utils"
 import { Typography } from "../ui/typography"
 
-type Calendar = {
-  id: number
-  name: string
-  email: string
+export type CalendarType = {
+  id: number, 
+  name: string, 
+  description: string 
   thumbnail?: string
   availability_status?: string
-  confirmed: boolean
-  custom_role_id?: string
 }
 
 type Props = {
-  calendarList: Calendar[]
+  calendarList: CalendarType[]
 }
 
 const getInitials = (name: string) => {
@@ -68,7 +66,6 @@ export const CalendarList: React.FC<Props> = ({
                 />
                 <div>
                   <Typography variant="span" className="block capitalize !text-neutral-300">{calendar.name}</Typography>
-                  <span>{calendar.email}</span>
                 </div>
               </div>
             </td>

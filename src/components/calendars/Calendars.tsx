@@ -21,19 +21,20 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { IconChevronLeft } from "@tabler/icons-react";
 
-import { GetSession, getUsers } from "@/services/users";
+import { getCookie, getUsers } from "@/services/users";
 import { getTeams } from "@/services/teams";
 
-import { FormSteps } from './FormSteps'; // Import the new FormSteps component
-import { FormFieldConfig } from './types'; // Import strict field configuration types
-import { Select } from "@/components/ui/select/select"; // Needed for formStepsConfig reference
+import { FormSteps } from './FormSteps'; 
+import { FormFieldConfig } from './types'; 
+import { Select } from "@/components/ui/select/select";
 import { getAllServices, getServices } from "@/services/services";
 import { ServiceListTable } from "./ServiceListTable";
 import { PaginationControls } from "./PaginationControls";
 import { createCalendar, getCalendars } from "@/services/calendars";
-import { getCookie } from "@/utils/cookies";
-import { CalendarList } from "./CalendarList";
+import { CalendarList, CalendarType } from "./CalendarList";
 
+
+// Version 1.90.2
 
 
 export const Calendars = () => {
@@ -41,7 +42,7 @@ export const Calendars = () => {
   const [showForm, setShowForm] = useState(false);
   const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
-  const [calendars, setCalendars] = useState<number | undefined>(undefined);
+  const [calendars, setCalendars] = useState<CalendarType[]>([]);
   const [services, setServices] = useState<{
     id: string,
     name: string,
@@ -52,7 +53,6 @@ export const Calendars = () => {
     description: string;
   }[]>([]);
 
-  // Effect to fetch initial user and team data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -65,11 +65,10 @@ export const Calendars = () => {
         setTeams(teamsData);
         setServices(servicesData);
 
-        const rawSession = await GetSession()
-        const session = JSON.parse(rawSession.session);
+        const cookie = await getCookie()
+        const session = JSON.parse(cookie.session);
         const user = await getUsers({ email: session.uid });
-        const calendarsData = await getCalendars({ test:true, id: user[0].id });
-        console.log(calendarsData)
+        const calendarsData = await getCalendars({ id: user[0].id })
         setCalendars(calendarsData);
 
       } catch (error) {
@@ -293,7 +292,9 @@ export const Calendars = () => {
   return (
     <main
       className={cn(
-        "flex md:flex-row flex-col w-full md:gap-10 !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary"
+        "flex md:flex-row flex-col w-full !bg-[rgb(253,253,253)] dark:!bg-dark-chatwoot-primary",
+        !showForm && "!flex-col",
+        showForm && "md:gap-10"
       )}
     >
       <section
@@ -360,7 +361,7 @@ export const Calendars = () => {
           </aside>
         )}
       </section>
-      {showForm && (
+      {showForm ? (
         <section className={cn("flex flex-col gap-4 p-4 w-full h-full")}>
           <div className="relative dark:bg-neutral-800 shadow-md bg-neutral-100 py-6 rounded-lg h-fit sm:h-full">
             <header className="px-[1.5rem] pb-4">
@@ -406,9 +407,9 @@ export const Calendars = () => {
             </FormProvider>
           </div>
         </section>
-      )}
-      {console.log(calendars)}
-      <CalendarList calendarList={calendars || []} />
+      ) : (
+        <CalendarList calendarList={calendars} />
+      )}      
     </main>
   );
 };

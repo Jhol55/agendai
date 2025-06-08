@@ -9,7 +9,7 @@ export const getUsers = async ({ test = false, email }: { test?: boolean, email?
   }
 }
 
-export const GetSession = async () => {
+export const getCookie = async () => {
   try {
     const response = await fetch('/api/session', {
       method: 'GET',
@@ -19,13 +19,7 @@ export const GetSession = async () => {
       },
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
-    }
-
     const sessionData = await response.json();
-    console.log(sessionData)
     return sessionData;
 
   } catch (error) {
