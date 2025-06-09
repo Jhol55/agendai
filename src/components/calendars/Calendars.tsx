@@ -24,8 +24,8 @@ import { IconChevronLeft } from "@tabler/icons-react";
 import { getCookie, getUsers } from "@/services/users";
 import { getTeams } from "@/services/teams";
 
-import { FormSteps } from './FormSteps'; 
-import { FormFieldConfig } from './types'; 
+import { FormSteps } from './FormSteps';
+import { FormFieldConfig } from './types';
 import { Select } from "@/components/ui/select/select";
 import { getAllServices, getServices } from "@/services/services";
 import { ServiceListTable } from "./ServiceListTable";
@@ -33,6 +33,7 @@ import { PaginationControls } from "./PaginationControls";
 import { createCalendar, getCalendars } from "@/services/calendars";
 import { CalendarList, CalendarType } from "./CalendarList";
 import { useSearchParams } from "next/navigation";
+import Spinner from "../ui/spinner";
 
 
 // Version 1.90.2
@@ -53,18 +54,19 @@ export const Calendars = () => {
     allow_in_person: boolean
     description: string;
   }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const searchParams = useSearchParams();
   const accountId = searchParams.get("accountId");
-  
-  useEffect(() => { 
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const [usersData, teamsData, servicesData, calendarsData] = await Promise.all([
           getUsers({}),
           getTeams({}),
           getAllServices({}).then((data) => data.services),
-          getCalendars({ id: accountId ?? undefined })
+          getCalendars({ id: accountId ?? "1" }) // ALTERAR DEPOIS O 1 PARA UNDEFINED
         ]);
         setUsers(usersData);
         setTeams(teamsData);
@@ -77,6 +79,17 @@ export const Calendars = () => {
     };
     fetchData();
   }, [accountId]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000)
+
+    if (calendars.length) {
+      setIsLoading(false);
+      clearTimeout(timeout);
+    }
+  }, [calendars])
 
   // Default values for the form, memoized for stability
   const defaultValues = useMemo(
@@ -246,7 +259,6 @@ export const Calendars = () => {
     (data: AddCalendarProps) => {
       createCalendar({ data });
 
-
       form.reset(); // Reset form after submission
       setStep(0); // Go back to the first step
       setShowForm(false); // Hide the form
@@ -300,11 +312,11 @@ export const Calendars = () => {
       <section
         className={cn(
           "flex flex-col md:w-fit w-full",
-          !showForm && "md:w-full h-full",
+          !showForm && "md:w-full",
           showForm && "md:h-full md:!w-[30rem] w-full"
         )}
       >
-        <header className={cn("md:pb-10 px-6 sm:px-0", showForm && "md:fixed px-0")}>
+        <header className={cn("flex flex-col md:pb-10 px-6 sm:px-0 gap-2", showForm && "md:fixed px-0")}>
           <div className="flex items-center justify-between gap-2 w-full mx-auto">
             <div className="flex items-center gap-4 sm:px-0">
               {showForm && (
@@ -326,6 +338,11 @@ export const Calendars = () => {
               </WootButton>
             )}
           </div>
+          {!showForm && (
+          <Typography variant="span" className="dark:!text-neutral-400 !text-neutral-500 font-normal font-inter max-w-3xl">
+            Um calendário é uma ferramenta que permite gerenciar compromissos. A lista abaixo mostra todos os calendários disponíveis em sua conta, incluindo aqueles compartilhados com você diretamente ou por meio de sua equipe.
+          </Typography>
+          )}
         </header>
         {showForm && (
           <aside className={cn("top-16", showForm && "md:fixed")}>
@@ -408,8 +425,23 @@ export const Calendars = () => {
           </div>
         </section>
       ) : (
-        <CalendarList calendarList={calendars} />
-      )}      
+        isLoading ? (
+          <div className="w-full h-full flex justify-center">
+            <div className="flex gap-4 items-start">
+              <Typography variant="h2">Carregando calendários</Typography>
+              <Spinner />
+            </div>
+          </div>
+        ) : (
+          !(calendars.length > 0 && Object.keys(calendars[0]).length > 0) ? (
+            <div className="flex justify-center items-start w-full h-full">
+              <Typography variant="h2" className="!text-neutral-600 dark:!text-neutral-400">Não existem calendários associados a esta conta.</Typography>
+            </div>
+          ) : (
+            <CalendarList calendarList={calendars} />
+          )
+        )
+      )}
     </main>
   );
 };
