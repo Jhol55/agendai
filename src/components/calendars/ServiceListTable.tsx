@@ -6,7 +6,7 @@ import { Checkbox } from '../ui/checkbox';
 import { cn } from '@/lib/utils';
 import { AddCalendarProps } from './models/AddCalendar';
 import { ChevronDown, ChevronUp, Check, X } from 'lucide-react';
-import { FormMessage } from '../ui/form';
+
 
 interface Service {
   id: string;
@@ -28,13 +28,11 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
 
   const [expandedServiceIds, setExpandedServiceIds] = useState<Set<string>>(new Set());
 
-  // selectedServiceIds é um array de objetos { id: string }
   const selectedServiceIds = useMemo(() => {
     return (watch(fieldName) as { id: string }[] || []);
   }, [watch, fieldName]);
 
   const handleServiceToggle = useCallback((serviceId: string, isChecked: boolean) => {
-    // Primeiro, obtenha um array de *apenas os IDs em string* dos serviços já selecionados
     const currentIdsAsStrings = selectedServiceIds.map(item => item.id);
 
     let updatedIdsAsStrings: string[];
@@ -42,13 +40,14 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
     if (isChecked) {
       updatedIdsAsStrings = [...new Set([...currentIdsAsStrings, serviceId])];
     } else {
-      updatedIdsAsStrings = currentIdsAsStrings.filter(id => id !== serviceId);
+      updatedIdsAsStrings = currentIdsAsStrings.filter(id => id != serviceId);
     }
 
     const servicesAsObjects = updatedIdsAsStrings.map(id => ({ id }));
+    console.log(servicesAsObjects)
 
     setValue(fieldName, servicesAsObjects);
-  }, [selectedServiceIds, setValue, fieldName]); // selectedServiceIds agora é uma dependência que funciona corretamente
+  }, [selectedServiceIds, setValue, fieldName]);
 
   const handleToggleExpand = useCallback((serviceId: string) => {
     setExpandedServiceIds(prev => {
@@ -93,15 +92,14 @@ export const ServiceListTable: React.FC<ServiceListTableProps> = ({ services, fi
                   )}
                 >
                   <div className="col-span-1">
-                    <Checkbox
-                      checked={selectedServiceIds.some(item => item.id === service.id)} // <-- AQUI ESTÁ A MUDANÇA
+                    <Checkbox                  
+                      checked={selectedServiceIds.some(item => item.id == service.id)}
                       onCheckedChange={(checked: boolean) =>
                         handleServiceToggle(service.id, checked)
-                      }
+                      }                   
                     />
                   </div>
                   <div className="col-span-3 text-neutral-700 dark:text-neutral-200 truncate font-medium">{service.name}</div>
-                  {/* Colunas Online e Presencial na linha principal */}
                   <div className="col-span-1 flex justify-center">
                     {service.allow_online ? (
                       <Check className="h-4 w-4 text-green-600" />

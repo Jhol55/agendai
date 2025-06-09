@@ -34,6 +34,7 @@ import { createCalendar, getCalendars } from "@/services/calendars";
 import { CalendarList, CalendarType } from "./CalendarList";
 import { useSearchParams } from "next/navigation";
 import Spinner from "../ui/spinner";
+import { parseSafeDate } from "@/utils/utils";
 
 
 // Version 1.90.2
@@ -55,6 +56,7 @@ export const Calendars = () => {
     description: string;
   }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [editCalendarIndex, setEditCalendarIndex] = useState<number | undefined>(undefined);
 
   const searchParams = useSearchParams();
   const accountId = searchParams.get("accountId");
@@ -124,6 +126,59 @@ export const Calendars = () => {
 
   const watch = form.watch();
 
+  useEffect(() => {
+    if (editCalendarIndex !== undefined && calendars.length > 0 && Object.keys(calendars[0]).length > 0) {
+      form.reset({
+        calendar: {
+          name: calendars[editCalendarIndex]?.name ?? "",
+          description: calendars[editCalendarIndex]?.description ?? "",
+        },
+        agentOrTeam: {
+          id: calendars[editCalendarIndex]?.user_or_team_id ?? "",
+          type: calendars[editCalendarIndex]?.user_type ?? "",
+        },
+        services: calendars[editCalendarIndex]?.services,
+        operatingHours: {
+          sunday: {
+            start: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[0]?.start),
+            end: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[0]?.end),
+            closed: calendars[editCalendarIndex]?.operating_hours?.[0]?.closed
+          },
+          monday: {
+            start: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[1]?.start),
+            end: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[1]?.end),
+            closed: calendars[editCalendarIndex]?.operating_hours?.[1]?.closed
+          },
+          tuesday: {
+            start: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[2]?.start),
+            end: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[2]?.end),
+            closed: calendars[editCalendarIndex]?.operating_hours?.[2]?.closed
+          },
+          wednesday: {
+            start: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[3]?.start),
+            end: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[3]?.end),
+            closed: calendars[editCalendarIndex]?.operating_hours?.[3]?.closed
+          },
+          thursday: {
+            start: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[4]?.start),
+            end: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[4]?.end),
+            closed: calendars[editCalendarIndex]?.operating_hours?.[4]?.closed
+          },
+          friday: {
+            start: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[5]?.start),
+            end: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[5]?.end),
+            closed: calendars[editCalendarIndex]?.operating_hours?.[5]?.closed
+          },
+          saturday: {
+            start: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[6]?.start),
+            end: parseSafeDate(calendars[editCalendarIndex]?.operating_hours?.[6]?.end),
+            closed: calendars[editCalendarIndex]?.operating_hours?.[6]?.closed
+          },
+        },
+      });
+    }
+  }, [calendars, editCalendarIndex, form]);
+
   // Memoized list of users formatted for the Select component
   const usersSelectList = useMemo(() => {
     return users.map((user) => ({
@@ -159,7 +214,7 @@ export const Calendars = () => {
 
   // Configuration for the timeline steps
   const timelines = [
-    { title: "Criar novo calendário", content: "Crie um novo calendário de serviços." },
+    { title: "Informações básicas", content: "Adicione um nome e descrição ao seu calendário." },
     { title: "Adicionar agentes", content: "Adicione um agente ou um time de agentes." },
     { title: "Adicionar serviços", content: "Adicione um ou mais serviços." },
     { title: "Definir horários", content: "Defina os horários de funcionamento semanais para o calendário." },
@@ -168,7 +223,7 @@ export const Calendars = () => {
 
   // Headers and content for each form step
   const formHeaders = [
-    { title: "Criar novo calendário", content: "Adicione um nome e descrição ao seu novo calendário." },
+    { title: "Informações básicas", content: "Adicione um nome e descrição ao seu calendário." },
     { title: "Adicionar agentes", content: "Adicione um agente ou uma equipe para organizar e gerenciar agendamentos no calendário." },
     { title: "Adicionar serviços", content: "Adicione um ou mais serviços previamente cadastrados ao seu calendário." },
     { title: "Definir horários", content: "Defina os horários de início e fim para cada dia da semana. Após criar o calendário, você também poderá bloquear horários específicos." },
@@ -180,8 +235,8 @@ export const Calendars = () => {
     return [
       // Step 0: Calendar details
       [
-        { name: "calendar.name", component: Input, label: "Name", placeholder: "Nome do calendário", className: "", type: "text" },
-        { name: "calendar.description", component: TextArea, label: "Description", placeholder: "Descrição do calendário", className: "min-h-20", type: "textarea" },
+        { name: "calendar.name", component: Input, label: "Nome", placeholder: "Nome do calendário", className: "", type: "text" },
+        { name: "calendar.description", component: TextArea, label: "Descrição", placeholder: "Descrição do calendário", className: "min-h-20", type: "textarea" },
       ],
       // Step 1: Agent or Team selection
       [
@@ -227,9 +282,7 @@ export const Calendars = () => {
         {
           name: "services", type: "custom",
           component: (
-            <>
-              <ServiceListTable services={paginatedServices} fieldName="services" />
-            </>
+            <ServiceListTable services={paginatedServices} fieldName="services" />
           )
         },
       ],
@@ -262,6 +315,7 @@ export const Calendars = () => {
       form.reset(); // Reset form after submission
       setStep(0); // Go back to the first step
       setShowForm(false); // Hide the form
+      setEditCalendarIndex(undefined);
     },
     [form]
   );
@@ -278,6 +332,7 @@ export const Calendars = () => {
           `operatingHours.${dayName}.closed`,
         ];
       }
+      console.log(form.formState.errors)
       return input.name;
     }) as Path<AddCalendarProps>[]; // Cast to Path<AddCalendarProps>[] for trigger
 
@@ -296,6 +351,7 @@ export const Calendars = () => {
       if (prevStep === 0) {
         form.reset(); // Reset form if going back from the first step
         setShowForm(false); // Hide the form
+        setEditCalendarIndex(undefined);
       }
       return Math.max(prevStep - 1, 0); // Go back one step, minimum 0
     });
@@ -333,15 +389,19 @@ export const Calendars = () => {
               </Typography>
             </div>
             {!showForm && (
-              <WootButton onClick={() => setShowForm(true)}>
+              <WootButton onClick={() => {
+                setShowForm(true);
+                form.reset(defaultValues);
+              }}
+              >
                 Adicionar Calendário
               </WootButton>
             )}
           </div>
           {!showForm && (
-          <Typography variant="span" className="dark:!text-neutral-400 !text-neutral-500 font-normal font-inter max-w-3xl">
-            Um calendário é uma ferramenta que permite gerenciar compromissos. A lista abaixo mostra todos os calendários disponíveis em sua conta, incluindo aqueles compartilhados com você diretamente ou por meio de sua equipe.
-          </Typography>
+            <Typography variant="span" className="dark:!text-neutral-400 !text-neutral-500 font-normal font-inter max-w-3xl">
+              Um calendário é uma ferramenta que permite gerenciar compromissos. A lista abaixo mostra todos os calendários disponíveis em sua conta, incluindo aqueles compartilhados com você diretamente ou por meio de sua equipe.
+            </Typography>
           )}
         </header>
         {showForm && (
@@ -438,7 +498,11 @@ export const Calendars = () => {
               <Typography variant="h2" className="!text-neutral-600 dark:!text-neutral-400">Não existem calendários associados a esta conta.</Typography>
             </div>
           ) : (
-            <CalendarList calendarList={calendars} />
+            <CalendarList calendarList={calendars} onEdit={(index) => {
+              setEditCalendarIndex(index);
+              setShowForm(true);
+
+            }} />
           )
         )
       )}

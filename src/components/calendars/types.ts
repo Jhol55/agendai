@@ -34,6 +34,7 @@ export interface BaseFormField {
   className?: string;
   group?: string;
   mask?: MaskType;
+  value?: string;
 }
 
 export interface CustomFieldConfig extends BaseFormField {

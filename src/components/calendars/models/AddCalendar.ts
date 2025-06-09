@@ -16,7 +16,7 @@ export interface AddCalendarProps {
     id: string;
     type: string;
   };
-  services: { id: string }[];
+  services: { id: string | number }[];
   operatingHours: {
     sunday: DayProps;
     monday: DayProps;
@@ -104,11 +104,16 @@ export const AddCalendarSchema = z.object({
     id: z.string().min(1, "É obrigatório selecionar um agente ou time"),
     type: z.string(),
   }),
-  services: z.array(
+  services: z
+  .array(
     z.object({
-      id: z.string().min(1, "O ID do serviço não pode ser vazio."),
+      id: z.preprocess(
+        (val) => String(val),
+        z.string().min(1, "O ID do serviço não pode ser vazio.")
+      ),
     })
-  ).min(1, "É obrigatório adicionar pelo menos um serviço."),
+  )
+  .min(1, "É obrigatório adicionar pelo menos um serviço."),
   operatingHours: z.object({
     sunday: daySchema,
     monday: daySchema,
