@@ -28,3 +28,13 @@ export const updateCalendar = async ({ test = false, data }: { test?: boolean, d
     console.error('Erro ao atualizar calendário: ', error);
   }
 }
+
+
+export const deleteCalendar = async ({ test = false, id }: { test?: boolean, id: string | number }) => {
+  try {
+    const response = await api(test).post("delete-calendar", { id });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar calendário: ', error);
+  }
+}
