@@ -371,7 +371,9 @@ export const Calendars = () => {
   const handlePrevStep = useCallback(() => {
     setStep((prevStep) => {
       if (prevStep === 0) {
-        form.reset(); // Reset form if going back from the first step
+        setTimeout(() => {
+          form.reset(); // Reset form if going back from the first step
+        }, 200)
         setShowForm(false); // Hide the form
         setEditCalendarIndex(undefined);
       }
@@ -484,7 +486,7 @@ export const Calendars = () => {
                   <>
                     <div className="flex flex-col gap-2">
                       {step === 2 && <FormMessage>{form.formState.errors.services?.message as string}</FormMessage>}
-                      <WootButton className="w-fit" onClick={handleNextStep}>Avançar</WootButton>
+                      <WootButton className="w-fit" type="button" onClick={handleNextStep}>Avançar</WootButton>
                     </div>
                     {step === 2 &&
                       <div className="w-2/3">
@@ -498,9 +500,12 @@ export const Calendars = () => {
                   </>
                 )}
                 {step === formStepsConfig.length - 1 && (
-                  <WootButton type="submit" form="add-calendar" onClick={() => console.log(form.formState.errors)}>
-                    {editCalendarIndex === undefined ? "Criar Calendário" : "Atualizar Calendário"}
-                  </WootButton>
+                  <div className="flex items-center gap-4">
+                    <WootButton type="submit" form="add-calendar" onClick={() => console.log(form.formState.errors)}>
+                      {editCalendarIndex === undefined ? "Criar Calendário" : "Atualizar Calendário"}
+                    </WootButton>
+                    {form.formState.isSubmitting && <Spinner />}
+                  </div>
                 )}
               </footer>
             </FormProvider>
