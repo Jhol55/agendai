@@ -91,7 +91,7 @@ export const CalendarList: React.FC<Props> = ({
                     <div className="rounded-full p-1 bg-neutral-100 dark:bg-[rgb(105,110,119,0.1)]">
                       <Typography variant="p" className="!text-neutral-600 dark:!text-white/70">{calendar.user_type === "agent" ? "Agente" : "Time"}</Typography>
                     </div>}
-                  <Typography variant="span" className="capitalize !text-neutral-600">{calendar.user_or_team_name}</Typography>
+                  <Typography variant="span" className="capitalize !text-neutral-600 dark:!text-neutral-400">{calendar.user_or_team_name}</Typography>
                 </div>
 
                 <ActionButtons onEdit={() => onEdit?.(index)} onDelete={() => onDelete?.(index)} />
