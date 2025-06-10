@@ -430,7 +430,7 @@ export const Calendars = () => {
                 <Button
                   variant="ghost"
                   className="hover:bg-transparent md:!p-0 px-2"
-                  onClick={() => handlePrevStep()}
+                  onClick={() => setShowForm(false)}
                 >
                   <IconChevronLeft className="!h-8 !w-8" />
                 </Button>
