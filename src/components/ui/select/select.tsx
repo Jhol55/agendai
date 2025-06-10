@@ -54,9 +54,9 @@ export const Select = ({
               {src?.length && src?.map((item, index) => (
                 <CommandItem
                   key={index}
-                  value={item.value}
+                  value={String(item.value)}
                   onSelect={(currentValue) => {
-                    onSelect?.(currentValue);
+                    onSelect?.(String(currentValue));
                     setIsOpened(false);
                   }}
                   className="cursor-pointer"

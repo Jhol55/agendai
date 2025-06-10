@@ -343,7 +343,7 @@ export const Calendars = () => {
   );
 
   // Callback to advance to the next step
-  const handleNextStep = useCallback(async () => {
+  const handleNextStep = useCallback(async (newStep?: number) => {
     // Get fields relevant to the current step for validation
     const currentStepFields = formStepsConfig[step].flatMap((input) => {
       if (input.type === "dayHours") {
@@ -354,7 +354,6 @@ export const Calendars = () => {
           `operatingHours.${dayName}.closed`,
         ];
       }
-      console.log(form.formState.errors)
       return input.name;
     }) as Path<AddCalendarProps>[]; // Cast to Path<AddCalendarProps>[] for trigger
 
@@ -362,7 +361,7 @@ export const Calendars = () => {
     const isValid = await form.trigger(currentStepFields);
 
     if (isValid) {
-      setStep((prevStep) => Math.min(prevStep + 1, formStepsConfig.length - 1));
+      setStep((prevStep) => newStep === undefined ? Math.min(prevStep + 1, formStepsConfig.length - 1) : newStep);
       form.clearErrors();
     }
   }, [step, form, formStepsConfig]);
@@ -433,7 +432,7 @@ export const Calendars = () => {
             <Timeline className="max-w-[20rem] w-full md:block hidden">
               {timelines.map((timeline, index) => (
                 <TimelineItem key={index} status="done">
-                  <TimelineHeading>{timeline.title}</TimelineHeading>
+                  <TimelineHeading className="cursor-pointer" onClick={() => handleNextStep(index)}>{timeline.title}</TimelineHeading>
                   <TimelineDot
                     status={
                       step > index
@@ -486,7 +485,7 @@ export const Calendars = () => {
                   <>
                     <div className="flex flex-col gap-2">
                       {step === 2 && <FormMessage>{form.formState.errors.services?.message as string}</FormMessage>}
-                      <WootButton className="w-fit" type="button" onClick={handleNextStep}>Avançar</WootButton>
+                      <WootButton className="w-fit" type="button" onClick={() => handleNextStep()}>Avançar</WootButton>
                     </div>
                     {step === 2 &&
                       <div className="w-2/3">

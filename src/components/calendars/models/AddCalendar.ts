@@ -14,7 +14,7 @@ export interface AddCalendarProps {
     description: string;
   };
   agentOrTeam: {
-    id: string;
+    id: string | number;
     type: string;
   };
   services: { id: string | number }[];
@@ -103,7 +103,7 @@ export const AddCalendarSchema = z.object({
     description: z.string(),
   }),
   agentOrTeam: z.object({
-    id: z.string().min(1, "É obrigatório selecionar um agente ou time"),
+    id: z.union([z.string().min(1, "É obrigatório selecionar um agente ou time"), z.number().min(1, "É obrigatório selecionar um agente ou time")]),
     type: z.string(),
   }),
   services: z

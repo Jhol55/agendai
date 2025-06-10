@@ -56,7 +56,7 @@ const Thumbnail: React.FC<{
           height={40}
         />
         :
-        <div className="flex items-center !font-inter dark:text-white/70 !text-skyblue justify-center rounded-full w-[40px] h-[40px] bg-gradient-to-t dark:from-[#135899] dark:to-[#135899] from-[#c2e1ff] to-[#d6ebff]">
+        <div className="flex items-center !font-inter dark:text-white/70 text-skyblue justify-center rounded-full w-[40px] h-[40px] bg-gradient-to-t dark:from-[#135899] dark:to-[#135899] from-[#c2e1ff] to-[#d6ebff]">
           {getInitials(username)}
         </div>
       }
