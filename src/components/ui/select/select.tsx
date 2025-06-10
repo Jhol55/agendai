@@ -26,6 +26,8 @@ export const Select = ({
 }: SelectProps) => {
   const [isOpened, setIsOpened] = useState(false);
 
+  console.log(src, value)
+
   return (
     <Popover open={isOpened} onOpenChange={setIsOpened} modal>
       <PopoverTrigger asChild>
@@ -39,8 +41,8 @@ export const Select = ({
             className
           )}
         >
-          <div className={cn("flex gap-4", !(src?.length && src?.find((item) => item?.value === value)?.label) ? "dark:text-neutral-400 text-neutral-500": "dark:text-neutral-200 text-neutral-700")}>
-            {(src?.length && src?.find((item) => item?.value === value)?.label) ?? placeholder}
+          <div className={cn("flex gap-4", !(src?.length && src?.find((item) => item?.value == value)?.label) ? "dark:text-neutral-400 text-neutral-500": "dark:text-neutral-200 text-neutral-700")}>
+            {(src?.length && src?.find((item) => item?.value == value)?.label) ?? placeholder}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
