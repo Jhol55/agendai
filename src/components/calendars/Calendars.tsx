@@ -86,7 +86,6 @@ export const Calendars = () => {
         setTeams(teamsData);
         setServices(servicesData);
         setCalendars(calendarsData);
-        console.log(calendarsData)
 
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -424,7 +423,6 @@ export const Calendars = () => {
 
   // Callback to go back to the previous step or close the form
   const handlePrevStep = useCallback((newStep?: number) => {
-    console.log(newStep)
     setStep((prevStep) => {
       if (prevStep === 0) {
         setTimeout(() => {
@@ -557,7 +555,7 @@ export const Calendars = () => {
                 )}
                 {step === formStepsConfig.length - 1 && (
                   <div className="flex items-center gap-4">
-                    <WootButton type="submit" form="add-calendar" onClick={() => console.log(form.formState.errors)}>
+                    <WootButton type="submit" form="add-calendar">
                       {editCalendarIndex === undefined ? "Criar Calendário" : "Atualizar Calendário"}
                     </WootButton>
                     {form.formState.isSubmitting && <Spinner />}
