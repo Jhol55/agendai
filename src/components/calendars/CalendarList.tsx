@@ -88,8 +88,8 @@ export const CalendarList: React.FC<Props> = ({
 
                 <div className="flex w-full gap-2">
                   {calendar.user_or_team_name &&
-                    <div className="rounded-full p-1 bg-gradient-to-t dark:from-[#135899] dark:to-[#135899] from-[#c2e1ff] to-[#d6ebff]">
-                      <Typography variant="p" className="!text-skyblue dark:!text-white/70">{calendar.user_type === "agent" ? "Agente" : "Time"}</Typography>
+                    <div className="rounded-full p-1 bg-neutral-100 dark:bg-[rgb(105,110,119,0.1)]">
+                      <Typography variant="p" className="!text-neutral-600 dark:!text-white/70">{calendar.user_type === "agent" ? "Agente" : "Time"}</Typography>
                     </div>}
                   <Typography variant="span" className="capitalize !text-neutral-600">{calendar.user_or_team_name}</Typography>
                 </div>
