@@ -25,9 +25,6 @@ export const Select = ({
   placeholder
 }: SelectProps) => {
   const [isOpened, setIsOpened] = useState(false);
-
-  console.log(src, value)
-
   return (
     <Popover open={isOpened} onOpenChange={setIsOpened} modal>
       <PopoverTrigger asChild>

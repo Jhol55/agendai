@@ -355,16 +355,14 @@ export const Calendars = () => {
 
   // Callback to advance to the next step
   const handleNextStep = useCallback(async (newStep?: number) => {
-    let targetStep = newStep !== undefined ? newStep : step + 1; // O passo alvo inicial
-    targetStep = Math.min(targetStep, formStepsConfig.length - 1); // Garante que não exceda o último passo
+    let targetStep = newStep !== undefined ? newStep : step + 1; 
+    targetStep = Math.min(targetStep, formStepsConfig.length - 1); 
 
     let fieldsToValidateInCurrentIteration: Path<AddCalendarProps>[] = [];
-    let validationPassedUpToStep = step; // Acompanha até qual passo a validação passou
 
-    // Itera pelos passos, validando um por um
     for (let s = step; s <= targetStep; s++) {
       if (s < 0 || s >= formStepsConfig.length) {
-        break; // Sai do loop se o passo estiver fora dos limites
+        break; 
       }
 
       fieldsToValidateInCurrentIteration = formStepsConfig[s].flatMap((input) => {
@@ -379,47 +377,22 @@ export const Calendars = () => {
         return input.name;
       }) as Path<AddCalendarProps>[];
 
-      // Se o passo atual não tem campos para validar, ele é considerado válido para pular
       if (fieldsToValidateInCurrentIteration.length === 0) {
-        validationPassedUpToStep = s;
-        continue; // Pula para o próximo passo
+        continue;
       }
 
-      // Valida APENAS os campos do passo atual (s)
       const isValid = await form.trigger(fieldsToValidateInCurrentIteration);
-
+      console.log(fieldsToValidateInCurrentIteration, isValid, newStep, step)
       if (!isValid) {
-        // Se a validação falhar para este passo (s),
-        // o formulário deve ir para ESTE passo (s) onde falhou.
         setStep(s);
-        form.clearErrors(); // Opcional: limpa erros de outros campos, foca no erro atual
-        // Opcional: Foca no primeiro campo com erro nesse passo
-        // if (Object.keys(form.formState.errors).length > 0) {
-        //     form.setFocus(Object.keys(form.formState.errors)[0] as Path<AddCalendarProps>);
-        // }
-        return; // Sai da função, pois a navegação já foi feita para o passo com erro
+        return;
       } else {
-        // Se o passo atual (s) é válido, atualiza o marcador de passo válido
-        validationPassedUpToStep = s;
+        setStep(targetStep);
+        form.clearErrors();
+        return;
       }
     }
-
-    // Se o loop terminou (todos os passos até targetStep foram validados com sucesso)
-    // ou se newStep era menor que step, avança para o targetStep (que é o newStep ou step + 1)
-    if (validationPassedUpToStep === targetStep) {
-      setStep(targetStep); // Define o passo final como o targetStep
-      form.clearErrors(); // Limpa todos os erros após a validação completa
-    }
-
-    // Se você tiver um cenário onde newStep é menor que step, e você quer permitir voltar sem revalidar tudo,
-    // adicione uma verificação aqui.
-    if (newStep !== undefined && newStep < step) {
-      setStep(newStep);
-      form.clearErrors();
-    }
-
-
-  }, [step, form, formStepsConfig]); // Dependências permanecem as mesmas
+  }, [step, form, formStepsConfig]);
 
   // Callback to go back to the previous step or close the form
   const handlePrevStep = useCallback((newStep?: number) => {
