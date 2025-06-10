@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Typography } from "../ui/typography";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   Timeline,
   TimelineContent,
@@ -30,7 +40,7 @@ import { Select } from "@/components/ui/select/select";
 import { getAllServices, getServices } from "@/services/services";
 import { ServiceListTable } from "./ServiceListTable";
 import { PaginationControls } from "./PaginationControls";
-import { createCalendar, getCalendars, updateCalendar } from "@/services/calendars";
+import { createCalendar, deleteCalendar, getCalendars, updateCalendar } from "@/services/calendars";
 import { CalendarList, CalendarType } from "./CalendarList";
 import { useSearchParams } from "next/navigation";
 import Spinner from "../ui/spinner";
@@ -58,6 +68,7 @@ export const Calendars = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [editCalendarIndex, setEditCalendarIndex] = useState<number | undefined>(undefined);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteCalendarIndex, setDeleteCalendarIndex] = useState<number | undefined>(undefined);
 
   const searchParams = useSearchParams();
   const accountId = searchParams.get("accountId") ?? "1";
@@ -353,65 +364,63 @@ export const Calendars = () => {
 
     // Itera pelos passos, validando um por um
     for (let s = step; s <= targetStep; s++) {
-        if (s < 0 || s >= formStepsConfig.length) {
-            console.warn(`Configuração para o passo ${s} não encontrada.`);
-            break; // Sai do loop se o passo estiver fora dos limites
+      if (s < 0 || s >= formStepsConfig.length) {
+        break; // Sai do loop se o passo estiver fora dos limites
+      }
+
+      fieldsToValidateInCurrentIteration = formStepsConfig[s].flatMap((input) => {
+        if (input.type === "dayHours") {
+          const dayName = (input.name as string).split(".")[1];
+          return [
+            `operatingHours.${dayName}.start`,
+            `operatingHours.${dayName}.end`,
+            `operatingHours.${dayName}.closed`,
+          ];
         }
+        return input.name;
+      }) as Path<AddCalendarProps>[];
 
-        fieldsToValidateInCurrentIteration = formStepsConfig[s].flatMap((input) => {
-            if (input.type === "dayHours") {
-                const dayName = (input.name as string).split(".")[1];
-                return [
-                    `operatingHours.${dayName}.start`,
-                    `operatingHours.${dayName}.end`,
-                    `operatingHours.${dayName}.closed`,
-                ];
-            }
-            return input.name;
-        }) as Path<AddCalendarProps>[];
+      // Se o passo atual não tem campos para validar, ele é considerado válido para pular
+      if (fieldsToValidateInCurrentIteration.length === 0) {
+        validationPassedUpToStep = s;
+        continue; // Pula para o próximo passo
+      }
 
-        // Se o passo atual não tem campos para validar, ele é considerado válido para pular
-        if (fieldsToValidateInCurrentIteration.length === 0) {
-            validationPassedUpToStep = s;
-            continue; // Pula para o próximo passo
-        }
+      // Valida APENAS os campos do passo atual (s)
+      const isValid = await form.trigger(fieldsToValidateInCurrentIteration);
 
-        // Valida APENAS os campos do passo atual (s)
-        const isValid = await form.trigger(fieldsToValidateInCurrentIteration);
-
-        if (!isValid) {
-            // Se a validação falhar para este passo (s),
-            // o formulário deve ir para ESTE passo (s) onde falhou.
-            setStep(s);
-            console.error(`Validação falhou no passo ${s}. Erros:`, form.formState.errors);
-            form.clearErrors(); // Opcional: limpa erros de outros campos, foca no erro atual
-            // Opcional: Foca no primeiro campo com erro nesse passo
-            // if (Object.keys(form.formState.errors).length > 0) {
-            //     form.setFocus(Object.keys(form.formState.errors)[0] as Path<AddCalendarProps>);
-            // }
-            return; // Sai da função, pois a navegação já foi feita para o passo com erro
-        } else {
-            // Se o passo atual (s) é válido, atualiza o marcador de passo válido
-            validationPassedUpToStep = s;
-        }
+      if (!isValid) {
+        // Se a validação falhar para este passo (s),
+        // o formulário deve ir para ESTE passo (s) onde falhou.
+        setStep(s);
+        form.clearErrors(); // Opcional: limpa erros de outros campos, foca no erro atual
+        // Opcional: Foca no primeiro campo com erro nesse passo
+        // if (Object.keys(form.formState.errors).length > 0) {
+        //     form.setFocus(Object.keys(form.formState.errors)[0] as Path<AddCalendarProps>);
+        // }
+        return; // Sai da função, pois a navegação já foi feita para o passo com erro
+      } else {
+        // Se o passo atual (s) é válido, atualiza o marcador de passo válido
+        validationPassedUpToStep = s;
+      }
     }
 
     // Se o loop terminou (todos os passos até targetStep foram validados com sucesso)
     // ou se newStep era menor que step, avança para o targetStep (que é o newStep ou step + 1)
     if (validationPassedUpToStep === targetStep) {
-        setStep(targetStep); // Define o passo final como o targetStep
-        form.clearErrors(); // Limpa todos os erros após a validação completa
-    } 
+      setStep(targetStep); // Define o passo final como o targetStep
+      form.clearErrors(); // Limpa todos os erros após a validação completa
+    }
 
     // Se você tiver um cenário onde newStep é menor que step, e você quer permitir voltar sem revalidar tudo,
     // adicione uma verificação aqui.
     if (newStep !== undefined && newStep < step) {
-        setStep(newStep);
-        form.clearErrors();
+      setStep(newStep);
+      form.clearErrors();
     }
 
 
-}, [step, form, formStepsConfig]); // Dependências permanecem as mesmas
+  }, [step, form, formStepsConfig]); // Dependências permanecem as mesmas
 
   // Callback to go back to the previous step or close the form
   const handlePrevStep = useCallback((newStep?: number) => {
@@ -572,14 +581,62 @@ export const Calendars = () => {
               <Typography variant="h2" className="!text-neutral-600 dark:!text-neutral-400">Não existem calendários associados a esta conta.</Typography>
             </div>
           ) : (
-            <CalendarList calendarList={calendars} onEdit={(index) => {
-              setEditCalendarIndex(index);
-              setShowForm(true);
-            }} 
-            onDelete={() => {
-              setShowDeleteDialog(true);
-            }}
-            />
+            <>
+              <CalendarList calendarList={calendars} onEdit={(index) => {
+                setEditCalendarIndex(index);
+                setShowForm(true);
+              }}
+                onDelete={(index) => {
+                  setShowDeleteDialog(true);
+                  setDeleteCalendarIndex(index)
+                }}
+              />
+              <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle asChild>
+                      <Typography
+                        variant="h2"
+                      >
+                        Tem certeza que deseja continuar?
+                      </Typography>
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <Typography
+                        variant="span"
+                        secondary
+                      >
+                        Esta ação removerá o calendário selecionado e não poderá ser desfeita.
+                      </Typography>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel
+                      className="!border-none"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowDeleteDialog(false);
+                      }}
+                    >
+                      Voltar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-red-500 hover:bg-red-600 text-white !border-none"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (deleteCalendarIndex !== undefined) {
+                          setShowDeleteDialog(false);
+                          await deleteCalendar({ id: calendars[deleteCalendarIndex]?.id });
+                          await getCalendars({ id: accountId }).then(setCalendars);                       
+                        }
+                      }}
+                    >
+                      Continuar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           )
         )
       )}
