@@ -30,7 +30,7 @@ import { Select } from "@/components/ui/select/select";
 import { getAllServices, getServices } from "@/services/services";
 import { ServiceListTable } from "./ServiceListTable";
 import { PaginationControls } from "./PaginationControls";
-import { createCalendar, getCalendars } from "@/services/calendars";
+import { createCalendar, getCalendars, updateCalendar } from "@/services/calendars";
 import { CalendarList, CalendarType } from "./CalendarList";
 import { useSearchParams } from "next/navigation";
 import Spinner from "../ui/spinner";
@@ -59,7 +59,7 @@ export const Calendars = () => {
   const [editCalendarIndex, setEditCalendarIndex] = useState<number | undefined>(undefined);
 
   const searchParams = useSearchParams();
-  const accountId = searchParams.get("accountId");
+  const accountId = searchParams.get("accountId") ?? "1";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,12 +68,13 @@ export const Calendars = () => {
           getUsers({}),
           getTeams({}),
           getAllServices({}).then((data) => data.services),
-          getCalendars({ id: accountId ?? "1" }) // ALTERAR DEPOIS O 1 PARA UNDEFINED
+          getCalendars({ id: accountId })
         ]);
         setUsers(usersData);
         setTeams(teamsData);
         setServices(servicesData);
         setCalendars(calendarsData);
+        console.log(calendarsData)
 
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -114,6 +115,13 @@ export const Calendars = () => {
         friday: { start: undefined, end: undefined, closed: false },
         saturday: { start: undefined, end: undefined, closed: false },
       },
+      settings: {
+        tax: "0",
+        rescheduleDeadlineValue: "2",
+        rescheduleDeadlineUnit: "days",
+        paymentDeadlineValue: "1",
+        taxDeadlineValue: "2"
+      }
     }),
     []
   );
@@ -130,6 +138,7 @@ export const Calendars = () => {
     if (editCalendarIndex !== undefined && calendars.length > 0 && Object.keys(calendars[0]).length > 0) {
       form.reset({
         calendar: {
+          id: calendars[editCalendarIndex]?.id ?? "",
           name: calendars[editCalendarIndex]?.name ?? "",
           description: calendars[editCalendarIndex]?.description ?? "",
         },
@@ -175,6 +184,13 @@ export const Calendars = () => {
             closed: calendars[editCalendarIndex]?.operating_hours?.[6]?.closed
           },
         },
+        settings: {
+          tax: calendars[editCalendarIndex]?.settings.tax ?? "0",
+          rescheduleDeadlineValue: calendars[editCalendarIndex]?.settings.reschedule_deadline_value ?? "2",
+          rescheduleDeadlineUnit: calendars[editCalendarIndex]?.settings.reschedule_deadline_unit ?? "days",
+          paymentDeadlineValue: calendars[editCalendarIndex]?.settings.payment_deadline_value ?? "1",
+          taxDeadlineValue: calendars[editCalendarIndex]?.settings.tax_deadline_value ?? "2"
+        }
       });
     }
   }, [calendars, editCalendarIndex, form]);
@@ -309,15 +325,21 @@ export const Calendars = () => {
 
   // Callback for form submission
   const onSubmit = useCallback(
-    (data: AddCalendarProps) => {
-      createCalendar({ data });
+    async (data: AddCalendarProps) => {
+      if (editCalendarIndex === undefined) {
+        await createCalendar({ data });
+      } else {
+        await updateCalendar({ data });
+      }
+
+      await getCalendars({ id: accountId }).then(setCalendars);
 
       form.reset(); // Reset form after submission
       setStep(0); // Go back to the first step
       setShowForm(false); // Hide the form
       setEditCalendarIndex(undefined);
     },
-    [form]
+    [accountId, editCalendarIndex, form]
   );
 
   // Callback to advance to the next step
@@ -477,7 +499,7 @@ export const Calendars = () => {
                 )}
                 {step === formStepsConfig.length - 1 && (
                   <WootButton type="submit" form="add-calendar" onClick={() => console.log(form.formState.errors)}>
-                    Criar Calendário
+                    {editCalendarIndex === undefined ? "Criar Calendário" : "Atualizar Calendário"}
                   </WootButton>
                 )}
               </footer>

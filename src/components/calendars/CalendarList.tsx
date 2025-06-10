@@ -14,9 +14,17 @@ export type CalendarType = {
   thumbnail?: string
   availability_status?: string
   user_or_team_id?: string
+  user_or_team_name?: string
   user_type?: string
   operating_hours?: { start: string, end: string, closed: boolean }[]
   services?: { id: string }[]
+  settings: {
+    tax: string,
+    reschedule_deadline_value: string,
+    reschedule_deadline_unit: string,
+    payment_deadline_value: string,
+    tax_deadline_value: string
+  }
 }
 
 type Props = {
@@ -48,7 +56,7 @@ const Thumbnail: React.FC<{
           height={40}
         />
         :
-        <div className="flex items-center !font-inter text-white/70 justify-center rounded-full w-[40px] h-[40px] bg-gradient-to-t from-[#135899] to-[#135899]">
+        <div className="flex items-center !font-inter dark:text-white/70 !text-skyblue justify-center rounded-full w-[40px] h-[40px] bg-gradient-to-t dark:from-[#135899] dark:to-[#135899] from-[#c2e1ff] to-[#d6ebff]">
           {getInitials(username)}
         </div>
       }
@@ -69,7 +77,7 @@ export const CalendarList: React.FC<Props> = ({
           <tr key={calendar.id}>
             <td className="py-4 pr-4">
               <div className="flex flex-row items-center justify-between gap-4">
-                <div className="flex gap-4">
+                <div className="flex gap-4 w-1/2">
                   <Thumbnail
                     src={calendar.thumbnail}
                     username={calendar.name}
@@ -77,6 +85,15 @@ export const CalendarList: React.FC<Props> = ({
                   />
                   <Typography variant="span" className="block capitalize dark:!text-neutral-400 !text-neutral-600">{calendar.name}</Typography>
                 </div>
+
+                <div className="flex w-full gap-2">
+                  {calendar.user_or_team_name &&
+                    <div className="rounded-full p-1 bg-gradient-to-t dark:from-[#135899] dark:to-[#135899] from-[#c2e1ff] to-[#d6ebff]">
+                      <Typography variant="p" className="!text-skyblue dark:!text-white/70">{calendar.user_type === "agent" ? "Agente" : "Time"}</Typography>
+                    </div>}
+                  <Typography variant="span" className="capitalize !text-neutral-600">{calendar.user_or_team_name}</Typography>
+                </div>
+
                 <ActionButtons onEdit={() => onEdit?.(index)} onDelete={() => onDelete?.(index)} />
               </div>
             </td>

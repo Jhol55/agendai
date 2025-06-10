@@ -9,6 +9,7 @@ interface DayProps {
 
 export interface AddCalendarProps {
   calendar: {
+    id: number | string;
     name: string;
     description: string;
   };
@@ -97,6 +98,7 @@ export const daySchema = z.discriminatedUnion("closed", [
 // --- O AddCalendarSchema permanece o mesmo, pois daySchema foi atualizado ---
 export const AddCalendarSchema = z.object({
   calendar: z.object({
+    id: z.number().optional(),
     name: z.string().min(1, "O nome do calendário é obrigatório"),
     description: z.string(),
   }),

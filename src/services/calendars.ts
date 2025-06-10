@@ -19,3 +19,12 @@ export const createCalendar = async ({ test = false, data }: { test?: boolean, d
     console.error('Erro ao adicionar calendário: ', error);
   }
 }
+
+export const updateCalendar = async ({ test = false, data }: { test?: boolean, data: object }) => {
+  try {
+    const response = await api(test).post("update-calendar", data);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao atualizar calendário: ', error);
+  }
+}
