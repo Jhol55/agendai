@@ -43,9 +43,9 @@ export class AppointmentService {
     return this.appointments;
   }
 
-  async getInitialAppointments({ test = false, from, to }: { test?: boolean, from: string | undefined, to: string | undefined }) {
+  async getInitialAppointments({ test = false, from, to, id }: { test?: boolean, from?: string, to?: string, id?: string }) {
     try {
-      const response = await api(test).get(`get-appointments?from=${from}&to=${to}`); 
+      const response = await api(test).get(`get-appointments?from=${from}&to=${to}&id=${id}`); 
       const data = response.data;
       this.appointments = data;
       return data;

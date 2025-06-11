@@ -19,6 +19,15 @@ export const getAllServices = async ({ test = false, page }: { test?: boolean, p
   }
 }
 
+export const getCalendarServices = async ({ test = false, name, id }: { test?: boolean, name?: string, id?: string }) => {
+  try {
+    const response = await api(test).get(`get-calendar-services?name=${name}&id=${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao carregar os serviços: ', error);
+  }
+}
+
 export const AddService = async ({ test = false, data }: { test?: boolean, data: object }) => {
   try {
     const response = await api(test).post("add-service", data);

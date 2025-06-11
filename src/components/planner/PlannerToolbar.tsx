@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useCalendar } from "@/contexts/planner/PlannerContext";
 import { cn } from "@/lib/utils";
 import { addMonths, endOfMonth, format, getDaysInMonth, startOfMonth, subMonths } from "date-fns";
@@ -12,6 +12,9 @@ import { capitalizeFirstLetter } from "@/utils/capitalize-first-letter";
 import { Separator } from "../ui/separator";
 import AddAppointmentDialog from "./AddAppointmentDialog";
 import { ConfigDialog } from "./ConfigDialog";
+import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
+import { Select } from "../ui/select/select";
+import { useSearchParams } from "next/navigation";
 
 
 type CalendarToolbarProps = React.HTMLAttributes<HTMLDivElement>
@@ -20,7 +23,15 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   className,
   ...props
 }) => {
+  const searchParams = useSearchParams();
+  const accountId = searchParams.get("accountId") ?? undefined;
+
   const { setDateRange, viewMode } = useCalendar();
+  const { setCurrentCalendarId, currentCalendarId, setAccountId, calendars } = usePlannerData();
+
+  useEffect(() => {
+    setAccountId(accountId);
+  }, [accountId, setAccountId])
 
   const [range, setRange] = useState<DateRange>({
     from: startOfWeek(new Date(), {
@@ -89,6 +100,13 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
     setDateRange(range);
   }, [range, setDateRange]);
 
+  const calendarsSelectList = useMemo(() => {
+    return calendars.map((calendar) => ({
+      label: calendar.name,
+      value: String(calendar.id),
+    }));
+  }, [calendars]);
+
 
   return (
     <div
@@ -97,6 +115,15 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
     >
       <div className="flex gap-2 justify-between items-center w-full p-4">
         <div className="flex gap-4 items-center">
+          <div>
+            <Select
+              src={calendarsSelectList}
+              value={currentCalendarId}
+              className="w-72 dark:focus:ring-skyblue dark:focus:ring-1 focus:ring-skyblue focus:ring-1 h-10"
+              onSelect={(value) => setCurrentCalendarId(value)}
+            />
+          </div>
+          <Separator orientation="vertical" className="h-4" /> 
           <div className="flex gap-2">
             <Button
               variant={viewMode === "day" ? "default" : "ghost"}

@@ -71,7 +71,7 @@ export const Calendars = () => {
   const [deleteCalendarIndex, setDeleteCalendarIndex] = useState<number | undefined>(undefined);
 
   const searchParams = useSearchParams();
-  const accountId = searchParams.get("accountId") ?? "1";
+  const accountId = searchParams.get("accountId") ?? undefined;
 
   useEffect(() => {
     const fetchData = async () => {

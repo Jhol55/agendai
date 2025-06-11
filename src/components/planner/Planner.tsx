@@ -70,10 +70,9 @@ type CalendarContentProps = React.HTMLAttributes<HTMLDivElement>
 const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   const { viewMode, dateRange, timeLabels } = useCalendar();
   const { isMobile } = useWindowSize();
-  const { settings } = useSettings();
   const {
     resources, appointments, updateAppointment, hourLabels, setBlockedTimeSlots, handleUpdate,
-    blockedTimeSlots, setAppointments, isDragging, setIsDragging, isResizing, setIsResizing
+    blockedTimeSlots, setAppointments, isDragging, setIsDragging, isResizing, setIsResizing, settings
   } = usePlannerData();
   const [isOnDropTransitionPending, startOnDropTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);

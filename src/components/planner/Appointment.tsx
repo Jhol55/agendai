@@ -95,10 +95,9 @@ const Appointment: React.FC<AppointmentProps> = ({
   columnIndex,
   className
 }) => {
-  const { updateAppointment, removeAppointment, addAppointment, handleUpdate, isDragging, isResizing } = usePlannerData();
+  const { updateAppointment, removeAppointment, addAppointment, handleUpdate, currentCalendarId, settings } = usePlannerData();
   const [isPending, startOnSubmitTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
-  const { settings } = useSettings();
   const [isOpened, setIsOpened] = useState(false);
   const [isRemoveAppointmentOpen, setIsRemoveAppointmentOpen] = useState(false);
   const [isRemoveOtherOpen, setIsRemoveOtherOpen] = useState(false);
@@ -152,6 +151,7 @@ const Appointment: React.FC<AppointmentProps> = ({
 
   const defaultValues = useMemo(() => ({
     title: appointment.title,
+    calendarId: appointment.calendarId,
     clientId: appointment.clientId,
     start: appointment?.original_start ?? appointment.start,
     end: appointment?.original_end ?? appointment.end,

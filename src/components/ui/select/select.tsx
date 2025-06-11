@@ -12,7 +12,7 @@ import { Button } from "../button";
 export interface SelectProps {
   src?: { label: React.ReactNode; value: string }[];
   onSelect?: (value: string) => void;
-  value?: ((string | number | readonly string[]) & (Date | null)) | undefined;
+  value?: string | ((string | number | readonly string[]) & (Date | null)) | undefined;
   className?: string;
   placeholder?: string;
 }

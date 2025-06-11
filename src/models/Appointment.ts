@@ -29,6 +29,7 @@ export interface NewAppointment {
 
 export interface Appointment {
   id: string;
+  calendarId: string;
   title: string;
   clientId?: number;
   start: Date;
@@ -145,6 +146,7 @@ export const updateAppointmentSchema = z.object({
 
 export const createAppointmentSchema = z.object({
   title: z.string().min(1, { message: "O nome do cliente é obrigatório" }),
+  calendarId: z.string(),
   clientId: z.number().optional(),
   start: z.date({
     required_error: "A data de início é obrigatória",

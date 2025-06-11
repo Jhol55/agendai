@@ -39,7 +39,7 @@ import { toast } from "sonner";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { getClients } from "@/services/clients";
 import { Loading } from "../ui/loading/loading";
-import { getServices } from "@/services/services";
+import { getCalendarServices, getServices } from "@/services/services";
 import { IconBriefcase, IconUser, IconVideo, IconVideoOff, IconMapPin, IconMapPinOff, IconCalendarPlus } from "@tabler/icons-react";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
@@ -60,10 +60,9 @@ type ServiceType = {
 }
 
 const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className }: { open?: boolean, startDate?: Date, onOpenChange?: (open: boolean) => void, className?: string }) => {
-  const { addAppointment, handleUpdate } = usePlannerData();
+  const { addAppointment, handleUpdate, currentCalendarId, settings } = usePlannerData();
   const [isOpened, setIsOpened] = useState(open);
   const [isPending, startAddAppointmentTransition] = useTransition();
-  const { settings } = useSettings();
   const [openClient, setOpenClient] = React.useState(false);
   const [openService, setOpenService] = React.useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -83,6 +82,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
   const defaultValues = useMemo<NewAppointment>(() => ({
     id: "",
     title: "",
+    calendarId: "",
     start: undefined,
     end: undefined,
     resourceId: "a47aaada-005d-4db0-8779-7fddb32d291e",
@@ -148,6 +148,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
       id: "",
       title: values.title,
       clientId: values?.clientId,
+      calendarId: values?.calendarId,
       start: values.start,
       end: values.end,
       resourceId: values.resourceId,
@@ -211,6 +212,12 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
   }, [form, otherForm, startDate, type])
 
   useEffect(() => {
+    if (currentCalendarId !== undefined) {
+      form.setValue("calendarId", currentCalendarId)
+    }
+  }, [currentCalendarId, form, isOpened])
+
+  useEffect(() => {
     if (clientSearchValue) {
       setIsClientSearching(true);
       const timeoutId = setTimeout(() => {
@@ -228,7 +235,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
     if (serviceSearchValue) {
       setIsServiceSearching(true);
       const timeoutId = setTimeout(() => {
-        return getServices({ name: serviceSearchValue }).then(data => {
+        return getCalendarServices({ name: serviceSearchValue, id: currentCalendarId }).then(data => {
           setServices(data?.services);
           setIsServiceSearching(false);
         })

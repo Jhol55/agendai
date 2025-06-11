@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, FC, useEffect, useMemo, useRef, useCallback, Dispatch, SetStateAction } from "react";
-import { AppointmentService, ResourceService } from "@/services/planner/";
+import { AppointmentService, getSettings, ResourceService } from "@/services/planner/";
 import { Appointment, NewAppointment, Resource } from "@/models";
 import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
@@ -9,6 +9,9 @@ import { getMinMaxCalendarRange, parseSafeDate } from "@/utils/utils";
 import { OperatingHoursProps } from "@/models/OperatingHours";
 import { getBlockedTimeSlots } from "@/services/block-time-slots";
 import { BlockTimeSlotsProps, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
+import { CalendarType } from "@/components/calendars/CalendarList";
+import { getCalendars } from "@/services/calendars";
+import { SettingsState } from "../settings/SettingsContext.type";
 
 
 interface DataContextType {
@@ -17,6 +20,14 @@ interface DataContextType {
   operatingHours: OperatingHoursProps[];
   blockedTimeSlots: UpdatedBlockTimeSlotsProps[];
   setBlockedTimeSlots: Dispatch<SetStateAction<UpdatedBlockTimeSlotsProps[]>>;
+  currentCalendarId: string | undefined;
+  setCurrentCalendarId: Dispatch<SetStateAction<string | undefined>>;
+  accountId: string | undefined;
+  setAccountId: Dispatch<SetStateAction<string | undefined>>;
+  calendars: CalendarType[];
+  setCalendars: Dispatch<SetStateAction<CalendarType[]>>;
+  settings: SettingsState;
+  setSettings: Dispatch<SetStateAction<SettingsState>>;
   isDragging: boolean;
   isResizing: boolean;
   setIsDragging: Dispatch<SetStateAction<boolean>>;
@@ -44,6 +55,10 @@ export const PlannerDataContextProvider: FC<{
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [operatingHours, setOperatingHours] = useState<OperatingHoursProps[]>([]);
   const [blockedTimeSlots, setBlockedTimeSlots] = useState<UpdatedBlockTimeSlotsProps[]>([])
+  const [currentCalendarId, setCurrentCalendarId] = useState<string | undefined>(undefined);
+  const [settings, setSettings] = useState<SettingsState | undefined>(undefined);
+  const [calendars, setCalendars] = useState<CalendarType[]>([]);
+  const [accountId, setAccountId] = useState<string | undefined>(undefined);
   const [hourLabels, setHourLabels] = useState<Date[]>([]);
   const { dateRange } = useCalendar();
   const [isDragging, setIsDragging] = useState(false);
@@ -137,24 +152,6 @@ export const PlannerDataContextProvider: FC<{
     return result;
   }, [])
 
-  // const getDateForWeekdayInRange = useCallback((
-  //   dayOfWeek?: number, // 0 (Sunday) to 6 (Saturday)
-  //   rangeStart?: Date,
-  //   rangeEnd?: Date,
-  //   dateTime?: Date
-  // ): Date | null => {
-  //   if (!rangeStart || !rangeEnd || !dateTime) return null;
-  //   const current = new Date(rangeStart);
-
-  //   while (current <= rangeEnd) {
-  //     if (current.getDay() === dayOfWeek) {
-  //       return new Date(new Date(current).setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0));
-  //     }
-  //     current.setDate(current.getDate() + 1);
-  //   }
-  //   return null;
-  // }, []);
-
   const getDateInRange = ({
     rangeStart,
     rangeEnd,
@@ -239,14 +236,23 @@ export const PlannerDataContextProvider: FC<{
     }
   };
 
+  useEffect(() => {
+    getSettings({ id: currentCalendarId }).then(setSettings)
+  }, [currentCalendarId])
 
 
   useEffect(() => {
-    if (!dateRange) return;
-    appointmentServiceRef.current
+    if (!dateRange || accountId === undefined) return;
+
+    getCalendars({ id: accountId }).then(setCalendars);
+
+    if (currentCalendarId === undefined) return;
+
+    appointmentServiceRef.current //PASSAR O CALENDARINDEX AQUI PARA SELECIONAR OS APPOINTMENTS
       .getInitialAppointments({
         from: dateRange?.from?.toISOString(),
         to: dateRange?.to?.toISOString(),
+        id: currentCalendarId
       })
       .then((data) => {
         const expandedAppointments = splitMultiTimeSlots({ slots: data })
@@ -342,7 +348,7 @@ export const PlannerDataContextProvider: FC<{
         });
       })
 
-  }, [dateRange, splitMultiTimeSlots, trigger]);
+  }, [accountId, currentCalendarId, dateRange, splitMultiTimeSlots, trigger]);
 
   useEffect(() => {
     const AppointmentSubscription = subscribe({
@@ -373,6 +379,14 @@ export const PlannerDataContextProvider: FC<{
     operatingHours,
     blockedTimeSlots,
     setBlockedTimeSlots,
+    currentCalendarId,
+    setCurrentCalendarId,
+    accountId,
+    setAccountId,
+    calendars,
+    setCalendars,
+    settings,
+    setSettings,
     hourLabels,
     isDragging,
     setIsDragging,
