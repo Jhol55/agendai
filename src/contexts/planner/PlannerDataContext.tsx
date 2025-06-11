@@ -237,8 +237,10 @@ export const PlannerDataContextProvider: FC<{
   };
 
   useEffect(() => {
-    getSettings({ id: currentCalendarId }).then(setSettings)
-  }, [currentCalendarId])
+    if (currentCalendarId !== undefined) {
+      getSettings({ id: currentCalendarId }).then(setSettings)
+    }
+  }, [currentCalendarId, trigger])
 
 
   useEffect(() => {
