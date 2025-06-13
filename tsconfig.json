@@ -44,7 +44,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "scripts/replace.js"
-  ],
+, "src/services/chatwoot-api.ts"  ],
   "exclude": [
     "node_modules"
   ]

@@ -302,7 +302,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
   return (
     <Dialog open={isOpened} onOpenChange={setIsOpened}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className={cn("bg-skyblue hover:bg-skyblue hover:enabled:brightness-110 focus-visible:brightness-110 transition-all duration-200 ease-in-out", className)}>
+        <Button variant="ghost" className={cn("bg-skyblue hover:bg-skyblue hover:enabled:brightness-110 focus-visible:brightness-110 transition-all duration-200 ease-in-out h-10", className)}>
           <IconCalendarPlus className="h-4 w-4 dark:text-white !text-white" />
           <Typography variant="span" className="md:block hidden dark:!text-white !text-white">Novo compromisso</Typography>
         </Button>

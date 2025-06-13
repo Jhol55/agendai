@@ -45,6 +45,7 @@ import { CalendarList, CalendarType } from "./CalendarList";
 import { useSearchParams } from "next/navigation";
 import Spinner from "../ui/spinner";
 import { parseSafeDate } from "@/utils/utils";
+import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 
 
 // Version 1.90.2
@@ -382,7 +383,6 @@ export const Calendars = () => {
       }
 
       const isValid = await form.trigger(fieldsToValidateInCurrentIteration);
-      console.log(fieldsToValidateInCurrentIteration, isValid, newStep, step)
       if (!isValid) {
         setStep(s);
         return;
