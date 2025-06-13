@@ -2,6 +2,7 @@ import { z } from "zod"
 
 export interface BlockTimeSlotsProps {
   id: string;
+  calendarId: string;
   freq?: "period" | "weekly"
   start: string
   end: string
@@ -16,6 +17,7 @@ export interface BlockTimeSlotsProps {
 
 export interface UpdatedBlockTimeSlotsProps {
   id: string;
+  calendarId: string;
   freq?: "period" | "weekly";
   start: Date;
   end: Date;
@@ -32,6 +34,7 @@ export interface UpdatedBlockTimeSlotsProps {
 
 export const blockedTimesSchema = z.object({
   id: z.string(),
+  calendarId: z.string(),
   freq: z.string().optional(),
   start: z.date({
     required_error: "Data e hora de início são obrigatórias",

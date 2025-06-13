@@ -19,9 +19,9 @@ export const updateBlockedTimeSlot = async ({ test = false, data }: { test?: boo
   }
 }
 
-export const getBlockedTimeSlots = async ({ test = false }: { test?: boolean }) => {
+export const getBlockedTimeSlots = async ({ test = false, id }: { test?: boolean, id: number | string }) => {
   try {
-    const response = await api(test).get('get-blocked-time-slot');
+    const response = await api(test).get(`get-blocked-time-slot?id=${id}`);
     return response.data;
   } catch (error) {
     console.error('Erro ao carregar compromissos: ', error);

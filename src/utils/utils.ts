@@ -1,5 +1,5 @@
 import { type ClassValue, clsx } from "clsx"
-import { eachDayOfInterval, eachHourOfInterval, eachMonthOfInterval, eachWeekOfInterval, endOfDay, endOfMonth, endOfYear, format, differenceInDays, getWeekOfMonth, isSameDay, isSameMonth, isSameWeek, isWithinInterval, startOfDay, startOfMonth, startOfYear, differenceInCalendarDays, getMonth, differenceInCalendarWeeks } from "date-fns";
+import { eachDayOfInterval, eachHourOfInterval, eachMonthOfInterval, eachWeekOfInterval, endOfDay, endOfMonth, endOfYear, format, differenceInDays, getWeekOfMonth, isSameDay, isSameMonth, isSameWeek, isWithinInterval, startOfDay, startOfMonth, startOfYear, differenceInCalendarDays, getMonth, differenceInCalendarWeeks, setDay, isBefore, addWeeks, setHours, setMinutes, addMonths, setMilliseconds, setSeconds, addDays, parseISO, getDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { twMerge } from "tailwind-merge"
 import { Appointment } from "@/models/Appointment";
@@ -141,7 +141,7 @@ export function getMinMaxCalendarRange(
       const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
       const year = tomorrow.getFullYear();
 
-      return`${year}/${month}/${day}, ${time}`;
+      return `${year}/${month}/${day}, ${time}`;
     }
     return dateTime
   })
@@ -168,4 +168,132 @@ export function getMinMaxCalendarRange(
 export function parseSafeDate(value: unknown): Date | undefined {
   const date = typeof value === "string" || value instanceof Date ? new Date(value) : undefined;
   return date instanceof Date && !isNaN(date.getTime()) ? date : undefined;
+}
+
+export const getDateInRange = ({
+  rangeStart,
+  rangeEnd,
+  dateTime,
+  options,
+}: {
+  rangeStart?: Date;
+  rangeEnd?: Date;
+  dateTime?: Date;
+  options: {
+    frequency?: 'daily' | 'weekly' | 'monthly' | "period";
+    interval?: number;
+    dayOfMonth?: number;
+  };
+}): Date[] | null => {
+  const { frequency, interval, dayOfMonth } = options;
+
+  if (!rangeStart || !rangeEnd || !dateTime || interval === undefined) return null;
+
+  const result: Date[] = [];
+
+  switch (frequency) {
+    case 'daily': {
+      const current = new Date(dateTime);
+
+      current.setHours(dateTime.getHours(), dateTime.getMinutes());
+
+      while (current < rangeStart) {
+        current.setDate(current.getDate() + interval);
+      }
+
+      while (current <= rangeEnd) {
+        result.push(new Date(current));
+        current.setDate(current.getDate() + interval);
+      }
+
+      return result;
+    }
+
+    case 'weekly': {
+      let current = setDay(rangeStart, dateTime.getDay(), { weekStartsOn: 0 });
+
+      if (isBefore(current, rangeStart)) {
+        current = addWeeks(current, 1);
+      }
+
+      current = setHours(current, dateTime.getHours());
+      current = setMinutes(current, dateTime.getMinutes());
+
+      const weeksSinceReference = Math.floor((+current - +dateTime) / (7 * 24 * 60 * 60 * 1000));
+      const offsetWeeks = (weeksSinceReference % interval + interval) % interval;
+
+      current = addWeeks(current, offsetWeeks === 0 ? 0 : interval - offsetWeeks);
+      result.push(current);
+      return result;
+    }
+
+    case 'monthly': {
+      if (dayOfMonth === undefined) return null;
+      let current = new Date(rangeStart);
+      current.setDate(dayOfMonth);
+
+      if (isBefore(current, rangeStart)) {
+        current = addMonths(current, 1);
+      }
+
+      let months = 0;
+      while (months < 1000 && isBefore(current, rangeEnd)) {
+        const monthDiff =
+          (current.getFullYear() - dateTime.getFullYear()) * 12 +
+          (current.getMonth() - dateTime.getMonth());
+        if (monthDiff % interval === 0) break;
+        current = addMonths(current, 1);
+        months++;
+      }
+      result.push(current);
+      return result;
+    }
+
+    default:
+      return [dateTime];
+  }
+};
+
+export function findWeekdayInDateRange({
+  dateRangeStart,
+  dateRangeEnd,
+  desiredDayOfWeek,
+  dateTime
+}: {
+  dateRangeStart?: Date | string;
+  dateRangeEnd?: Date | string;
+  desiredDayOfWeek?: number;
+  dateTime?: Date | string;
+}): Date | null {
+  if (!dateRangeStart || !dateRangeEnd || !dateTime) return null;
+  const rangeStart: Date = dateRangeStart instanceof Date ? dateRangeStart : parseISO(dateRangeStart);
+  const rangeEnd: Date = dateRangeEnd instanceof Date ? dateRangeEnd : parseISO(dateRangeEnd);
+  const originalDateTime: Date = dateTime instanceof Date ? dateTime : parseISO(dateTime);
+
+  const hours: number = originalDateTime.getHours();
+  const minutes: number = originalDateTime.getMinutes();
+  const seconds: number = originalDateTime.getSeconds();
+  const milliseconds: number = originalDateTime.getMilliseconds();
+
+  let adjustedDate: Date | null = null;
+  let currentDate: Date = rangeStart;
+
+  while (currentDate <= rangeEnd) {
+    if (getDay(currentDate) === desiredDayOfWeek) {
+      adjustedDate = setMilliseconds(
+        setSeconds(
+          setMinutes(
+            setHours(currentDate, hours),
+            minutes
+          ),
+          seconds
+        ),
+        milliseconds
+      );
+      break;
+    }
+    currentDate = addDays(currentDate, 1);
+  }
+
+  return adjustedDate;
 }

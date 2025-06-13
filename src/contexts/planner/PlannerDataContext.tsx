@@ -5,7 +5,7 @@ import { useCalendar } from "./PlannerContext";
 import { subscribe } from "@/database/realtime";
 import { getOperatingHours } from "@/services/operatingHours";
 import { addDays, addMonths, addWeeks, eachMinuteOfInterval, format, formatISO, isAfter, isBefore, isSameDay, setDay, setHours, setMinutes, startOfDay } from "date-fns";
-import { getMinMaxCalendarRange, parseSafeDate } from "@/utils/utils";
+import { getDateInRange, getMinMaxCalendarRange, parseSafeDate } from "@/utils/utils";
 import { OperatingHoursProps } from "@/models/OperatingHours";
 import { getBlockedTimeSlots } from "@/services/block-time-slots";
 import { BlockTimeSlotsProps, UpdatedBlockTimeSlotsProps } from "@/models/BlockTimeSlots";
@@ -152,89 +152,7 @@ export const PlannerDataContextProvider: FC<{
     return result;
   }, [])
 
-  const getDateInRange = ({
-    rangeStart,
-    rangeEnd,
-    dateTime,
-    options,
-  }: {
-    rangeStart?: Date;
-    rangeEnd?: Date;
-    dateTime?: Date;
-    options: {
-      frequency?: 'daily' | 'weekly' | 'monthly' | "period";
-      interval?: number;
-      dayOfMonth?: number;
-    };
-  }): Date[] | null => {
-    const { frequency, interval, dayOfMonth } = options;
-
-    if (!rangeStart || !rangeEnd || !dateTime || interval === undefined) return null;
-
-    const result: Date[] = [];
-
-    switch (frequency) {
-      case 'daily': {
-        const current = new Date(dateTime);
-
-        current.setHours(dateTime.getHours(), dateTime.getMinutes());
-
-        while (current < rangeStart) {
-          current.setDate(current.getDate() + interval);
-        }
-
-        while (current <= rangeEnd) {
-          result.push(new Date(current));
-          current.setDate(current.getDate() + interval);
-        }
-
-        return result;
-      }
-
-      case 'weekly': {
-        let current = setDay(rangeStart, dateTime.getDay(), { weekStartsOn: 0 });
-
-        if (isBefore(current, rangeStart)) {
-          current = addWeeks(current, 1);
-        }
-
-        current = setHours(current, dateTime.getHours());
-        current = setMinutes(current, dateTime.getMinutes());
-
-        const weeksSinceReference = Math.floor((+current - +dateTime) / (7 * 24 * 60 * 60 * 1000));
-        const offsetWeeks = (weeksSinceReference % interval + interval) % interval;
-
-        current = addWeeks(current, offsetWeeks === 0 ? 0 : interval - offsetWeeks);
-        result.push(current);
-        return result;
-      }
-
-      case 'monthly': {
-        if (dayOfMonth === undefined) return null;
-        let current = new Date(rangeStart);
-        current.setDate(dayOfMonth);
-
-        if (isBefore(current, rangeStart)) {
-          current = addMonths(current, 1);
-        }
-
-        let months = 0;
-        while (months < 1000 && isBefore(current, rangeEnd)) {
-          const monthDiff =
-            (current.getFullYear() - dateTime.getFullYear()) * 12 +
-            (current.getMonth() - dateTime.getMonth());
-          if (monthDiff % interval === 0) break;
-          current = addMonths(current, 1);
-          months++;
-        }
-        result.push(current);
-        return result;
-      }
-
-      default:
-        return [dateTime];
-    }
-  };
+  
 
   useEffect(() => {
     if (currentCalendarId !== undefined) {
@@ -300,7 +218,7 @@ export const PlannerDataContextProvider: FC<{
           setOperatingHours(data);
           setHourLabels(interval);
 
-          getBlockedTimeSlots({}).then((data) => {
+          getBlockedTimeSlots({ id: currentCalendarId }).then((data) => {
             const expandedBlockedTimeSlots = splitMultiTimeSlots({
               slots: data,
               minTime: interval?.length // Visual only
@@ -334,6 +252,8 @@ export const PlannerDataContextProvider: FC<{
                     interval: slot.interval,
                   },
                 });
+
+                console.log(expandedBlockedTimeSlots)
 
                 return startDates?.map((startDate, index) => ({
                   ...slot,

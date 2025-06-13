@@ -48,6 +48,8 @@ import { Typography } from "../ui/typography";
 import { blockedTimesSchema } from "@/models/BlockTimeSlots";
 import { TextArea } from "../ui/text-area";
 import { AddBlockedTimeSlot } from "@/services/block-time-slots";
+import { findWeekdayInDateRange } from "@/utils/utils";
+import { useCalendar } from "@/contexts/planner/PlannerContext";
 
 
 type ServiceType = {
@@ -61,6 +63,7 @@ type ServiceType = {
 
 const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className }: { open?: boolean, startDate?: Date, onOpenChange?: (open: boolean) => void, className?: string }) => {
   const { addAppointment, handleUpdate, currentCalendarId, settings } = usePlannerData();
+  const { dateRange } = useCalendar();
   const [isOpened, setIsOpened] = useState(open);
   const [isPending, startAddAppointmentTransition] = useTransition();
   const [openClient, setOpenClient] = React.useState(false);
@@ -112,6 +115,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
 
   const otherDefaultValues = useMemo(() => ({
     id: "",
+    calendarId: currentCalendarId,
     freq: "period",
     start: undefined,
     end: undefined,
@@ -120,7 +124,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
     is_recurring: false,
     day_of_week: startDate?.getDay(),
     description: "",
-  }), [startDate]);
+  }), [startDate, currentCalendarId]);
 
 
   const form = useForm<AppointmentType>({
@@ -180,11 +184,35 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
 
 
   const onSubmitOther = useCallback((values: z.infer<typeof blockedTimesSchema>) => {
+    let newAppointment = values;
+
+    if (values.freq === "weekly") {
+      const start = findWeekdayInDateRange({
+        dateRangeStart: dateRange?.from,
+        dateRangeEnd: dateRange?.to,
+        desiredDayOfWeek: values.day_of_week,
+        dateTime: values.start
+      })
+
+      const end = findWeekdayInDateRange({
+        dateRangeStart: dateRange?.from,
+        dateRangeEnd: dateRange?.to,
+        desiredDayOfWeek: values.day_of_week,
+        dateTime: values.end
+      })
+
+      newAppointment = {
+        ...values,
+        start: start ?? undefined,
+        end: end ?? undefined
+      }
+    }
+
     startAddAppointmentTransition(() => {
       toast.promise(
         async () => {
           await new Promise((resolve) => setTimeout(resolve, 500));
-          await AddBlockedTimeSlot({ data: values })
+          await AddBlockedTimeSlot({ data: newAppointment })
           setTimeout(() => {
             handleUpdate();
             setIsOpened(false);
@@ -200,7 +228,7 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
         }
       );
     });
-  }, [handleUpdate, form, otherForm])
+  }, [dateRange, handleUpdate, form, otherForm])
 
   const watch = form.watch();
 
@@ -214,8 +242,10 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
   useEffect(() => {
     if (currentCalendarId !== undefined) {
       form.setValue("calendarId", currentCalendarId)
+      otherForm.setValue("calendarId", currentCalendarId)
     }
-  }, [currentCalendarId, form, isOpened])
+  }, [currentCalendarId, form, isOpened, otherForm])
+
 
   useEffect(() => {
     if (clientSearchValue) {
@@ -1183,6 +1213,25 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                           mode={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "datetime" : "time"}
                           value={otherWatch.start}
                           onChange={(date) => {
+                            if (otherWatch.freq === 'weekly' && date && otherWatch.end) {
+
+                              const hours = otherWatch.end.getHours();
+                              const minutes = otherWatch.end.getMinutes();
+                              const seconds = otherWatch.end.getSeconds();
+                              const milliseconds = otherWatch.end.getMilliseconds();
+
+                              const adjustedDate = new Date(
+                                date.getFullYear(),
+                                date.getMonth(),
+                                date.getDate(),
+                                hours,
+                                minutes,
+                                seconds,
+                                milliseconds
+                              );
+                              otherForm.setValue("end", adjustedDate)
+                            }
+
                             field.onChange(date);
                             setIsCalendarOpen(false);
                           }}
@@ -1211,7 +1260,27 @@ const AddAppointmentDialog = ({ open = false, startDate, onOpenChange, className
                           mode={otherWatch.freq === "period" || otherWatch.freq === "daily" ? "datetime" : "time"}
                           value={otherWatch.end}
                           onChange={(date) => {
-                            field.onChange(date);
+                            let adjustedDate = date;
+
+                            if (otherWatch.freq === 'weekly' && date && otherWatch.start) {
+
+                              const hours = date.getHours();
+                              const minutes = date.getMinutes();
+                              const seconds = date.getSeconds();
+                              const milliseconds = date.getMilliseconds();
+
+                              adjustedDate = new Date(
+                                otherWatch.start.getFullYear(),
+                                otherWatch.start.getMonth(),
+                                otherWatch.start.getDate(),
+                                hours,
+                                minutes,
+                                seconds,
+                                milliseconds
+                              );
+                            }
+
+                            field.onChange(adjustedDate);
                             setIsCalendarOpen(false);
                           }}
                           onClick={() => setIsCalendarOpen(true)}
