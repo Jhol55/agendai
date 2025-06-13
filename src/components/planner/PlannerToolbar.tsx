@@ -107,6 +107,12 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
     }));
   }, [calendars]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentCalendarId(localStorage.getItem("current_calendar_id") ?? undefined)
+    }
+  })
+
 
   return (
     <div
@@ -117,29 +123,33 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         <div className="flex gap-4 items-center">
           <div>
             <Select
-              src={calendarsSelectList}
+              src={calendarsSelectList ?? []}
               value={currentCalendarId}
-              className="w-72 dark:focus:ring-skyblue dark:focus:ring-1 focus:ring-skyblue focus:ring-1 h-10"
-              onSelect={(value) => setCurrentCalendarId(value)}
+              placeholder="Selecione um calendário"
+              className="w-72"
+              onSelect={(value) => {
+                setCurrentCalendarId(value);
+                localStorage.setItem("current_calendar_id", value);
+              }}
             />
           </div>
-          <Separator orientation="vertical" className="h-4" /> 
+          <Separator orientation="vertical" className="h-4" />
           <div className="flex gap-2">
             <Button
               variant={viewMode === "day" ? "default" : "ghost"}
               disabled
-              className={cn(viewMode === "day" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
+              className={cn(viewMode === "day" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfDay(new Date()),
                 to: endOfDay(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-woot-500", "md:block hidden")}>Dia</Typography>
-              <Typography variant="span" className={cn(viewMode === "day" && "!text-neutral-200 dark:!text-woot-500", "md:hidden block")}>D</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-skyblue dark:!text-woot-500/80", "md:block hidden")}>Dia</Typography>
+              <Typography variant="span" className={cn(viewMode === "day" && "!text-skyblue dark:!text-woot-500/80", "md:hidden block")}>D</Typography>
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "ghost"}
-              className={cn(viewMode === "week" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
+              className={cn(viewMode === "week" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white !text-skyblue hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfWeek(new Date(), {
                   locale: { options: { weekStartsOn: 0 } },
@@ -147,20 +157,20 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
                 to: endOfWeek(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-woot-500", "md:block hidden")}>Semana</Typography>
-              <Typography variant="span" className={cn(viewMode === "week" && "!text-neutral-200 dark:!text-woot-500", "md:hidden block")}>S</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-skyblue dark:!text-woot-500/80", "md:block hidden")}>Semana</Typography>
+              <Typography variant="span" className={cn(viewMode === "week" && "!text-skyblue dark:!text-woot-500/80", "md:hidden block")}>S</Typography>
             </Button>
             <Button
               variant={viewMode === "month" ? "default" : "ghost"}
               disabled
-              className={cn(viewMode === "month" && "border bg-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
+              className={cn(viewMode === "month" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfMonth(new Date()),
                 to: endOfMonth(new Date()),
               })}
             >
-              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-woot-500", "md:block hidden")}>Mês</Typography>
-              <Typography variant="span" className={cn(viewMode === "month" && "!text-neutral-200 dark:!text-woot-500", "md:hidden block")}>M</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-skyblue dark:!text-woot-500/80", "md:block hidden")}>Mês</Typography>
+              <Typography variant="span" className={cn(viewMode === "month" && "!text-skyblue dark:!text-woot-500/80", "md:hidden block")}>M</Typography>
             </Button>
           </div>
           <Separator orientation="vertical" className="h-4" />

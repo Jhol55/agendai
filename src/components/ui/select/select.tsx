@@ -25,6 +25,7 @@ export const Select = ({
   placeholder
 }: SelectProps) => {
   const [isOpened, setIsOpened] = useState(false);
+
   return (
     <Popover open={isOpened} onOpenChange={setIsOpened} modal>
       <PopoverTrigger asChild>
@@ -35,11 +36,12 @@ export const Select = ({
           className={cn(
             !value && "text-muted-foreground",
             "h-10 w-full justify-between bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-900",
+            "dark:focus:ring-skyblue dark:focus:ring-1 h-10 data-[state=closed]:!ring-0 data-[state=open]:ring-1 data-[state=open]:ring-skyblue transition-all duration-75",
             className
           )}
         >
-          <div className={cn("flex gap-4", !(src?.length && src?.find((item) => item?.value == value)?.label) ? "dark:text-neutral-400 text-neutral-500": "dark:text-neutral-200 text-neutral-700")}>
-            {(src?.length && src?.find((item) => item?.value == value)?.label) ?? placeholder}
+          <div className={cn("flex gap-4", !(src?.length && Object.keys(src[0]).length > 0 && src?.find((item) => item?.value == value)?.label) ? "dark:text-neutral-400 text-neutral-500": "dark:text-neutral-200 text-neutral-700")}>
+            {(src?.length && Object.keys(src[0]).length > 0 && src?.find((item) => item?.value == value)?.label) || placeholder}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

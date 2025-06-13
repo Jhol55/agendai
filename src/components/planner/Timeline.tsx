@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Typography } from "../ui/typography";
+import { usePlannerData } from "@/contexts/planner/PlannerDataContext";
 
 
 export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
@@ -52,14 +53,14 @@ export const Timeline: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           <TableHead
             key={index}
             className={cn(
-              "relative bg-background text-center max-w-full whitespace-nowrap bg-neutral-700 dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
+              "relative bg-background text-center max-w-full whitespace-nowrap bg-neutral-200 dark:bg-neutral-800 dark:border-neutral-800 hover:dark:border-neutral-800",
               // shouldDisplayIcon({ index, viewMode })
               //   ? "z-30" : "z-20"
             )}
           >
             {/* bug fix - th sticky border */}
-            {index === 1 && <div className="absolute top-0 left-0 w-full h-full dark:bg-neutral-800 bg-neutral-700"></div>}
-            <Typography variant="span" className="relative flex items-center justify-center dark:!text-neutral-200 !text-neutral-200">
+            {index === 1 && <div className="absolute top-0 left-0 w-full h-full dark:bg-neutral-800 bg-neutral-200"></div>}
+            <Typography variant="span" className="relative border flex items-center justify-center dark:!text-neutral-200 !text-neutral-600">
               {String(label).charAt(0).toUpperCase() + String(label).slice(1)}
               {/* {shouldDisplayIcon({ index, viewMode }) &&
                 <TooltipProvider>

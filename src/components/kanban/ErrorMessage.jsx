@@ -1,11 +1,10 @@
-// ErrorMessage.tsx
+// ErrorMessage.jsx
 import React from 'react';
 
-interface ErrorMessageProps {
-  message: string;
-}
-
-export default function ErrorMessage({ message }: ErrorMessageProps) {
+/**
+ * @param {{ message: string }} props
+ */
+export default function ErrorMessage({ message }) {
   return (
     <div
       role="alert"
@@ -16,3 +15,4 @@ export default function ErrorMessage({ message }: ErrorMessageProps) {
     </div>
   );
 }
+// Usage example:

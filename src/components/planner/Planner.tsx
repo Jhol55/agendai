@@ -23,6 +23,7 @@ import { updateBlockedTimeSlot } from "@/services/block-time-slots";
 import { parseSafeDate } from "@/utils/utils";
 import { useSettings } from "@/hooks/use-settings";
 import { useDebouncedResizeObserver } from "@/hooks/use-debounced-resize-observer";
+import Spinner from "../ui/spinner";
 
 export interface PlannerProps extends React.HTMLAttributes<HTMLDivElement> {
   initialResources: Resource[];
@@ -555,7 +556,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
   }, [dateRange?.from, dateRange?.to])
 
 
-  return (appointments &&
+  return (
     <div
       className="flex flex-col border border-l-0 border-b-0 rounded-md rounded-l-none rounded-br-none overflow-hidden md:h-[calc(91vh-2px)] h-[calc(91vh-2px] leading-relaxed shadow-sm"
     >
@@ -566,8 +567,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
           <TableBody ref={ref} className="relative">
             {resources.map((resource) => (
               hourLabels.map((dateTime, rowIndex) => (
-                <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px] hover:!bg-transparent data-[state=selected]:!bg-transparent", isLoading && "hidden")}>
-                  <td className="!bg-neutral-50 dark:!bg-dark-chatwoot-primary text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]" style={{ backgroundClip: 'padding-box' }}>
+                <TableRow key={rowIndex} className={cn("max-h-[34px] min-h-[34px] h-[34px] hover:!bg-transparent data-[state=selected]:!bg-transparent")}>
+                  <td className="!bg-white dark:!bg-dark-chatwoot-primary text-center dark:text-neutral-100 border-r !min-w-[50px] w-[50px] !max-w-[50px]" style={{ backgroundClip: 'padding-box' }}>
                     {format(dateTime, 'HH:mm')}
                   </td>
 
@@ -693,9 +694,6 @@ const CalendarContent: React.FC<CalendarContentProps> = ({ ...props }) => {
             ))}
           </TableBody>
         </Table>
-        <div className={cn(isLoading && "!flex bg-transparent", "w-full justify-center hidden")}>
-          <Loading display={isLoading} className="!scale-[0.5] mt-10" />
-        </div>
       </div>
     </div>
   );

@@ -1,15 +1,10 @@
-// CustomAttributesList.tsx
+// CustomAttributesList.jsx
 import React from 'react';
 
-interface CustomAttributesListProps {
-  attributes: Record<string, string | number>;
-  displayNames: Record<string, string>;
-}
-
-export default function CustomAttributesList({
-  attributes,
-  displayNames,
-}: CustomAttributesListProps) {
+/**
+ * @param {{ attributes: Record<string, any>, displayNames: Record<string, string> }} props
+ */
+export default function CustomAttributesList({ attributes, displayNames }) {
   return (
     <div className="mt-2 text-xs text-gray-500">
       {Object.entries(attributes)
@@ -17,9 +12,7 @@ export default function CustomAttributesList({
         .map(([key, value]) => (
           <div key={key} className="truncate" title={String(value)}>
             <span className="font-semibold">{displayNames[key] || key.replace('kbw_', '')}: </span>
-            <span>
-              {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-            </span>
+            <span>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
           </div>
         ))}
     </div>
