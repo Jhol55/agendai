@@ -138,7 +138,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             <Button
               variant={viewMode === "day" ? "default" : "ghost"}
               disabled
-              className={cn(viewMode === "day" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
+              className={cn(viewMode === "day" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-skyblue/10")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfDay(new Date()),
                 to: endOfDay(new Date()),
@@ -149,7 +149,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "ghost"}
-              className={cn(viewMode === "week" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white !text-skyblue hover:bg-neutral-700")}
+              className={cn(viewMode === "week" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white !text-skyblue hover:bg-skyblue/10")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfWeek(new Date(), {
                   locale: { options: { weekStartsOn: 0 } },
@@ -163,7 +163,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             <Button
               variant={viewMode === "month" ? "default" : "ghost"}
               disabled
-              className={cn(viewMode === "month" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-neutral-700")}
+              className={cn(viewMode === "month" && "bg-skyblue/10 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white text-black hover:bg-skyblue/10")}
               onClick={() => handleDateRangeUpdate({
                 from: startOfMonth(new Date()),
                 to: endOfMonth(new Date()),
